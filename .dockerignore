@@ -9,3 +9,4 @@
 !src/*
 !alembic/*
 !alembic.ini
+!entrypoint.sh
