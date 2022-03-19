@@ -63,7 +63,7 @@ class GarlicManager:
 
         for i, user in enumerate(users):
             embed.add_field(
-                name=f"{i + 1}. {user.name}",
+                name=f"{i + 1}. {user.name[:-5]}",
                 value=f"🧄 {user.count:,}",
                 inline=True,
             )
