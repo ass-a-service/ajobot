@@ -44,7 +44,7 @@ class Garlic(Cog):
         if change > 0:
             await itr.send(f"{GARLIC} You won {change:,} garlic {GARLIC}")
         else:
-            await itr.send(f"{GARLIC} You lost {abs(change),} garlic {GARLIC}")
+            await itr.send(f"{GARLIC} You lost {abs(change):,} garlic {GARLIC}")
 
     @command(name="garlic", description="Get your garlic count.")
     async def garlic_command(self, ctx: Context[Bot]) -> None:
@@ -67,7 +67,7 @@ class Garlic(Cog):
         if change > 0:
             await ctx.reply(f"{GARLIC} You won {change:,} garlic {GARLIC}")
         else:
-            await ctx.reply(f"{GARLIC} You lost {abs(change),} garlic {GARLIC}")
+            await ctx.reply(f"{GARLIC} You lost {abs(change):,} garlic {GARLIC}")
 
 
 def setup(bot: Bot) -> None:

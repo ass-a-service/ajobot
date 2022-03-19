@@ -21,9 +21,9 @@ class GarlicManager:
     async def _resolve_user(self, user: User) -> Stats:
         if user.id not in self._cache:
             try:
-                self._cache[user.id] = await Stats.objects.get(user=id)
+                self._cache[user.id] = await Stats.objects.get(user=user.id)
             except NoMatch:
-                self._cache[user.id] = await Stats(user=id, name=f"{user.name}#{user.discriminator}").save()
+                self._cache[user.id] = await Stats(user=user.id, name=f"{user.name}#{user.discriminator}").save()
 
         return self._cache[user.id]
 
