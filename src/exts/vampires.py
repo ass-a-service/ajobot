@@ -20,6 +20,10 @@ class Vampires(Cog):
                 return
 
             garlic = await self.bot.manager.get_user_garlic(message.author)
+
+            if garlic < 1:
+                return
+
             to_pay = round(garlic / 25) + 1
 
             await self.bot.manager.add_user_garlic(message.author, -to_pay)
