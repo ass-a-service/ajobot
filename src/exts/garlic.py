@@ -81,10 +81,10 @@ class Garlic(Cog):
             new = ceil((randrange(0, 100) / 100) * amount)
 
             await self._increment_user(itr.author.id, str(itr.author), new)
-            await itr.send(f"{GARLIC} You won {new} garlic {GARLIC}")
+            await itr.send(f"{GARLIC} You won {new:,} garlic {GARLIC}")
         else:
             await self._increment_user(itr.author.id, str(itr.author), -amount)
-            await itr.send(f"{GARLIC} You lost {amount} garlic {GARLIC}")
+            await itr.send(f"{GARLIC} You lost {amount:,} garlic {GARLIC}")
 
     @command(name="garlic", description="Get your garlic count.")
     async def garlic_command(self, ctx: Context[Bot]) -> None:
@@ -105,13 +105,13 @@ class Garlic(Cog):
             return
 
         if randrange(0, 3) == 1:
-            new = ceil((randrange(0, 100) / 100) * amount)
+            new = ceil((randrange(0, 100) / 50) * amount)
 
             await self._increment_user(ctx.author.id, str(ctx.author), new)
-            await ctx.reply(f"{GARLIC} You won {new} garlic {GARLIC}", allowed_mentions=MENTIONS)
+            await ctx.reply(f"{GARLIC} You won {new:,} garlic {GARLIC}", allowed_mentions=MENTIONS)
         else:
             await self._increment_user(ctx.author.id, str(ctx.author), -amount)
-            await ctx.reply(f"{GARLIC} You lost {amount} garlic {GARLIC}", allowed_mentions=MENTIONS)
+            await ctx.reply(f"{GARLIC} You lost {amount:,} garlic {GARLIC}", allowed_mentions=MENTIONS)
 
 
 def setup(bot: Bot) -> None:
