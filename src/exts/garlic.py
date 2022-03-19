@@ -51,6 +51,9 @@ class Garlic(Cog):
         if "garlic" in message.content.lower() or GARLIC in message.content or ":garlic:" in message.content:
             await self._increment_user(message.author.id, str(message.author), 1)
 
+        if "give me garlic" in message.content.lower():
+            await message.add_reaction(GARLIC)
+
     @slash_command(name="garlic", description="Get your garlic count.")
     async def garlic(self, itr: CommandInteraction) -> None:
         user = await self._resolve_user(itr.author.id, str(itr.author))
