@@ -48,7 +48,7 @@ class Garlic(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        if "garlic" in message.content.lower():
+        if "garlic" in message.content.lower() or GARLIC in message.content or ":garlic:" in message.content:
             await self._increment_user(message.author.id, str(message.author), 1)
 
     @slash_command(name="garlic", description="Get your garlic count.")
