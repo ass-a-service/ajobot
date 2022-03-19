@@ -108,7 +108,7 @@ class GarlicManager:
     async def claim_weekly(self, user: User) -> timedelta | None:
         stats = await self._resolve_user(user)
 
-        if stats.last_weekly is None or datetime.utcnow() - stats.last_weekly > timedelta(days=1):
+        if stats.last_weekly is None or datetime.utcnow() - stats.last_weekly > timedelta(days=7):
             stats = await stats.update(last_weekly=datetime.utcnow(), count=stats.count + WEEKLY)
             self._cache[user.id] = stats
             return
