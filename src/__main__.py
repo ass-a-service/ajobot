@@ -1,5 +1,7 @@
 from os import environ
 
+from disnake import Intents
+
 from . import Bot
 
 
@@ -9,7 +11,10 @@ def main() -> None:
     if guild := environ.get("TEST_GUILD"):
         test_guilds = [int(guild)]
 
-    bot = Bot(test_guilds=test_guilds)
+    intents = Intents.none()
+    intents.messages = True
+
+    bot = Bot(test_guilds=test_guilds, intents=intents)
 
     for ext in ["src.exts.garlic"]:
         bot.load_extension(ext)
