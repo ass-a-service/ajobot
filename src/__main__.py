@@ -25,6 +25,7 @@ def main() -> None:
     for ext in [
         "src.exts.garlic",
         "src.exts.general",
+        "src.exts.vampires",
     ]:
         bot.load_extension(ext)
 

@@ -1,5 +1,6 @@
 {
     "python.analysis.diagnosticSeverityOverrides": {
-        "reportMissingTypeStubs": "none"
+        "reportMissingTypeStubs": "none",
+        "reportUnknownMemberType": "none"
     }
 }
