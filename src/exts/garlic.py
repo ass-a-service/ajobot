@@ -114,6 +114,26 @@ class Garlic(Cog):
 
         await ctx.reply(f"{GARLIC} You paid {amount:,} garlic to {user} {GARLIC}")
 
+    @command(name="daily", description="Claim your daily garlic.")
+    async def daily_command(self, ctx: Context[Bot]) -> None:
+        res = await self.bot.manager.claim_daily(ctx.author)
+
+        if res:
+            await ctx.reply("You already claimed your daily garlic.")
+            return
+
+        await ctx.reply(f"{GARLIC} You claimed your daily garlic! {GARLIC}")
+
+    @command(name="weekly", description="Claim your weekly garlic.")
+    async def weekly_command(self, ctx: Context[Bot]) -> None:
+        res = await self.bot.manager.claim_weekly(ctx.author)
+
+        if res:
+            await ctx.reply("You already claimed your weekly garlic.")
+            return
+
+        await ctx.reply(f"{GARLIC} You claimed your weekly garlic! {GARLIC}")
+
 
 def setup(bot: Bot) -> None:
     bot.add_cog(Garlic(bot))
