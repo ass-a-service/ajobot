@@ -1,4 +1,4 @@
-from disnake import CommandInteraction, Message
+from disnake import CommandInteraction, Message, User
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 
 from src.impl.bot import Bot
@@ -46,6 +46,21 @@ class Garlic(Cog):
         else:
             await itr.send(f"{GARLIC} You lost {abs(change):,} garlic {GARLIC}")
 
+    @slash_command(name="pay", description="Pay someone garlic.")
+    async def pay(
+        self,
+        itr: CommandInteraction,
+        user: User = Param(description="The user to pay."),
+        amount: int = Param(description="The amount to pay."),
+    ) -> None:
+        try:
+            await self.bot.manager.pay_garlic(itr.author, user, amount)
+        except ValueError:
+            await itr.send("You don't have enough garlic to pay that much.")
+            return
+
+        await itr.send(f"{GARLIC} You paid {amount:,} garlic to {user} {GARLIC}")
+
     @command(name="garlic", description="Get your garlic count.")
     async def garlic_command(self, ctx: Context[Bot]) -> None:
         count = await self.bot.manager.get_user_garlic(ctx.author)
@@ -68,6 +83,16 @@ class Garlic(Cog):
             await ctx.reply(f"{GARLIC} You won {change:,} garlic {GARLIC}")
         else:
             await ctx.reply(f"{GARLIC} You lost {abs(change):,} garlic {GARLIC}")
+
+    @command(name="pay", description="Pay someone garlic.")
+    async def pay_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
+        try:
+            await self.bot.manager.pay_garlic(ctx.author, user, amount)
+        except ValueError:
+            await ctx.reply("You don't have enough garlic to pay that much.")
+            return
+
+        await ctx.reply(f"{GARLIC} You paid {amount:,} garlic to {user} {GARLIC}")
 
 
 def setup(bot: Bot) -> None:

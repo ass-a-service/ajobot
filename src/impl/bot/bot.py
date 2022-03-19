@@ -14,7 +14,7 @@ class Bot(_Bot):
         super().__init__(*args, **kwargs)  # type: ignore
 
         self._status = StatusHeartbeater()
-        self._manager = GarlicManager()
+        self.manager = GarlicManager()
 
     async def start(self, *args: Any, reconnect: bool = True, **kwargs: Any) -> None:
         logger.info("Connecting to the database...")

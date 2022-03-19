@@ -29,8 +29,11 @@ class GarlicManager:
 
     async def set_user_garlic(self, user: User, amount: int) -> Stats:
         stats = await self._resolve_user(user)
+        stats = await stats.update(count=amount)
 
-        return await stats.update(count=amount)
+        self._cache[user.id] = stats
+
+        return stats
 
     async def get_user_garlic(self, user: User) -> int:
         stats = await self._resolve_user(user)
@@ -39,8 +42,11 @@ class GarlicManager:
 
     async def add_user_garlic(self, user: User, amount: int) -> Stats:
         stats = await self._resolve_user(user)
+        stats = await stats.update(count=stats.count + amount)
 
-        return await stats.update(count=stats.count + amount)
+        self._cache[user.id] = stats
+
+        return stats
 
     async def get_leaderboard(self) -> Embed:
         users = await Stats.objects.order_by("-count").limit(12).all()  # type: ignore
@@ -75,3 +81,12 @@ class GarlicManager:
         await self.set_user_garlic(user, new)
 
         return change
+
+    async def pay_garlic(self, from_user: User, to_user: User, amount: int) -> None:
+        from_stats = await self._resolve_user(from_user)
+
+        if amount > from_stats.count:
+            raise ValueError("You don't have enough garlic to pay that much.")
+
+        await self.add_user_garlic(from_user, -amount)
+        await self.add_user_garlic(to_user, amount)
