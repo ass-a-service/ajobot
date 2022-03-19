@@ -3,7 +3,7 @@
 
 from datetime import datetime
 
-from ormar import BigInteger, Model, String, DateTime
+from ormar import BigInteger, DateTime, Model, String
 
 from .metadata import database, metadata
 

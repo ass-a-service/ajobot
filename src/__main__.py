@@ -22,7 +22,10 @@ def main() -> None:
         allowed_mentions=AllowedMentions.none(),
     )
 
-    for ext in ["src.exts.garlic"]:
+    for ext in [
+        "src.exts.garlic",
+        "src.exts.general",
+    ]:
         bot.load_extension(ext)
 
     bot.run(environ["TOKEN"])

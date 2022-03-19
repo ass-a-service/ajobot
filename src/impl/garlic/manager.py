@@ -1,13 +1,12 @@
+from datetime import datetime, timedelta
 from math import ceil
 from random import randrange
 from typing import Any, Protocol
-from datetime import datetime, timedelta
 
 from disnake import Embed
 from ormar import NoMatch
 
 from ..database import GarlicUser
-
 
 DAILY = 32
 WEEKLY = DAILY * 8
