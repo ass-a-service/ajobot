@@ -11,4 +11,4 @@ RUN poetry install
 
 COPY . /bot
 
-CMD ["poetry", "run", "task", "start"]
+CMD ["sh", "entrypoint.sh"]
