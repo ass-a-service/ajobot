@@ -1,10 +1,11 @@
-from disnake import CommandInteraction, Embed, Message
-from disnake.ext.commands import Bot, Cog, slash_command
+from disnake import AllowedMentions, CommandInteraction, Embed, Message
+from disnake.ext.commands import Bot, Cog, Context, command, slash_command
 from ormar import NoMatch
 
 from src.impl.database import Stats
 
 GARLIC = "🧄"
+MENTIONS = AllowedMentions(replied_user=False)
 
 
 class Garlic(Cog):
@@ -25,6 +26,23 @@ class Garlic(Cog):
 
         self._users[id] = await user.update(count=user.count + garlic)
 
+    async def _get_leaderboard(self) -> Embed:
+        users = await Stats.objects.order_by("-count").limit(12).all()  # type: ignore
+
+        embed = Embed(
+            title="Garlic Leaderboard",
+            colour=0x87CEEB,
+        )
+
+        for i, user in enumerate(users):
+            embed.add_field(
+                name=f"{i + 1}. {user.name}",
+                value=f"{GARLIC} {user.count:,}",
+                inline=True,
+            )
+
+        return embed
+
     @Cog.listener()
     async def on_message(self, message: Message) -> None:
         if message.author.bot or message.guild is None:
@@ -41,21 +59,17 @@ class Garlic(Cog):
 
     @slash_command(name="leaderboard", description="Get the garlic leaderboard.")
     async def leaderboard(self, itr: CommandInteraction) -> None:
-        users = await Stats.objects.order_by("-count").limit(12).all()  # type: ignore
+        await itr.send(embed=await self._get_leaderboard())
 
-        embed = Embed(
-            title="Garlic Leaderboard",
-            colour=0x87CEEB,
-        )
+    @command(name="garlic", description="Get your garlic count.")
+    async def garlic_command(self, ctx: Context[Bot]) -> None:
+        user = await self._resolve_user(ctx.author.id, str(ctx.author))
 
-        for i, user in enumerate(users):
-            embed.add_field(
-                name=f"{i + 1}. {user.name}",
-                value=f"{GARLIC} {user.count:,}",
-                inline=True,
-            )
+        await ctx.reply(f"{GARLIC} You have {user.count} garlic {GARLIC}", allowed_mentions=MENTIONS)
 
-        await itr.send(embed=embed)
+    @command(name="leaderboard", description="Get the garlic leaderboard.")
+    async def leaderboard_command(self, ctx: Context[Bot]) -> None:
+        await ctx.reply(embed=await self._get_leaderboard(), allowed_mentions=MENTIONS)
 
 
 def setup(bot: Bot) -> None:
