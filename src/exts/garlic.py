@@ -61,6 +61,26 @@ class Garlic(Cog):
 
         await itr.send(f"{GARLIC} You paid {amount:,} garlic to {user} {GARLIC}")
 
+    @slash_command(name="daily", description="Claim your daily garlic.")
+    async def daily(self, itr: CommandInteraction) -> None:
+        res = await self.bot.manager.claim_daily(itr.author)
+
+        if res:
+            await itr.send("You already claimed your daily garlic.")
+            return
+
+        await itr.send(f"{GARLIC} You claimed your daily garlic! {GARLIC}")
+
+    @slash_command(name="weekly", description="Claim your weekly garlic.")
+    async def weekly(self, itr: CommandInteraction) -> None:
+        res = await self.bot.manager.claim_weekly(itr.author)
+
+        if res:
+            await itr.send("You already claimed your weekly garlic.")
+            return
+
+        await itr.send(f"{GARLIC} You claimed your weekly garlic! {GARLIC}")
+
     @command(name="garlic", description="Get your garlic count.")
     async def garlic_command(self, ctx: Context[Bot]) -> None:
         count = await self.bot.manager.get_user_garlic(ctx.author)

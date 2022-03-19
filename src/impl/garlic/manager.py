@@ -1,11 +1,16 @@
 from math import ceil
 from random import randrange
 from typing import Any, Protocol
+from datetime import datetime, timedelta
 
 from disnake import Embed
 from ormar import NoMatch
 
-from ..database import Stats
+from ..database import GarlicUser
+
+
+DAILY = 32
+WEEKLY = DAILY * 8
 
 
 class User(Protocol):
@@ -16,18 +21,18 @@ class User(Protocol):
 
 class GarlicManager:
     def __init__(self) -> None:
-        self._cache: dict[int, Stats] = {}
+        self._cache: dict[int, GarlicUser] = {}
 
-    async def _resolve_user(self, user: User) -> Stats:
+    async def _resolve_user(self, user: User) -> GarlicUser:
         if user.id not in self._cache:
             try:
-                self._cache[user.id] = await Stats.objects.get(user=user.id)
+                self._cache[user.id] = await GarlicUser.objects.get(user=user.id)
             except NoMatch:
-                self._cache[user.id] = await Stats(user=user.id, name=f"{user.name}#{user.discriminator}").save()
+                self._cache[user.id] = await GarlicUser(user=user.id, name=f"{user.name}#{user.discriminator}").save()
 
         return self._cache[user.id]
 
-    async def set_user_garlic(self, user: User, amount: int) -> Stats:
+    async def set_user_garlic(self, user: User, amount: int) -> GarlicUser:
         stats = await self._resolve_user(user)
         stats = await stats.update(count=amount)
 
@@ -40,7 +45,7 @@ class GarlicManager:
 
         return stats.count
 
-    async def add_user_garlic(self, user: User, amount: int) -> Stats:
+    async def add_user_garlic(self, user: User, amount: int) -> GarlicUser:
         stats = await self._resolve_user(user)
         stats = await stats.update(count=stats.count + amount)
 
@@ -49,7 +54,7 @@ class GarlicManager:
         return stats
 
     async def get_leaderboard(self) -> Embed:
-        users = await Stats.objects.order_by("-count").limit(12).all()  # type: ignore
+        users = await GarlicUser.objects.order_by("-count").limit(12).all()  # type: ignore
 
         embed = Embed(
             title="Garlic Leaderboard",
@@ -90,3 +95,23 @@ class GarlicManager:
 
         await self.add_user_garlic(from_user, -amount)
         await self.add_user_garlic(to_user, amount)
+
+    async def claim_daily(self, user: User) -> timedelta | None:
+        stats = await self._resolve_user(user)
+
+        if stats.last_daily is None or datetime.utcnow() - stats.last_daily > timedelta(days=1):
+            stats = await stats.update(last_daily=datetime.utcnow(), count=stats.count + DAILY)
+            self._cache[user.id] = stats
+            return
+
+        return (stats.last_daily + timedelta(days=1)) - datetime.utcnow()
+
+    async def claim_weekly(self, user: User) -> timedelta | None:
+        stats = await self._resolve_user(user)
+
+        if stats.last_weekly is None or datetime.utcnow() - stats.last_weekly > timedelta(days=1):
+            stats = await stats.update(last_weekly=datetime.utcnow(), count=stats.count + WEEKLY)
+            self._cache[user.id] = stats
+            return
+
+        return (stats.last_weekly + timedelta(days=7)) - datetime.utcnow()
