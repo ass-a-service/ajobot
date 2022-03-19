@@ -9,7 +9,7 @@ repository = "https://github.com/vcokltfre/garlic-bot"
 [tool.poetry.dependencies]
 python = "^3.10"
 taskipy = "^1.9.0"
-disnake = "^2.3.0"
+disnake = "^2.4.0"
 asyncpg = "^0.25.0"
 loguru = "^0.5.3"
 alembic = "^1.7.5"
