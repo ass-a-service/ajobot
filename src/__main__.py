@@ -14,7 +14,7 @@ def main() -> None:
     intents = Intents.none()
     intents.messages = True
 
-    bot = Bot(test_guilds=test_guilds, intents=intents, command_prefix="g/", help_command=None)
+    bot = Bot(test_guilds=test_guilds, intents=intents, command_prefix="g/", help_command=None, sync_commands=False)
 
     for ext in ["src.exts.garlic"]:
         bot.load_extension(ext)

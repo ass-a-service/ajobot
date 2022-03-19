@@ -1,5 +1,8 @@
+from math import ceil
+from random import randrange
+
 from disnake import AllowedMentions, CommandInteraction, Embed, Message
-from disnake.ext.commands import Bot, Cog, Context, command, slash_command
+from disnake.ext.commands import Bot, Cog, Context, Param, command, slash_command
 from ormar import NoMatch
 
 from src.impl.database import Stats
@@ -64,6 +67,25 @@ class Garlic(Cog):
     async def leaderboard(self, itr: CommandInteraction) -> None:
         await itr.send(embed=await self._get_leaderboard())
 
+    @slash_command(name="gamble", description="Gamble your garlic.")
+    async def gamble(
+        self, itr: CommandInteraction, amount: int = Param(description="How much garlic to gamble.")
+    ) -> None:
+        user = await self._resolve_user(itr.author.id, str(itr.author))
+
+        if amount > user.count:
+            await itr.send(f"{GARLIC} You don't have that much garlic {GARLIC}")
+            return
+
+        if randrange(0, 3) == 1:
+            new = ceil((randrange(0, 100) / 100) * amount)
+
+            await self._increment_user(itr.author.id, str(itr.author), new)
+            await itr.send(f"{GARLIC} You won {new} garlic {GARLIC}")
+        else:
+            await self._increment_user(itr.author.id, str(itr.author), -amount)
+            await itr.send(f"{GARLIC} You lost {amount} garlic {GARLIC}")
+
     @command(name="garlic", description="Get your garlic count.")
     async def garlic_command(self, ctx: Context[Bot]) -> None:
         user = await self._resolve_user(ctx.author.id, str(ctx.author))
@@ -73,6 +95,23 @@ class Garlic(Cog):
     @command(name="leaderboard", description="Get the garlic leaderboard.")
     async def leaderboard_command(self, ctx: Context[Bot]) -> None:
         await ctx.reply(embed=await self._get_leaderboard(), allowed_mentions=MENTIONS)
+
+    @command(name="gamble", description="Gamble your garlic.")
+    async def gamble_command(self, ctx: Context[Bot], amount: int) -> None:
+        user = await self._resolve_user(ctx.author.id, str(ctx.author))
+
+        if amount > user.count:
+            await ctx.reply(f"{GARLIC} You don't have that much garlic {GARLIC}", allowed_mentions=MENTIONS)
+            return
+
+        if randrange(0, 3) == 1:
+            new = ceil((randrange(0, 100) / 100) * amount)
+
+            await self._increment_user(ctx.author.id, str(ctx.author), new)
+            await ctx.reply(f"{GARLIC} You won {new} garlic {GARLIC}", allowed_mentions=MENTIONS)
+        else:
+            await self._increment_user(ctx.author.id, str(ctx.author), -amount)
+            await ctx.reply(f"{GARLIC} You lost {amount} garlic {GARLIC}", allowed_mentions=MENTIONS)
 
 
 def setup(bot: Bot) -> None:
