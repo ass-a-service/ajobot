@@ -1,5 +1,5 @@
-from disnake import CommandInteraction
-from disnake.ext.commands import Cog, slash_command, command, is_owner, Context, Bot
+from disnake import CommandInteraction, User
+from disnake.ext.commands import Bot, Cog, Context, command, is_owner, slash_command
 
 from src.impl.bot import Bot
 from src.impl.database import GarlicUser
@@ -16,12 +16,21 @@ class General(Cog):
     @command(name="debug")
     @is_owner()
     async def debug(self, ctx: Context[Bot]) -> None:
-        dbg = "\n".join([
-            f"DB users: {await GarlicUser.objects.count()}",
-            f"Latency: {self.bot.latency * 1000:.2f}ms",
-        ])
+        dbg = "\n".join(
+            [
+                f"DB users: {await GarlicUser.objects.count()}",
+                f"Latency: {self.bot.latency * 1000:.2f}ms",
+            ]
+        )
 
         await ctx.send(dbg)
+
+    @command(name="setgarlic")
+    @is_owner()
+    async def setgarlic(self, ctx: Context[Bot], user: User, amount: int) -> None:
+        await self.bot.manager.set_user_garlic(user, amount)
+
+        await ctx.send(f"Set garlic for {user} to {amount}")
 
 
 def setup(bot: Bot) -> None:

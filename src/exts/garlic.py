@@ -37,8 +37,8 @@ class Garlic(Cog):
     ) -> None:
         try:
             change = await self.bot.manager.gamble_garlic(itr.author, amount)
-        except ValueError:
-            await itr.send("You don't have enough garlic to gamble that much.")
+        except ValueError as e:
+            await itr.send(e.args[0])
             return
 
         if change > 0:
@@ -55,8 +55,8 @@ class Garlic(Cog):
     ) -> None:
         try:
             await self.bot.manager.pay_garlic(itr.author, user, amount)
-        except ValueError:
-            await itr.send("You don't have enough garlic to pay that much.")
+        except ValueError as e:
+            await itr.send(e.args[0])
             return
 
         await itr.send(f"{GARLIC} You paid {amount:,} garlic to {user} {GARLIC}")
@@ -95,8 +95,8 @@ class Garlic(Cog):
     async def gamble_command(self, ctx: Context[Bot], amount: int) -> None:
         try:
             change = await self.bot.manager.gamble_garlic(ctx.author, amount)
-        except ValueError:
-            await ctx.reply("You don't have enough garlic to gamble that much.")
+        except ValueError as e:
+            await ctx.reply(e.args[0])
             return
 
         if change > 0:
@@ -108,8 +108,8 @@ class Garlic(Cog):
     async def pay_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
         try:
             await self.bot.manager.pay_garlic(ctx.author, user, amount)
-        except ValueError:
-            await ctx.reply("You don't have enough garlic to pay that much.")
+        except ValueError as e:
+            await ctx.reply(e.args[0])
             return
 
         await ctx.reply(f"{GARLIC} You paid {amount:,} garlic to {user} {GARLIC}")

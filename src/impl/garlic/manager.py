@@ -72,6 +72,9 @@ class GarlicManager:
     async def gamble_garlic(self, user: User, amount: int) -> int:
         stats = await self._resolve_user(user)
 
+        if amount < 1:
+            raise ValueError("You can't gamble less than 1 garlic.")
+
         if amount > stats.count:
             raise ValueError("You don't have enough garlic to gamble that much.")
 
@@ -88,6 +91,9 @@ class GarlicManager:
 
     async def pay_garlic(self, from_user: User, to_user: User, amount: int) -> None:
         from_stats = await self._resolve_user(from_user)
+
+        if amount < 1:
+            raise ValueError("You can't pay less than 1 garlic.")
 
         if amount > from_stats.count:
             raise ValueError("You don't have enough garlic to pay that much.")
