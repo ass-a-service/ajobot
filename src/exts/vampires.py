@@ -16,7 +16,7 @@ class Vampires(Cog):
             return
 
         if "garlic" in message.content.lower():
-            if randrange(0, 20):
+            if randrange(0, 150):
                 return
 
             garlic = await self.bot.manager.get_user_garlic(message.author)
@@ -24,7 +24,7 @@ class Vampires(Cog):
             if garlic < 1:
                 return
 
-            to_pay = round(garlic / 25) + 1
+            to_pay = round(garlic / 50) + 1
 
             await self.bot.manager.add_user_garlic(message.author, -to_pay)
             await message.reply(
