@@ -79,7 +79,7 @@ class GarlicManager:
             raise ValueError("You don't have enough garlic to gamble that much.")
 
         if randrange(0, 3) == 1:
-            change = ceil((randrange(0, 100) / 100) * amount)
+            change = ceil((randrange(0, 100) / 40) * amount)
             new = stats.count + change
         else:
             change = -amount
