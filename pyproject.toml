@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "garlic-bot"
+name = "ajo-bot"
 version = "1.0.0"
-description = "Count your garlic stats!"
-authors = ["vcokltfre <vcokltfre@gmail.com>"]
+description = "Count your ajo stats!"
+authors = ["axel <axl89@users.noreply.github.com>"]
 license = "MIT"
-repository = "https://github.com/vcokltfre/garlic-bot"
+repository = "https://github.com/lastlife/ajobot"
 
 [tool.poetry.dependencies]
 python = "^3.10"
