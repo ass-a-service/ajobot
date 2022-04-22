@@ -6,9 +6,9 @@ You can blame Mot for this exising :)
 
 ## Invite the bot
 
-[Invite](https://discord.com/api/oauth2/authorize?client_id=954718378755489852&permissions=265280&scope=bot%20applications.commands)
+[Invite](https://discord.com/api/oauth2/authorize?client_id=967138080375046214&permissions=265280&scope=bot%20applications.commands)
 
-[Without permissions](https://discord.com/api/oauth2/authorize?client_id=954718378755489852&permissions=265280&scope=bot%20applications.commands)
+[Without permissions](https://discord.com/api/oauth2/authorize?client_id=967138080375046214&permissions=265280&scope=bot%20applications.commands)
 
 ## Running the bot
 
