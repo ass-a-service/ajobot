@@ -11,7 +11,7 @@ class General(Cog):
 
     @slash_command(name="support", description="Get an invite link to the support server.")
     async def support(self, itr: CommandInteraction) -> None:
-        await itr.send("Here's an invite to my support server: https://discord.gg/t5Bs4cXfv2", ephemeral=True)
+        await itr.send("Here's an invite to my support server: /dev/null", ephemeral=True)
 
     @command(name="debug")
     @is_owner()
