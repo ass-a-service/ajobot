@@ -5,6 +5,7 @@ from disnake.ext.commands import Cog
 
 from src.impl.bot import Bot
 
+GARLIC = "🧄"
 
 class Vampires(Cog):
     def __init__(self, bot: Bot) -> None:
@@ -15,8 +16,8 @@ class Vampires(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        if "garlic" in message.content.lower():
-            if randrange(0, 150):
+        if "garlic" in message.content.lower() or "ajo" in message.content.lower() or GARLIC in message.content:
+            if randrange(0, 100):
                 return
 
             garlic = await self.bot.manager.get_user_garlic(message.author)
@@ -24,9 +25,11 @@ class Vampires(Cog):
             if garlic < 1:
                 return
 
-            to_pay = round(garlic / 50) + 1
+            random_pct = randrange(1,10)
+            to_pay = round(garlic * (random_pct/100))
 
             await self.bot.manager.add_user_garlic(message.author, -to_pay)
+            # Feature request: hay un 0.1% de que el vampiro te hace discombolulate y te jode y te quita un 33%.
             await message.reply(
                 f"A vampire has appeared! You use {to_pay} garlic to defeat them. You are safe... for now."
             )

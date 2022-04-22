@@ -23,7 +23,8 @@ class GarlicManager:
         self._cache: dict[int, GarlicUser] = {}
 
     async def _resolve_user(self, user: User) -> GarlicUser:
-        if user.id not in self._cache:
+        #if user.id not in self._cache:
+        if True:
             try:
                 self._cache[user.id] = await GarlicUser.objects.get(user=user.id)
             except NoMatch:
@@ -120,3 +121,35 @@ class GarlicManager:
             return
 
         return (stats.last_weekly + timedelta(days=7)) - datetime.utcnow()
+
+    async def discombobulate(self, from_user: User, to_user: User, amount: int) -> None:
+        from_stats = await self._resolve_user(from_user)
+        to_stats = await self._resolve_user(to_user)
+
+        if amount < 1:
+            raise ValueError("You can't discombobulate for less than 1 ajo.")
+
+        if amount > from_stats.count:
+            raise ValueError(f"You don't have enough ajos to discombobulate {to_stats.name}.")
+
+        if amount <= (35/100) * to_stats.count:
+            raise ValueError(f"You haven't offered enough ajos to discombobulate {to_stats.name}.")
+        
+        # Remove ajos from from_user
+        await self.add_user_garlic(from_user, -amount)
+
+        # DISCOMBOBULATE!
+        discombobulate_pct = randrange(69,200) # Feature idea: do a normal distribution random
+        discombobulate_dmg = round(amount * (discombobulate_pct / 100))
+
+        # Corner case: over 9000 discombobulate
+        if to_stats.count - discombobulate_dmg < 0:
+            discombobulate_dmg = to_stats.count
+
+        await self.add_user_garlic(to_user, -discombobulate_dmg)
+
+        return discombobulate_dmg
+
+    async def show_garlic(self, to_user: User) -> None:
+        to_stats = await self._resolve_user(to_user)
+        return to_stats.count

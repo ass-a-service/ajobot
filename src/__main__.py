@@ -17,7 +17,7 @@ def main() -> None:
     bot = Bot(
         test_guilds=test_guilds,
         intents=intents,
-        command_prefix=("g/", "garlic ", "garlic/"),
+        command_prefix=("a/", "ajo ", "ajo/"),
         help_command=None,
         allowed_mentions=AllowedMentions.none(),
     )

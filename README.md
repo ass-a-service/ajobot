@@ -1,8 +1,8 @@
-# garlic-bot
+# ajo-bot
 
-Count your garlic stats!
+Count your ajo stats!
 
-You can blame Dragory for this exising :)
+You can blame Mot for this exising :)
 
 ## Invite the bot
 
