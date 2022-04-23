@@ -3,14 +3,14 @@ from math import ceil
 from random import randrange
 from typing import Any, Protocol
 
-from disnake import Embed
+from disnake import Embed, Message
 from ormar import NoMatch
 
 from ..database import GarlicUser
 
+GARLIC = "🧄"
 DAILY = 32
 WEEKLY = DAILY * 8
-
 
 class User(Protocol):
     id: int
@@ -31,6 +31,15 @@ class GarlicManager:
                 self._cache[user.id] = await GarlicUser(user=user.id, name=f"{user.name}#{user.discriminator}").save()
 
         return self._cache[user.id]
+
+    async def contains_ajo(self, msg: Message) -> bool:
+        txt = msg.content
+        itxt = txt.lower()
+        return "garlic" in itxt or "ajo" in itxt or GARLIC in txt or ":garlic" in txt
+
+    async def is_begging_for_ajo(self, msg: Message) -> bool:
+        itxt = msg.content.lower()
+        return "give me garlic" in itxt or "dame ajo" in itxt
 
     async def set_user_garlic(self, user: User, amount: int) -> GarlicUser:
         stats = await self._resolve_user(user)

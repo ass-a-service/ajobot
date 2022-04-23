@@ -15,10 +15,16 @@ class Garlic(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        if "garlic" in message.content.lower() or "ajo" in message.content.lower() or GARLIC in message.content or ":garlic:" in message.content:
+        # this message is not interesting
+        contains_ajo = await self.bot.manager.contains_ajo(message)
+        if not contains_ajo:
+            return
+
+        if contains_ajo:
             await self.bot.manager.add_user_garlic(message.author, 1)
 
-        if "give me garlic" in message.content.lower() or "dame ajo" in message.content.lower():
+        is_begging = await self.bot.manager.is_begging_for_ajo(message)
+        if is_begging:
             await message.add_reaction(GARLIC)
 
     @slash_command(name="ajo", description="Get your count of ajos.")
