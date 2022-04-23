@@ -1,3 +1,4 @@
+from datetime import timedelta
 from disnake import CommandInteraction, Message, User
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 
@@ -72,7 +73,8 @@ class Garlic(Cog):
         res = await self.bot.manager.claim_daily(itr.author)
 
         if res:
-            await itr.send("You already claimed your daily ajos.")
+            human_res = await self.strip_microseconds(res)
+            await itr.send(f"You already claimed your daily ajos, you can claim again in {human_res}.")
             return
 
         await itr.send(f"{GARLIC} You claimed your daily ajos! {GARLIC}")
@@ -82,7 +84,8 @@ class Garlic(Cog):
         res = await self.bot.manager.claim_weekly(itr.author)
 
         if res:
-            await itr.send("You already claimed your weekly ajos.")
+            human_res = await self.strip_microseconds(res)
+            await itr.send(f"You already claimed your weekly ajos, you can claim again in {human_res}.")
             return
 
         await itr.send(f"{GARLIC} You claimed your weekly ajos! {GARLIC}")
@@ -125,7 +128,8 @@ class Garlic(Cog):
         res = await self.bot.manager.claim_daily(ctx.author)
 
         if res:
-            await ctx.reply("You already claimed your daily ajos.")
+            human_res = await self.strip_microseconds(res)
+            await ctx.reply(f"You already claimed your daily ajos, you can claim again in {human_res}.")
             return
 
         await ctx.reply(f"{GARLIC} You claimed your daily ajos! {GARLIC}")
@@ -135,7 +139,8 @@ class Garlic(Cog):
         res = await self.bot.manager.claim_weekly(ctx.author)
 
         if res:
-            await ctx.reply("You already claimed your weekly ajos.")
+            human_res = await self.strip_microseconds(res)
+            await ctx.reply(f"You already claimed your weekly ajos, you can claim again in {human_res}.")
             return
 
         await ctx.reply(f"{GARLIC} You claimed your weekly ajos! {GARLIC}")
@@ -180,6 +185,9 @@ class Garlic(Cog):
         count = await self.bot.manager.show_garlic(user)
 
         await itr.send(f"{GARLIC} {user} has {count} ajos {GARLIC}")
+
+    async def strip_microseconds(self, td: timedelta) -> timedelta:
+        return timedelta(days=td.days, seconds=td.seconds)
 
 
 def setup(bot: Bot) -> None:
