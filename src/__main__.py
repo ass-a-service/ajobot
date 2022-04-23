@@ -23,7 +23,7 @@ def main() -> None:
     )
 
     for ext in [
-        "src.exts.garlic",
+        "src.exts.ajo",
         "src.exts.general",
         "src.exts.vampires",
     ]:

@@ -6,9 +6,9 @@ from typing import Any, Protocol
 from disnake import Embed, Message
 from ormar import NoMatch
 
-from ..database import GarlicUser
+from ..database import AjoUser
 
-GARLIC = "🧄"
+AJO = "🧄"
 DAILY = 32
 WEEKLY = DAILY * 8
 
@@ -18,30 +18,30 @@ class User(Protocol):
     discriminator: Any
 
 
-class GarlicManager:
+class AjoManager:
     def __init__(self) -> None:
-        self._cache: dict[int, GarlicUser] = {}
+        self._cache: dict[int, AjoUser] = {}
 
-    async def _resolve_user(self, user: User) -> GarlicUser:
+    async def _resolve_user(self, user: User) -> AjoUser:
         #if user.id not in self._cache:
         if True:
             try:
-                self._cache[user.id] = await GarlicUser.objects.get(user=user.id)
+                self._cache[user.id] = await AjoUser.objects.get(user=user.id)
             except NoMatch:
-                self._cache[user.id] = await GarlicUser(user=user.id, name=f"{user.name}#{user.discriminator}").save()
+                self._cache[user.id] = await AjoUser(user=user.id, name=f"{user.name}#{user.discriminator}").save()
 
         return self._cache[user.id]
 
     async def contains_ajo(self, msg: Message) -> bool:
         txt = msg.content
         itxt = txt.lower()
-        return "garlic" in itxt or "ajo" in itxt or GARLIC in txt or ":garlic" in txt
+        return "garlic" in itxt or "ajo" in itxt or AJO in txt or ":garlic" in txt
 
     async def is_begging_for_ajo(self, msg: Message) -> bool:
         itxt = msg.content.lower()
         return "give me garlic" in itxt or "dame ajo" in itxt
 
-    async def set_user_garlic(self, user: User, amount: int) -> GarlicUser:
+    async def set_user_ajo(self, user: User, amount: int) -> AjoUser:
         stats = await self._resolve_user(user)
         stats = await stats.update(count=amount)
 
@@ -49,12 +49,12 @@ class GarlicManager:
 
         return stats
 
-    async def get_user_garlic(self, user: User) -> int:
+    async def get_user_ajo(self, user: User) -> int:
         stats = await self._resolve_user(user)
 
         return stats.count
 
-    async def add_user_garlic(self, user: User, amount: int) -> GarlicUser:
+    async def add_user_ajo(self, user: User, amount: int) -> AjoUser:
         stats = await self._resolve_user(user)
         stats = await stats.update(count=stats.count + amount)
 
@@ -63,7 +63,7 @@ class GarlicManager:
         return stats
 
     async def get_leaderboard(self) -> Embed:
-        users = await GarlicUser.objects.order_by("-count").limit(12).all()  # type: ignore
+        users = await AjoUser.objects.order_by("-count").limit(12).all()  # type: ignore
 
         embed = Embed(
             title="Ajo Leaderboard",
@@ -79,7 +79,7 @@ class GarlicManager:
 
         return embed
 
-    async def gamble_garlic(self, user: User, amount: int) -> int:
+    async def gamble_ajo(self, user: User, amount: int) -> int:
         stats = await self._resolve_user(user)
 
         if amount < 1:
@@ -95,11 +95,11 @@ class GarlicManager:
             change = -amount
             new = stats.count - amount
 
-        await self.set_user_garlic(user, new)
+        await self.set_user_ajo(user, new)
 
         return change
 
-    async def pay_garlic(self, from_user: User, to_user: User, amount: int) -> None:
+    async def pay_ajo(self, from_user: User, to_user: User, amount: int) -> None:
         from_stats = await self._resolve_user(from_user)
 
         if amount < 1:
@@ -108,8 +108,8 @@ class GarlicManager:
         if amount > from_stats.count:
             raise ValueError("You don't have enough ajos to pay that much.")
 
-        await self.add_user_garlic(from_user, -amount)
-        await self.add_user_garlic(to_user, amount)
+        await self.add_user_ajo(from_user, -amount)
+        await self.add_user_ajo(to_user, amount)
 
     async def claim_daily(self, user: User) -> timedelta | None:
         stats = await self._resolve_user(user)
@@ -145,7 +145,7 @@ class GarlicManager:
             raise ValueError(f"You haven't offered enough ajos to discombobulate {to_stats.name}.")
         
         # Remove ajos from from_user
-        await self.add_user_garlic(from_user, -amount)
+        await self.add_user_ajo(from_user, -amount)
 
         # DISCOMBOBULATE!
         discombobulate_pct = randrange(69,200) # Feature idea: do a normal distribution random
@@ -155,10 +155,10 @@ class GarlicManager:
         if to_stats.count - discombobulate_dmg < 0:
             discombobulate_dmg = to_stats.count
 
-        await self.add_user_garlic(to_user, -discombobulate_dmg)
+        await self.add_user_ajo(to_user, -discombobulate_dmg)
 
         return discombobulate_dmg
 
-    async def show_garlic(self, to_user: User) -> None:
+    async def show_ajo(self, to_user: User) -> None:
         to_stats = await self._resolve_user(to_user)
         return to_stats.count

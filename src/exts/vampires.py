@@ -21,15 +21,14 @@ class Vampires(Cog):
         if randrange(0, 100):
             return
 
-        garlic = await self.bot.manager.get_user_garlic(message.author)
-
-        if garlic < 1:
+        ajo = await self.bot.manager.get_user_ajo(message.author)
+        if ajo < 1:
             return
 
         random_pct = randrange(1,10)
-        to_pay = round(garlic * (random_pct/100))
+        to_pay = round(ajo * (random_pct/100))
 
-        await self.bot.manager.add_user_garlic(message.author, -to_pay)
+        await self.bot.manager.add_user_ajo(message.author, -to_pay)
         # Feature request: hay un 0.1% de que el vampiro te hace discombolulate y te jode y te quita un 33%.
         await message.reply(
             f"A vampire has appeared! You use {to_pay} ajos to defeat them. You are safe... for now."
