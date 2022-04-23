@@ -57,7 +57,7 @@ class GarlicManager:
         users = await GarlicUser.objects.order_by("-count").limit(12).all()  # type: ignore
 
         embed = Embed(
-            title="Garlic Leaderboard",
+            title="Ajo Leaderboard",
             colour=0x87CEEB,
         )
 
@@ -74,10 +74,10 @@ class GarlicManager:
         stats = await self._resolve_user(user)
 
         if amount < 1:
-            raise ValueError("You can't gamble less than 1 garlic.")
+            raise ValueError("You can't gamble less than 1 ajo.")
 
         if amount > stats.count:
-            raise ValueError("You don't have enough garlic to gamble that much.")
+            raise ValueError("You don't have enough ajos to gamble that much.")
 
         if randrange(0, 3) == 1:
             change = ceil((randrange(0, 100) / 40) * amount)
@@ -94,10 +94,10 @@ class GarlicManager:
         from_stats = await self._resolve_user(from_user)
 
         if amount < 1:
-            raise ValueError("You can't pay less than 1 garlic.")
+            raise ValueError("You can't pay less than 1 ajo.")
 
         if amount > from_stats.count:
-            raise ValueError("You don't have enough garlic to pay that much.")
+            raise ValueError("You don't have enough ajos to pay that much.")
 
         await self.add_user_garlic(from_user, -amount)
         await self.add_user_garlic(to_user, amount)

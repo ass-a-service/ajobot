@@ -25,12 +25,12 @@ class General(Cog):
 
         await ctx.send(dbg)
 
-    @command(name="setgarlic")
+    @command(name="setajo")
     @is_owner()
     async def setgarlic(self, ctx: Context[Bot], user: User, amount: int) -> None:
         await self.bot.manager.set_user_garlic(user, amount)
 
-        await ctx.send(f"Set garlic for {user} to {amount}")
+        await ctx.send(f"Set ajo for {user} to {amount}")
 
 
 def setup(bot: Bot) -> None:

@@ -31,7 +31,7 @@ class Vampires(Cog):
             await self.bot.manager.add_user_garlic(message.author, -to_pay)
             # Feature request: hay un 0.1% de que el vampiro te hace discombolulate y te jode y te quita un 33%.
             await message.reply(
-                f"A vampire has appeared! You use {to_pay} garlic to defeat them. You are safe... for now."
+                f"A vampire has appeared! You use {to_pay} ajos to defeat them. You are safe... for now."
             )
 
 
