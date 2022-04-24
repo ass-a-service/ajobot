@@ -1,0 +1,25 @@
+name: Docker Image CI
+on:
+  push:
+    tags:
+      - v*
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - uses: crazy-max/ghaction-docker-meta@v1
+      id: docker_meta
+      with: 
+        images: ghcr.io/ass-a-service/ajobot
+    - name: build and push
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: ${{ steps.docker_meta.outputs.tags }}
+        labels: ${{ steps.docker_meta.outputs.labels }}
