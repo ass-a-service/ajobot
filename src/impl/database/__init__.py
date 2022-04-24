@@ -1,7 +1,7 @@
 from .metadata import database
-from .user import GarlicUser
+from .user import AjoUser
 
 __all__ = (
-    "GarlicUser",
+    "AjoUser",
     "database",
 )

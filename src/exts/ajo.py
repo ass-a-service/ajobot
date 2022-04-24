@@ -1,12 +1,13 @@
+from datetime import timedelta
 from disnake import CommandInteraction, Message, User
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 
 from src.impl.bot import Bot
 
-GARLIC = "🧄"
+AJO = "🧄"
 
 
-class Garlic(Cog):
+class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
@@ -15,17 +16,23 @@ class Garlic(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        if "garlic" in message.content.lower() or "ajo" in message.content.lower() or GARLIC in message.content or ":garlic:" in message.content:
-            await self.bot.manager.add_user_garlic(message.author, 1)
+        # this message is not interesting
+        contains_ajo = await self.bot.manager.contains_ajo(message)
+        if not contains_ajo:
+            return
 
-        if "give me garlic" in message.content.lower() or "dame ajo" in message.content.lower():
-            await message.add_reaction(GARLIC)
+        if contains_ajo:
+            await self.bot.manager.add_user_ajo(message.author, 1)
+
+        is_begging = await self.bot.manager.is_begging_for_ajo(message)
+        if is_begging:
+            await message.add_reaction(AJO)
 
     @slash_command(name="ajo", description="Get your count of ajos.")
-    async def garlic(self, itr: CommandInteraction) -> None:
-        count = await self.bot.manager.get_user_garlic(itr.author)
+    async def ajo(self, itr: CommandInteraction) -> None:
+        count = await self.bot.manager.get_user_ajo(itr.author)
 
-        await itr.send(f"{GARLIC} You have {count} ajos {GARLIC}")
+        await itr.send(f"{AJO} You have {count} ajos {AJO}")
 
     @slash_command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard(self, itr: CommandInteraction) -> None:
@@ -36,15 +43,15 @@ class Garlic(Cog):
         self, itr: CommandInteraction, amount: int = Param(description="How much ajos to gamble.")
     ) -> None:
         try:
-            change = await self.bot.manager.gamble_garlic(itr.author, amount)
+            change = await self.bot.manager.gamble_ajo(itr.author, amount)
         except ValueError as e:
             await itr.send(e.args[0])
             return
 
         if change > 0:
-            await itr.send(f"{GARLIC} You won {change:,} ajos {GARLIC}")
+            await itr.send(f"{AJO} You won {change:,} ajos {AJO}")
         else:
-            await itr.send(f"{GARLIC} You lost {abs(change):,} ajos {GARLIC}")
+            await itr.send(f"{AJO} You lost {abs(change):,} ajos {AJO}")
 
     @slash_command(name="pay", description="Pay someone ajos.")
     async def pay(
@@ -54,38 +61,40 @@ class Garlic(Cog):
         amount: int = Param(description="The amount to pay."),
     ) -> None:
         try:
-            await self.bot.manager.pay_garlic(itr.author, user, amount)
+            await self.bot.manager.pay_ajo(itr.author, user, amount)
         except ValueError as e:
             await itr.send(e.args[0])
             return
 
-        await itr.send(f"{GARLIC} You paid {amount:,} ajos to {user} {GARLIC}")
+        await itr.send(f"{AJO} You paid {amount:,} ajos to {user} {AJO}")
 
     @slash_command(name="daily", description="Claim your daily ajos.")
     async def daily(self, itr: CommandInteraction) -> None:
         res = await self.bot.manager.claim_daily(itr.author)
 
         if res:
-            await itr.send("You already claimed your daily ajos.")
+            human_res = await self.strip_microseconds(res)
+            await itr.send(f"You already claimed your daily ajos, you can claim again in {human_res}.")
             return
 
-        await itr.send(f"{GARLIC} You claimed your daily ajos! {GARLIC}")
+        await itr.send(f"{AJO} You claimed your daily ajos! {AJO}")
 
     @slash_command(name="weekly", description="Claim your weekly ajos.")
     async def weekly(self, itr: CommandInteraction) -> None:
         res = await self.bot.manager.claim_weekly(itr.author)
 
         if res:
-            await itr.send("You already claimed your weekly ajos.")
+            human_res = await self.strip_microseconds(res)
+            await itr.send(f"You already claimed your weekly ajos, you can claim again in {human_res}.")
             return
 
-        await itr.send(f"{GARLIC} You claimed your weekly ajos! {GARLIC}")
+        await itr.send(f"{AJO} You claimed your weekly ajos! {AJO}")
 
     @command(name="ajo", description="Get your count of ajos.")
-    async def garlic_command(self, ctx: Context[Bot]) -> None:
-        count = await self.bot.manager.get_user_garlic(ctx.author)
+    async def ajo_command(self, ctx: Context[Bot]) -> None:
+        count = await self.bot.manager.get_user_ajo(ctx.author)
 
-        await ctx.reply(f"{GARLIC} You have {count} ajos {GARLIC}")
+        await ctx.reply(f"{AJO} You have {count} ajos {AJO}")
 
     @command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard_command(self, ctx: Context[Bot]) -> None:
@@ -94,45 +103,47 @@ class Garlic(Cog):
     @command(name="gamble", description="Gamble your ajos.")
     async def gamble_command(self, ctx: Context[Bot], amount: int) -> None:
         try:
-            change = await self.bot.manager.gamble_garlic(ctx.author, amount)
+            change = await self.bot.manager.gamble_ajo(ctx.author, amount)
         except ValueError as e:
             await ctx.reply(e.args[0])
             return
 
         if change > 0:
-            await ctx.reply(f"{GARLIC} You won {change:,} garlic {GARLIC}")
+            await ctx.reply(f"{AJO} You won {change:,} ajos {AJO}")
         else:
-            await ctx.reply(f"{GARLIC} You lost {abs(change):,} garlic {GARLIC}")
+            await ctx.reply(f"{AJO} You lost {abs(change):,} ajos {AJO}")
 
     @command(name="pay", description="Pay someone ajos.")
     async def pay_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
         try:
-            await self.bot.manager.pay_garlic(ctx.author, user, amount)
+            await self.bot.manager.pay_ajo(ctx.author, user, amount)
         except ValueError as e:
             await ctx.reply(e.args[0])
             return
 
-        await ctx.reply(f"{GARLIC} You paid {amount:,} ajos to {user} {GARLIC}")
+        await ctx.reply(f"{AJO} You paid {amount:,} ajos to {user} {AJO}")
 
     @command(name="daily", description="Claim your daily ajos.")
     async def daily_command(self, ctx: Context[Bot]) -> None:
         res = await self.bot.manager.claim_daily(ctx.author)
 
         if res:
-            await ctx.reply("You already claimed your daily ajos.")
+            human_res = await self.strip_microseconds(res)
+            await ctx.reply(f"You already claimed your daily ajos, you can claim again in {human_res}.")
             return
 
-        await ctx.reply(f"{GARLIC} You claimed your daily ajos! {GARLIC}")
+        await ctx.reply(f"{AJO} You claimed your daily ajos! {AJO}")
 
     @command(name="weekly", description="Claim your weekly ajos.")
     async def weekly_command(self, ctx: Context[Bot]) -> None:
         res = await self.bot.manager.claim_weekly(ctx.author)
 
         if res:
-            await ctx.reply("You already claimed your weekly ajos.")
+            human_res = await self.strip_microseconds(res)
+            await ctx.reply(f"You already claimed your weekly ajos, you can claim again in {human_res}.")
             return
 
-        await ctx.reply(f"{GARLIC} You claimed your weekly ajos! {GARLIC}")
+        await ctx.reply(f"{AJO} You claimed your weekly ajos! {AJO}")
 
     @command(name="discombobulate", description="Discombobulate someone.")
     async def discombobulate_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
@@ -142,7 +153,7 @@ class Garlic(Cog):
             await ctx.reply(e.args[0])
             return
 
-        await ctx.reply(f"{GARLIC} You discombobulate {user} for {discombobulate_amount} damage. {GARLIC}")
+        await ctx.reply(f"{AJO} You discombobulate {user} for {discombobulate_amount} damage. {AJO}")
 
     @slash_command(name="discombobulate", description="Discombobulate someone.")
     async def discombobulate(
@@ -157,13 +168,13 @@ class Garlic(Cog):
             await itr.send(e.args[0])
             return
 
-        await itr.send(f"{GARLIC} You discombobulate {user} for {discombobulate_amount} damage. {GARLIC}")
+        await itr.send(f"{AJO} You discombobulate {user} for {discombobulate_amount} damage. {AJO}")
 
     @command(name="verajo", description="See someone else's ajos.")
     async def verajo_command(self, ctx: Context[Bot], user: User) -> None:
-        count = await self.bot.manager.show_garlic(user)
+        count = await self.bot.manager.show_ajo(user)
 
-        await ctx.reply(f"{GARLIC} {user} has {count} ajos {GARLIC}")
+        await ctx.reply(f"{AJO} {user} has {count} ajos {AJO}")
 
     @slash_command(name="verajo", description="See someone else's ajos.")
     async def verajo(
@@ -171,10 +182,13 @@ class Garlic(Cog):
         itr: CommandInteraction,
         user: User = Param(description="The user to get the ajo count from.")
     ) -> None:
-        count = await self.bot.manager.show_garlic(user)
+        count = await self.bot.manager.show_ajo(user)
 
-        await itr.send(f"{GARLIC} {user} has {count} ajos {GARLIC}")
+        await itr.send(f"{AJO} {user} has {count} ajos {AJO}")
+
+    async def strip_microseconds(self, td: timedelta) -> timedelta:
+        return timedelta(days=td.days, seconds=td.seconds)
 
 
 def setup(bot: Bot) -> None:
-    bot.add_cog(Garlic(bot))
+    bot.add_cog(Ajo(bot))

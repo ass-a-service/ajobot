@@ -4,7 +4,7 @@ from disnake.ext.commands import Bot as _Bot
 from loguru import logger
 
 from src.impl.database import database
-from src.impl.garlic import GarlicManager
+from src.impl.ajo import AjoManager
 
 from .status import StatusHeartbeater
 
@@ -14,7 +14,7 @@ class Bot(_Bot):
         super().__init__(*args, **kwargs)  # type: ignore
 
         self._status = StatusHeartbeater()
-        self.manager = GarlicManager()
+        self.manager = AjoManager()
 
     async def start(self, *args: Any, reconnect: bool = True, **kwargs: Any) -> None:
         logger.info("Connecting to the database...")

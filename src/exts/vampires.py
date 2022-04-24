@@ -5,8 +5,6 @@ from disnake.ext.commands import Cog
 
 from src.impl.bot import Bot
 
-GARLIC = "🧄"
-
 class Vampires(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
@@ -16,23 +14,25 @@ class Vampires(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        if "garlic" in message.content.lower() or "ajo" in message.content.lower() or GARLIC in message.content:
-            if randrange(0, 100):
-                return
+        contains_ajo = await self.bot.manager.contains_ajo(message)
+        if not contains_ajo:
+            return
 
-            garlic = await self.bot.manager.get_user_garlic(message.author)
+        if randrange(0, 100):
+            return
 
-            if garlic < 1:
-                return
+        ajo = await self.bot.manager.get_user_ajo(message.author)
+        if ajo < 1:
+            return
 
-            random_pct = randrange(1,10)
-            to_pay = round(garlic * (random_pct/100))
+        random_pct = randrange(1,10)
+        to_pay = round(ajo * (random_pct/100))
 
-            await self.bot.manager.add_user_garlic(message.author, -to_pay)
-            # Feature request: hay un 0.1% de que el vampiro te hace discombolulate y te jode y te quita un 33%.
-            await message.reply(
-                f"A vampire has appeared! You use {to_pay} garlic to defeat them. You are safe... for now."
-            )
+        await self.bot.manager.add_user_ajo(message.author, -to_pay)
+        # Feature request: hay un 0.1% de que el vampiro te hace discombolulate y te jode y te quita un 33%.
+        await message.reply(
+            f"A vampire has appeared! You use {to_pay} ajos to defeat them. You are safe... for now."
+        )
 
 
 def setup(bot: Bot) -> None:

@@ -8,7 +8,7 @@ from ormar import BigInteger, DateTime, Model, String
 from .metadata import database, metadata
 
 
-class GarlicUser(Model):
+class AjoUser(Model):
     class Meta:
         metadata = metadata
         database = database
