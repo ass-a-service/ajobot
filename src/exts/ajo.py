@@ -153,7 +153,7 @@ class Ajo(Cog):
             await ctx.reply(e.args[0])
             return
 
-        await ctx.reply(f"{AJO} You discombobulate {user} for {discombobulate_amount} damage. {AJO}")
+        await ctx.reply(f"{AJO} You discombobulate {user} for {discombobulate_amount} damage. {AJO}", file="https://i.imgur.com/f2SsEqU.gif")
 
     @slash_command(name="discombobulate", description="Discombobulate someone.")
     async def discombobulate(
@@ -168,7 +168,7 @@ class Ajo(Cog):
             await itr.send(e.args[0])
             return
 
-        await itr.send(f"{AJO} You discombobulate {user} for {discombobulate_amount} damage. {AJO}")
+        await itr.send(f"{AJO} You discombobulate {user} for {discombobulate_amount} damage. {AJO}", file="https://i.imgur.com/f2SsEqU.gif")
 
     @command(name="verajo", description="See someone else's ajos.")
     async def verajo_command(self, ctx: Context[Bot], user: User) -> None:
