@@ -3,7 +3,6 @@ from typing import Any, Optional
 from disnake.ext.commands import Bot as _Bot
 from loguru import logger
 
-from src.impl.database import database
 from src.impl.ajo import AjoManager
 
 from .status import StatusHeartbeater
@@ -17,11 +16,6 @@ class Bot(_Bot):
         self.manager = AjoManager()
 
     async def start(self, *args: Any, reconnect: bool = True, **kwargs: Any) -> None:
-        logger.info("Connecting to the database...")
-
-        await database.connect()
-
-        logger.info("Connected to the database.")
 
         self._status.run()
 

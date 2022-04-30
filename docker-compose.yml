@@ -5,20 +5,11 @@ services:
     build: .
     restart: always
     env_file: .env
-    environment:
-      DB_URI: postgresql://postgres:postgres@postgres:5432/bot
-    links:
-      - postgres
     depends_on:
-      - postgres
-
-  postgres:
-    image: postgres
-    restart: always
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: bot
-      PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - ./pg_data:/var/lib/postgresql/data
+      - redis
+  redis:
+    image: redis:6.2
+    restart: unless-stopped
+    command: redis-server --appendonly yes --loglevel warning
+    ports:
+      - '6379:6379'
