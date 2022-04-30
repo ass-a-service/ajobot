@@ -1,36 +1,31 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from math import ceil
 from random import randrange
 from typing import Any, Protocol
+from os import environ
+import time
 
 from disnake import Embed, Message
-from ormar import NoMatch
-
-from ..database import AjoUser
+from loguru import logger
+import redis
 
 AJO = "🧄"
 DAILY = 32
 WEEKLY = DAILY * 8
 
-class User(Protocol):
-    id: int
-    name: str
-    discriminator: Any
-
+DISCOMBOBULATE = "1b0cf976d8db4cb69ce54d60135a5e8fe1850607"
+GAMBLE = "b55d79a6c9b2a3d3ce5a07aaf16fc6e68c8ab997"
+PAY = "95813e7e3b61c064ecee01b59b637e72e5e03142"
+TIMELY_AWARD = "997360eb43e1de043028dbf3556e1572d231e39e"
+LEADERBOARD = "lb"
 
 class AjoManager:
     def __init__(self) -> None:
-        self._cache: dict[int, AjoUser] = {}
+        self.redis = redis.Redis(host=environ['REDIS_HOST'])
+        logger.info("Connected to the database.")
 
-    async def _resolve_user(self, user: User) -> AjoUser:
-        #if user.id not in self._cache:
-        if True:
-            try:
-                self._cache[user.id] = await AjoUser.objects.get(user=user.id)
-            except NoMatch:
-                self._cache[user.id] = await AjoUser(user=user.id, name=f"{user.name}#{user.discriminator}").save()
-
-        return self._cache[user.id]
+    def _get_seed(self) -> int:
+        return time.time_ns()
 
     async def contains_ajo(self, msg: Message) -> bool:
         txt = msg.content
@@ -41,124 +36,101 @@ class AjoManager:
         itxt = msg.content.lower()
         return "give me garlic" in itxt or "dame ajo" in itxt
 
-    async def set_user_ajo(self, user: User, amount: int) -> AjoUser:
-        stats = await self._resolve_user(user)
-        stats = await stats.update(count=amount)
+    async def add_ajo(self, user: str, amount: int) -> int:
+        res = self.redis.zincrby(LEADERBOARD, amount, user)
+        return int(res)
 
-        self._cache[user.id] = stats
-
-        return stats
-
-    async def get_user_ajo(self, user: User) -> int:
-        stats = await self._resolve_user(user)
-
-        return stats.count
-
-    async def add_user_ajo(self, user: User, amount: int) -> AjoUser:
-        stats = await self._resolve_user(user)
-        stats = await stats.update(count=stats.count + amount)
-
-        self._cache[user.id] = stats
-
-        return stats
+    async def get_ajo(self, user: str) -> int:
+        res = self.redis.zscore(LEADERBOARD, user)
+        if res is None:
+            return 0
+        return int(res)
 
     async def get_leaderboard(self) -> Embed:
-        users = await AjoUser.objects.order_by("-count").limit(12).all()  # type: ignore
-
+        data = self.redis.zrange(LEADERBOARD, 0, 11, "rev", "withscores")
         embed = Embed(
             title="Ajo Leaderboard",
             colour=0x87CEEB,
         )
 
-        for i, user in enumerate(users):
+        j = 0
+        for name, score in data:
+            name = name.decode("utf-8")
             embed.add_field(
-                name=f"{i + 1}. {user.name[:-5]}",
-                value=f"🧄 {user.count:,}",
+                name=f"{j} . {name[:-5]}",
+                value=f"{AJO} {score:0.0f}",
                 inline=True,
             )
+            j += 1
 
         return embed
 
-    async def gamble_ajo(self, user: User, amount: int) -> int:
-        stats = await self._resolve_user(user)
+    async def gamble_ajo(self, user: str, amount: int) -> int:
+        res = self.redis.evalsha(
+            GAMBLE,
+            1,
+            LEADERBOARD,
+            user,
+            amount,
+            self._get_seed()
+        )
+        if res is None:
+            raise ValueError("You can't gamble this amount.")
+        return res
 
-        if amount < 1:
-            raise ValueError("You can't gamble less than 1 ajo.")
+    async def pay_ajo(self, from_user: str, to_user: str, amount: int) -> None:
+        res = self.redis.evalsha(
+            PAY,
+            1,
+            LEADERBOARD,
+            from_user,
+            to_user,
+            amount
+        )
+        if res is None:
+            raise ValueError("You cannot pay this amount.")
 
-        if amount > stats.count:
-            raise ValueError("You don't have enough ajos to gamble that much.")
+        return res
 
-        if randrange(0, 3) == 1:
-            change = ceil((randrange(0, 100) / 40) * amount)
-            new = stats.count + change
-        else:
-            change = -amount
-            new = stats.count - amount
+    async def claim_daily(self, user: str) -> timedelta | None:
+        res = self.redis.evalsha(
+            TIMELY_AWARD,
+            2,
+            LEADERBOARD,
+            (f"{user}:daily"),
+            user,
+            DAILY,
+            24 * 3600
+        )
+        if res != b"OK":
+            return timedelta(seconds=int(res))
+        return None
 
-        await self.set_user_ajo(user, new)
+    async def claim_weekly(self, user: str) -> timedelta | None:
+        res = self.redis.evalsha(
+            TIMELY_AWARD,
+            2,
+            LEADERBOARD,
+            (f"{user}:weekly"),
+            user,
+            WEEKLY,
+            7 * 24 * 3600
+        )
+        if res != b"OK":
+            return timedelta(seconds=int(res))
+        return None
 
-        return change
+    async def discombobulate(self, from_user: str, to_user: str, amount: int) -> None:
+        res = self.redis.evalsha(
+            DISCOMBOBULATE,
+            1,
+            LEADERBOARD,
+            from_user,
+            to_user,
+            amount,
+            self._get_seed()
+        )
+        if res is None:
+            raise ValueError("You cannot discombobulate this amount.")
 
-    async def pay_ajo(self, from_user: User, to_user: User, amount: int) -> None:
-        from_stats = await self._resolve_user(from_user)
-
-        if amount < 1:
-            raise ValueError("You can't pay less than 1 ajo.")
-
-        if amount > from_stats.count:
-            raise ValueError("You don't have enough ajos to pay that much.")
-
-        await self.add_user_ajo(from_user, -amount)
-        await self.add_user_ajo(to_user, amount)
-
-    async def claim_daily(self, user: User) -> timedelta | None:
-        stats = await self._resolve_user(user)
-
-        if stats.last_daily is None or datetime.utcnow() - stats.last_daily > timedelta(days=1):
-            stats = await stats.update(last_daily=datetime.utcnow(), count=stats.count + DAILY)
-            self._cache[user.id] = stats
-            return
-
-        return (stats.last_daily + timedelta(days=1)) - datetime.utcnow()
-
-    async def claim_weekly(self, user: User) -> timedelta | None:
-        stats = await self._resolve_user(user)
-
-        if stats.last_weekly is None or datetime.utcnow() - stats.last_weekly > timedelta(days=7):
-            stats = await stats.update(last_weekly=datetime.utcnow(), count=stats.count + WEEKLY)
-            self._cache[user.id] = stats
-            return
-
-        return (stats.last_weekly + timedelta(days=7)) - datetime.utcnow()
-
-    async def discombobulate(self, from_user: User, to_user: User, amount: int) -> None:
-        from_stats = await self._resolve_user(from_user)
-        to_stats = await self._resolve_user(to_user)
-
-        if amount < 1:
-            raise ValueError("You can't discombobulate for less than 1 ajo.")
-
-        if amount > from_stats.count:
-            raise ValueError(f"You don't have enough ajos to discombobulate {to_stats.name}.")
-
-        if amount <= (35/100) * to_stats.count:
-            raise ValueError(f"You haven't offered enough ajos to discombobulate {to_stats.name}.")
-        
-        # Remove ajos from from_user
-        await self.add_user_ajo(from_user, -amount)
-
-        # DISCOMBOBULATE!
-        discombobulate_pct = randrange(69,200) # Feature idea: do a normal distribution random
-        discombobulate_dmg = round(amount * (discombobulate_pct / 100))
-
-        # Corner case: over 9000 discombobulate
-        if to_stats.count - discombobulate_dmg < 0:
-            discombobulate_dmg = to_stats.count
-
-        await self.add_user_ajo(to_user, -discombobulate_dmg)
-
-        return discombobulate_dmg
-
-    async def show_ajo(self, to_user: User) -> None:
-        to_stats = await self._resolve_user(to_user)
-        return to_stats.count
+        return res
