@@ -16,22 +16,29 @@ poetry run task start
 ```
 
 ## Redis data structure
-User model is stored in keys, leaderboard in sorted set.
-We use keys instead of a hash to benefit from redis' ttl system.
+There is no user model, a user is linked to a score via a redis sorted set.
 
 ```
 # [
-#   {id: 111, name: "Zymna", count: 7}
-#   {id: 222, name: "Axl", count: 4}
+#   {name: "Zymna#0001", count: 7}
+#   {name: "Axl#0001", count: 4}
 # ]
-> incrby 111:count 7
-> incrby 222:count 4
-
 # leaderboard implemented as a sorted set
-> zincrby leaderboard 7 "Zymna"
-> zincrby leaderboard 4 "Axl"
+> zincrby lb 7 "Zymna#0001"
+> zincrby lb 4 "Axl#0001"
 
 # expiring award operations are stored in :{type}
 > set 111:daily 1 ex 86400 # daily ttl
 > set 111:weekly 1 ex 604800 # weekly ttl
+```
+
+## Operations
+Most operations run through a LUA script to avoid concurrency.
+
+The following operation would be bulked into `pay.lua`:
+```
+# Axl#0001 pay 4 to Zymna#0001, with count check
+> zscore lb Axl#0001
+> zincrby lb -4 Axl#0001
+> zincrby lb 7 Zymna#0001
 ```
