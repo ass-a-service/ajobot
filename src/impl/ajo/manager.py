@@ -75,7 +75,7 @@ class AjoManager:
             self._get_seed()
         )
         if res is None:
-            raise ValueError("You can't gamble this amount.")
+            raise ValueError("You cannot gamble this amount.")
         return res
 
     async def pay_ajo(self, from_user: str, to_user: str, amount: int) -> None:
