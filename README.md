@@ -38,7 +38,19 @@ Most operations run through a LUA script to avoid concurrency.
 The following operation would be bulked into `pay.lua`:
 ```
 # Axl#0001 pay 4 to Zymna#0001, with count check
+# ensure the user can pay
 > zscore lb Axl#0001
-> zincrby lb -4 Axl#0001
-> zincrby lb 7 Zymna#0001
+# update leaderboard
+> zincrby lb -4 Axl#0001 # update leaderboard
+> zincrby lb 4 Zymna#0001
+```
+
+Or the following for time based:
+```
+# Axl#0001 daily award
+# ensure the user can be rewarded
+> ttl Axl#0001:daily
+# reward and block until next
+> zincrby lb 32 Axl#0001
+> set Axl#0001 1 EX 86400
 ```
