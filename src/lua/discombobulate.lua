@@ -42,5 +42,5 @@ end
 -- lock for percentage done in hours
 redis.call("zincrby", lb_key, -offer, from_name)
 redis.call("zincrby", lb_key, -dmg, to_name)
-redis.set("set", exp_key, 1, "ex", percent * 3600)
+redis.call("set", exp_key, 1, "ex", percent * 1800)
 return {"OK", dmg}
