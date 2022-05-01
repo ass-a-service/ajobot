@@ -97,7 +97,7 @@ class Ajo(Cog):
         user: User = Param(description="The user to pay."),
         amount: int = Param(description="The amount to pay."),
     ) -> None:
-        await itr.send(await self.__pay(itr.author), user, amount)
+        await itr.send(await self.__pay(itr.author, user, amount))
 
     # WEEKLY CLAIM
     async def __weekly(self, user: User) -> str:
