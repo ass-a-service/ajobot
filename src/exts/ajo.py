@@ -17,13 +17,17 @@ class Ajo(Cog):
         if message.author.bot or message.guild is None:
             return
 
+        # Update the user metadata
+        # TODO: Implement this elsewhere
+        self.bot.manager.redis.hmset(f"user:{message.author.id}",{"name": message.author.name, "discriminator": message.author.discriminator})
+
         # this message is not interesting
         contains_ajo = await self.bot.manager.contains_ajo(message)
         if not contains_ajo:
             return
 
         if contains_ajo:
-            await self.bot.manager.add_ajo(self.__get_user_id(message.author), 1)
+            await self.bot.manager.add_ajo(message.author.id, 1)
 
         is_begging = await self.bot.manager.is_begging_for_ajo(message)
         if is_begging:
@@ -42,7 +46,8 @@ class Ajo(Cog):
 
     @command(name="verajo", description="See someone else's ajos.")
     async def verajo_command(self, ctx: Context[Bot], user: User) -> None:
-        count = await self.bot.manager.get_ajo(self.__get_user_id(user))
+        self.bot.manager.redis.hmset(f"user:{user.id}",{"name": user.name, "discriminator": user.discriminator})
+        count = await self.bot.manager.get_ajo(user.id)
         await ctx.reply(f"{AJO} {user} has {count} ajos {AJO}")
 
     @slash_command(name="verajo", description="See someone else's ajos.")
@@ -51,7 +56,8 @@ class Ajo(Cog):
         itr: CommandInteraction,
         user: User = Param(description="The user to get the ajo count from.")
     ) -> None:
-        count = await self.bot.manager.get_ajo(self.__get_user_id(user))
+        self.bot.manager.redis.hmset(f"user:{user.id}",{"name": user.name, "discriminator": user.discriminator})
+        count = await self.bot.manager.get_ajo(user.id)
         await itr.send(f"{AJO} {user} has {count} ajos {AJO}")
 
     # LEADERBOARD

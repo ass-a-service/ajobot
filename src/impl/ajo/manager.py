@@ -39,29 +39,32 @@ class AjoManager:
         itxt = msg.content.lower()
         return "give me garlic" in itxt or "dame ajo" in itxt
 
-    async def add_ajo(self, user: str, amount: int) -> int:
-        res = self.redis.zincrby(LEADERBOARD, amount, user)
+    async def add_ajo(self, user_id: int, amount: int) -> int:
+        res = self.redis.zincrby(LEADERBOARD, amount, user_id)
         return int(res)
 
-    async def get_ajo(self, user: str) -> int:
-        res = self.redis.zscore(LEADERBOARD, user)
+    async def get_ajo(self, user_id: int) -> int:
+        res = self.redis.zscore(LEADERBOARD, user_id)
         if res is None:
             return 0
         return int(res)
 
     async def get_leaderboard(self) -> Embed:
-        data = self.redis.zrange(LEADERBOARD, 0, 11, "rev", "withscores")
+        data = self.redis.zrange(LEADERBOARD, 0, 9, "rev", "withscores")
         embed = Embed(
             title="Ajo Leaderboard",
             colour=0x87CEEB,
         )
 
         j = 0
-        for name, score in data:
-            name = name.decode("utf-8")
+        for id, score in data:
+            id = int(id)
             score = int(score)
+            name, discriminator = self.redis.hmget(f"user:{id}", "name", "discriminator")
+            name = name.decode("utf-8")
+            discriminator = discriminator.decode("utf-8")
             embed.add_field(
-                name=f"{j} . {name[:-5]}",
+                name=f"{name}#{discriminator}",
                 value=f"{AJO} {score}",
                 inline=True,
             )
