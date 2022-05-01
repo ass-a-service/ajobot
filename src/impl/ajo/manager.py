@@ -138,10 +138,10 @@ class AjoManager:
         return reply
 
     async def claim_daily(self, user: str) -> str:
-        return await self.__claim_timely("daily")
+        return await self.__claim_timely(user, "daily")
 
     async def claim_weekly(self, user: str) -> timedelta | None:
-        return await self.__claim_timely("weekly")
+        return await self.__claim_timely(user, "weekly")
 
     async def discombobulate(self, from_user: str, to_user: str, amount: int) -> str:
         err, res = self.redis.evalsha(

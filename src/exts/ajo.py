@@ -88,7 +88,7 @@ class Ajo(Cog):
 
     @command(name="pay", description="Pay someone ajos.")
     async def pay_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
-        await ctx.reply(await self.__pay(ctx.author), user, amount)
+        await ctx.reply(await self.__pay(ctx.author, user, amount))
 
     @slash_command(name="pay", description="Pay someone ajos.")
     async def pay(
