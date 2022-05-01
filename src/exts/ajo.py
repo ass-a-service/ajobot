@@ -78,7 +78,7 @@ class Ajo(Cog):
         itr: CommandInteraction,
         amount: int = Param(description="How much ajos to gamble.")
     ) -> None:
-        await itr.send(await self.__gamble(itr.author), amount)
+        await itr.send(await self.__gamble(itr.author, amount))
 
     # PAY
     async def __pay(self, from_user: User, to_user: User, amount: int) -> str:
