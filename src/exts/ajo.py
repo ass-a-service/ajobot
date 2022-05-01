@@ -65,7 +65,7 @@ class Ajo(Cog):
 
     # GAMBLE
     async def __gamble(self, user: User, amount: int) -> str:
-        id = await self.__get_user_id(user)
+        id = self.__get_user_id(user)
         return await self.bot.manager.gamble_ajo(id, amount)
 
     @command(name="gamble", description="Gamble your ajos.")
@@ -82,8 +82,8 @@ class Ajo(Cog):
 
     # PAY
     async def __pay(self, from_user: User, to_user: User, amount: int) -> str:
-        from_id = await self.__get_user_id(from_user)
-        to_id = await self.__get_user_id(to_user)
+        from_id = self.__get_user_id(from_user)
+        to_id = self.__get_user_id(to_user)
         return await self.bot.manager.pay_ajo(from_id, to_id, amount)
 
     @command(name="pay", description="Pay someone ajos.")
@@ -101,7 +101,7 @@ class Ajo(Cog):
 
     # WEEKLY CLAIM
     async def __weekly(self, user: User) -> str:
-        id = await self.__get_user_id(user)
+        id = self.__get_user_id(user)
         return await self.bot.manager.claim_weekly(id)
 
     @command(name="weekly", description="Claim your weekly ajos.")
@@ -114,7 +114,7 @@ class Ajo(Cog):
 
     # DAILY CLAIM
     async def __daily(self, user: User) -> str:
-        id = await self.__get_user_id(user)
+        id = self.__get_user_id(user)
         return await self.bot.manager.claim_daily(id)
 
     @command(name="daily", description="Claim your daily ajos.")
@@ -127,8 +127,8 @@ class Ajo(Cog):
 
     # DISCOMBOBULATE
     async def __discombobulate(self, from_user: User, to_user: User, amount: int) -> str:
-        from_id = await self.__get_user_id(from_user)
-        to_id = await self.__get_user_id(to_user)
+        from_id = self.__get_user_id(from_user)
+        to_id = self.__get_user_id(to_user)
         return await self.bot.manager.discombobulate(from_id, to_id, amount)
 
     @command(name="discombobulate", description="Discombobulate someone.")
