@@ -144,10 +144,12 @@ class AjoManager:
         return await self.__claim_timely(user, "weekly")
 
     async def discombobulate(self, from_user: str, to_user: str, amount: int) -> str:
+        exp_key = f"{from_user}:discombobulate"
         err, res = self.redis.evalsha(
             SCRIPTS["discombobulate"],
-            1,
+            2,
             LEADERBOARD,
+            exp_key,
             from_user,
             to_user,
             amount,
