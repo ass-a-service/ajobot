@@ -1,8 +1,7 @@
-from disnake import CommandInteraction, User
-from disnake.ext.commands import Bot, Cog, Context, command, is_owner, slash_command
+from disnake import CommandInteraction
+from disnake.ext.commands import Cog, slash_command
 
 from src.impl.bot import Bot
-
 
 class General(Cog):
     def __init__(self, bot: Bot) -> None:
