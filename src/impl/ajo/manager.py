@@ -110,7 +110,7 @@ class AjoManager:
                 reply = "You do not have enough ajos to pay that much."
             case "OK":
                 reward = int(res)
-                reply = f"{AJO} You claimed your {type} ajos! {AJO}"
+                reply = f"{AJO} You paid {reward} ajos to {to_user} {AJO}"
 
         return reply
 
