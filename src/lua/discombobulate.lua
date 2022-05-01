@@ -9,7 +9,7 @@ local seed = tonumber(ARGV[4])
 
 -- sanity checks
 if offer < 1 then
-    return {"err", nil}
+    return {"err", false}
 end
 
 -- can we discombobulate?
@@ -21,7 +21,7 @@ end
 -- can we discombobulate that much?
 local from_current = tonumber(redis.call("zscore", lb_key, from_name))
 if not from_current or from_current < offer then
-    return {"funds", nil}
+    return {"funds", false}
 end
 
 -- minimum offer is 35% of the victim

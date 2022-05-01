@@ -7,13 +7,13 @@ local seed = tonumber(ARGV[3])
 
 -- sanity checks
 if amount < 1 then
-    return {"err", nil}
+    return {"err", false}
 end
 
 -- can we gamble that much?
 local current = tonumber(redis.call("zscore", lb_key, name))
 if not current or current < amount then
-  return {"funds", nil}
+  return {"funds", false}
 end
 
 -- 25% chance to win up from 1% to 250%
