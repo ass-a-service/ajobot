@@ -17,9 +17,9 @@ TIMELY = {
 
 # script sha values
 SCRIPTS = {
-    "discombobulate": "13f0e6f5a9768bc2127660700be717c59a8dbbd4",
-    "gamble": "8be00b480d51d41cbc72ce9e99fb88c0a9724862",
-    "pay": "a5555e9c5fb167e363d281b91a51aa7be100a61d",
+    "discombobulate": "4e96d4968237139d3d249e840596e2c6e4081c3e",
+    "gamble": "632e7e53eba95229e10add8fe8bd2a77a9f46bd9",
+    "pay": "82bc5101c8ea559c65e9d8787e6193a4152f0ea4",
     "reward": "671988c19058773e8baa73cfeda43e30f6cfe84f"
 }
 
