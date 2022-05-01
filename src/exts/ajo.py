@@ -142,7 +142,7 @@ class Ajo(Cog):
         user: User = Param(description="The user to discombobulate."),
         amount: int = Param(description="The amount to offer."),
     ) -> None:
-        await itr.send(await self.__discombobulate(itr.author, user, amount)
+        await itr.send(await self.__discombobulate(itr.author, user, amount))
 
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))
