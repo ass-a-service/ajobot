@@ -97,7 +97,7 @@ class Ajo(Cog):
         user: User = Param(description="The user to pay."),
         amount: int = Param(description="The amount to pay."),
     ) -> None:
-        await itr.send(await self.__pay(itr.author), user, amount)
+        await itr.send(await self.__pay(itr.author, user, amount))
 
     # WEEKLY CLAIM
     async def __weekly(self, user: User) -> str:
@@ -110,7 +110,7 @@ class Ajo(Cog):
 
     @slash_command(name="weekly", description="Claim your weekly ajos.")
     async def weekly(self, itr: CommandInteraction) -> None:
-        await itr.send(await self.__weekly(ctx.author))
+        await itr.send(await self.__weekly(itr.author))
 
     # DAILY CLAIM
     async def __daily(self, user: User) -> str:
@@ -123,7 +123,7 @@ class Ajo(Cog):
 
     @slash_command(name="daily", description="Claim your daily ajos.")
     async def daily(self, itr: CommandInteraction) -> None:
-        await itr.send(await self.__daily(ctx.author))
+        await itr.send(await self.__daily(itr.author))
 
     # DISCOMBOBULATE
     async def __discombobulate(self, from_user: User, to_user: User, amount: int) -> str:
