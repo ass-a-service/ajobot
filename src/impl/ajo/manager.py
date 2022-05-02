@@ -34,7 +34,7 @@ class AjoManager:
     def __get_seed(self) -> int:
         return time.time_ns()-(int(time.time())*1000000000)
 
-    async def __setne_name(self, id: str, name: str) -> None:
+    async def __setne_name(self, user_id: str, user_name: str) -> None:
         # ensure the name we have is correct
         self.redis.evalsha(
             SCRIPTS["setne"],
