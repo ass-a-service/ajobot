@@ -21,7 +21,7 @@ SCRIPTS = {
     "gamble": environ['GAMBLE_SHA'],
     "pay": environ['PAY_SHA'],
     "reward": environ['TIMELY_SHA'],
-    "setne": environ['REWARD_SHA']
+    "setne": environ['SETNE_SHA']
 }
 
 LEADERBOARD = "lb"
