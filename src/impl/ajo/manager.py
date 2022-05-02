@@ -20,7 +20,8 @@ SCRIPTS = {
     "discombobulate": "8d6c9d1dd6f3f74daf58116514bb1648ddb27392",
     "gamble": "632e7e53eba95229e10add8fe8bd2a77a9f46bd9",
     "pay": "82bc5101c8ea559c65e9d8787e6193a4152f0ea4",
-    "reward": "671988c19058773e8baa73cfeda43e30f6cfe84f"
+    "reward": "671988c19058773e8baa73cfeda43e30f6cfe84f",
+    "setne": "646f93a222f3f7d669801d0d5a4b36fdb66f047a",
 }
 
 LEADERBOARD = "lb"
@@ -29,6 +30,18 @@ class AjoManager:
     def __init__(self) -> None:
         self.redis = redis.Redis(host=environ['REDIS_HOST'])
         logger.info("Connected to the database.")
+
+    def __get_seed(self) -> int:
+        return time.time_ns()-(int(time.time())*1000000000)
+
+    async def __setne_name(self, id: str, name: str) -> None:
+        # ensure the name we have is correct
+        self.redis.evalsha(
+            SCRIPTS["setne"],
+            1,
+            user_id,
+            user_name
+        )
 
     async def contains_ajo(self, msg: Message) -> bool:
         txt = msg.content
@@ -39,11 +52,14 @@ class AjoManager:
         itxt = msg.content.lower()
         return "give me garlic" in itxt or "dame ajo" in itxt
 
-    async def add_ajo(self, user_id: int, amount: int) -> int:
+    # we only update a user's name if we give him an ajo
+    async def add_ajo(self, user_id: str, user_name: str, amount: int) -> int:
+        # ensure the name we have is correct
+        await self.__setne_name(user_id, user_name)
         res = self.redis.zincrby(LEADERBOARD, amount, user_id)
         return int(res)
 
-    async def get_ajo(self, user_id: int) -> int:
+    async def get_ajo(self, user_id: str) -> int:
         res = self.redis.zscore(LEADERBOARD, user_id)
         if res is None:
             return 0
@@ -56,30 +72,32 @@ class AjoManager:
             colour=0x87CEEB,
         )
 
-        j = 0
+        ids = []
+        scores = []
         for id, score in data:
-            id = int(id)
-            score = int(score)
-            name, discriminator = self.redis.hmget(f"user:{id}", "name", "discriminator")
+            ids.append(id.decode("utf-8"))
+            scores.append(int(score))
+
+        names = self.redis.mget(ids)
+        for i in range(len(names)):
             name = name.decode("utf-8")
-            discriminator = discriminator.decode("utf-8")
             embed.add_field(
-                name=f"{name}#{discriminator}",
-                value=f"{AJO} {score}",
+                name=f"{j} . {names[i][:-5]}",
+                value=f"{AJO} {scores[i]}",
                 inline=True,
             )
             j += 1
 
         return embed
 
-    async def gamble_ajo(self, user: str, amount: int) -> str:
+    async def gamble_ajo(self, user_id: str, amount: int) -> str:
         err, res = self.redis.evalsha(
             SCRIPTS["gamble"],
             1,
             LEADERBOARD,
-            user,
+            user_id,
             amount,
-            time.time_ns()
+            self.__get_seed()
         )
 
         match err.decode("utf-8"):
@@ -96,13 +114,13 @@ class AjoManager:
 
         return reply
 
-    async def pay_ajo(self, from_user: str, to_user: str, amount: int) -> str:
+    async def pay_ajo(self, from_user_id: str, to_user_id: str, amount: int) -> str:
         err, res = self.redis.evalsha(
             SCRIPTS["pay"],
             1,
             LEADERBOARD,
-            from_user,
-            to_user,
+            from_user_id,
+            to_user_id,
             amount
         )
 
@@ -112,12 +130,12 @@ class AjoManager:
             case "funds":
                 reply = "You do not have enough ajos to pay that much."
             case "OK":
-                reward = int(res)
-                reply = f"{AJO} You paid {reward} ajos to {to_user} {AJO}"
+                amount = int(res)
+                reply = f"{AJO} You paid {amount} ajos to {to_user} {AJO}"
 
         return reply
 
-    async def __claim_timely(self, user: str, type: str,) -> str:
+    async def __claim_timely(self, user_id: str, type: str,) -> str:
         exp_key = f"{user}:{type}"
         reward, expire = TIMELY[type]
         err, res = self.redis.evalsha(
@@ -125,7 +143,7 @@ class AjoManager:
             2,
             LEADERBOARD,
             exp_key,
-            user,
+            user_id,
             reward,
             expire
         )
@@ -140,23 +158,23 @@ class AjoManager:
 
         return reply
 
-    async def claim_daily(self, user: str) -> str:
-        return await self.__claim_timely(user, "daily")
+    async def claim_daily(self, user: int) -> str:
+        return await self.__claim_timely(user_id, "daily")
 
-    async def claim_weekly(self, user: str) -> timedelta | None:
-        return await self.__claim_timely(user, "weekly")
+    async def claim_weekly(self, user: int) -> str:
+        return await self.__claim_timely(user_id, "weekly")
 
-    async def discombobulate(self, from_user: str, to_user: str, amount: int) -> str:
+    async def discombobulate(self, from_user_id: str, to_user_id: str, amount: int) -> str:
         exp_key = f"{from_user}:discombobulate"
         err, res = self.redis.evalsha(
             SCRIPTS["discombobulate"],
             2,
             LEADERBOARD,
             exp_key,
-            from_user,
-            to_user,
+            from_user_id,
+            to_user_id,
             amount,
-            time.time_ns()
+            self.__get_seed()
         )
 
         match err.decode("utf-8"):
