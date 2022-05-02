@@ -79,6 +79,7 @@ class AjoManager:
             scores.append(int(score))
 
         names = self.redis.mget(ids)
+        j = 0
         for i in range(len(names)):
             name = names[i].decode("utf-8")
             embed.add_field(
@@ -131,12 +132,12 @@ class AjoManager:
                 reply = "You do not have enough ajos to pay that much."
             case "OK":
                 amount = int(res)
-                reply = f"{AJO} You paid {amount} ajos to {to_user_id} {AJO}"
+                reply = f"{AJO} You paid {amount} ajos to [[TO_USER]] {AJO}"
 
         return reply
 
     async def __claim_timely(self, user_id: str, type: str,) -> str:
-        exp_key = f"{user}:{type}"
+        exp_key = f"{user_id}:{type}"
         reward, expire = TIMELY[type]
         err, res = self.redis.evalsha(
             SCRIPTS["reward"],
@@ -158,14 +159,14 @@ class AjoManager:
 
         return reply
 
-    async def claim_daily(self, user: int) -> str:
+    async def claim_daily(self, user_id: int) -> str:
         return await self.__claim_timely(user_id, "daily")
 
-    async def claim_weekly(self, user: int) -> str:
+    async def claim_weekly(self, user_id: int) -> str:
         return await self.__claim_timely(user_id, "weekly")
 
     async def discombobulate(self, from_user_id: str, to_user_id: str, amount: int) -> str:
-        exp_key = f"{from_user}:discombobulate"
+        exp_key = f"{from_user_id}:discombobulate"
         err, res = self.redis.evalsha(
             SCRIPTS["discombobulate"],
             2,
@@ -187,10 +188,10 @@ class AjoManager:
                 reply = f"You do not have enough ajos to discombobulate that much."
             case "offer":
                 min_offer = int(res)
-                reply = f"You have not offered enough ajos to discombobulate @{to_user_id}, needs {min_offer}."
+                reply = f"You have not offered enough ajos to discombobulate [[TO_USER]], needs {min_offer}."
             case "OK":
                 dmg = int(res)
-                reply = f"{AJO} You discombobulate {to_user_id} for {dmg} damage. {AJO}" \
+                reply = f"{AJO} You discombobulate [[TO_USER]] for {dmg} damage. {AJO}" \
                         "https://i.imgur.com/f2SsEqU.gif"
 
         return reply

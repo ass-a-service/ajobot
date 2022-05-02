@@ -82,7 +82,9 @@ class Ajo(Cog):
 
     # PAY
     async def __pay(self, from_user: User, to_user: User, amount: int) -> str:
-        return await self.bot.manager.pay_ajo(from_user.id, to_user.id, amount)
+        reply = await self.bot.manager.pay_ajo(from_user.id, to_user.id, amount)
+        return reply.replace("[[TO_USER]]", f"{to_user}")
+
 
     @command(name="pay", description="Pay someone ajos.")
     async def pay_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
@@ -123,7 +125,8 @@ class Ajo(Cog):
 
     # DISCOMBOBULATE
     async def __discombobulate(self, from_user: User, to_user: User, amount: int) -> str:
-        return await self.bot.manager.discombobulate(from_user.id, to_user.id, amount)
+        reply = await self.bot.manager.discombobulate(from_user.id, to_user.id, amount)
+        return reply.replace("[[TO_USER]]", f"{to_user}")
 
     @command(name="discombobulate", description="Discombobulate someone.")
     async def discombobulate_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
