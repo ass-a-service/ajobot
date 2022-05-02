@@ -17,11 +17,11 @@ TIMELY = {
 
 # script sha values
 SCRIPTS = {
-    "discombobulate": "8d6c9d1dd6f3f74daf58116514bb1648ddb27392",
-    "gamble": "632e7e53eba95229e10add8fe8bd2a77a9f46bd9",
-    "pay": "82bc5101c8ea559c65e9d8787e6193a4152f0ea4",
-    "reward": "671988c19058773e8baa73cfeda43e30f6cfe84f",
-    "setne": "646f93a222f3f7d669801d0d5a4b36fdb66f047a",
+    "discombobulate": environ['DISCOMBOBULATE_SHA'],
+    "gamble": environ['GAMBLE_SHA'],
+    "pay": environ['PAY_SHA'],
+    "reward": environ['TIMELY_SHA'],
+    "setne": environ['REWARD_SHA']
 }
 
 LEADERBOARD = "lb"
