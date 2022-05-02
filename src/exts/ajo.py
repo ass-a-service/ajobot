@@ -9,9 +9,6 @@ class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
-    def __get_user_id(self, user: User) -> str:
-        return f"{user.name}#{user.discriminator}"
-
     @Cog.listener()
     async def on_message(self, message: Message) -> None:
         if message.author.bot or message.guild is None:
@@ -23,7 +20,11 @@ class Ajo(Cog):
             return
 
         if contains_ajo:
-            await self.bot.manager.add_ajo(self.__get_user_id(message.author), 1)
+            await self.bot.manager.add_ajo(
+                message.author.id,
+                f"{message.author.name}#{message.author.discriminator}",
+                1
+            )
 
         is_begging = await self.bot.manager.is_begging_for_ajo(message)
         if is_begging:
@@ -32,17 +33,17 @@ class Ajo(Cog):
     # AJO/VERAJO
     @command(name="ajo", description="Get your count of ajos.")
     async def ajo_command(self, ctx: Context[Bot]) -> None:
-        count = await self.bot.manager.get_ajo(self.__get_user_id(ctx.author))
+        count = await self.bot.manager.get_ajo(ctx.author.id)
         await ctx.reply(f"{AJO} You have {count} ajos {AJO}")
 
     @slash_command(name="ajo", description="Get your count of ajos.")
     async def ajo(self, itr: CommandInteraction) -> None:
-        count = await self.bot.manager.get_ajo(self.__get_user_id(itr.author))
+        count = await self.bot.manager.get_ajo(itr.author.id)
         await itr.send(f"{AJO} You have {count} ajos {AJO}")
 
     @command(name="verajo", description="See someone else's ajos.")
     async def verajo_command(self, ctx: Context[Bot], user: User) -> None:
-        count = await self.bot.manager.get_ajo(self.__get_user_id(user))
+        count = await self.bot.manager.get_ajo(user.id)
         await ctx.reply(f"{AJO} {user} has {count} ajos {AJO}")
 
     @slash_command(name="verajo", description="See someone else's ajos.")
@@ -51,7 +52,7 @@ class Ajo(Cog):
         itr: CommandInteraction,
         user: User = Param(description="The user to get the ajo count from.")
     ) -> None:
-        count = await self.bot.manager.get_ajo(self.__get_user_id(user))
+        count = await self.bot.manager.get_ajo(user.id)
         await itr.send(f"{AJO} {user} has {count} ajos {AJO}")
 
     # LEADERBOARD
@@ -65,8 +66,7 @@ class Ajo(Cog):
 
     # GAMBLE
     async def __gamble(self, user: User, amount: int) -> str:
-        id = self.__get_user_id(user)
-        return await self.bot.manager.gamble_ajo(id, amount)
+        return await self.bot.manager.gamble_ajo(user.id, amount)
 
     @command(name="gamble", description="Gamble your ajos.")
     async def gamble_command(self, ctx: Context[Bot], amount: int) -> None:
@@ -82,9 +82,9 @@ class Ajo(Cog):
 
     # PAY
     async def __pay(self, from_user: User, to_user: User, amount: int) -> str:
-        from_id = self.__get_user_id(from_user)
-        to_id = self.__get_user_id(to_user)
-        return await self.bot.manager.pay_ajo(from_id, to_id, amount)
+        reply = await self.bot.manager.pay_ajo(from_user.id, to_user.id, amount)
+        return reply.replace("[[TO_USER]]", f"{to_user}")
+
 
     @command(name="pay", description="Pay someone ajos.")
     async def pay_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
@@ -101,8 +101,7 @@ class Ajo(Cog):
 
     # WEEKLY CLAIM
     async def __weekly(self, user: User) -> str:
-        id = self.__get_user_id(user)
-        return await self.bot.manager.claim_weekly(id)
+        return await self.bot.manager.claim_weekly(user.id)
 
     @command(name="weekly", description="Claim your weekly ajos.")
     async def weekly_command(self, ctx: Context[Bot]) -> None:
@@ -114,8 +113,7 @@ class Ajo(Cog):
 
     # DAILY CLAIM
     async def __daily(self, user: User) -> str:
-        id = self.__get_user_id(user)
-        return await self.bot.manager.claim_daily(id)
+        return await self.bot.manager.claim_daily(user.id)
 
     @command(name="daily", description="Claim your daily ajos.")
     async def daily_command(self, ctx: Context[Bot]) -> None:
@@ -127,9 +125,8 @@ class Ajo(Cog):
 
     # DISCOMBOBULATE
     async def __discombobulate(self, from_user: User, to_user: User, amount: int) -> str:
-        from_id = self.__get_user_id(from_user)
-        to_id = self.__get_user_id(to_user)
-        return await self.bot.manager.discombobulate(from_id, to_id, amount)
+        reply = await self.bot.manager.discombobulate(from_user.id, to_user.id, amount)
+        return reply.replace("[[TO_USER]]", f"{to_user}")
 
     @command(name="discombobulate", description="Discombobulate someone.")
     async def discombobulate_command(self, ctx: Context[Bot], user: User, amount: int) -> None:

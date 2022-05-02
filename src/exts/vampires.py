@@ -10,9 +10,6 @@ class Vampires(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
-    def _get_user_id(self, user: User) -> str:
-        return f"{user.name}#{user.discriminator}"
-
     @Cog.listener()
     async def on_message(self, message: Message) -> None:
         if message.author.bot or message.guild is None:
@@ -23,13 +20,14 @@ class Vampires(Cog):
             return
 
         # Depending on the vampire level of the user, it has more chance to be triggered
-        vampire_level = self.bot.manager.redis.get(f"vampire:{message.author.id}") or 1
+        vampire_key = f"{message.author.id}:vampire"
+        vampire_level = self.bot.manager.redis.get(vampire_key) or 1
         vampire_level = int(vampire_level) # TODO: Fixme
         appear_chance = 1 if vampire_level == 1 else log(vampire_level,10)*20
         if appear_chance < SystemRandom().uniform(0,100):
             return
 
-        ajo = await self.bot.manager.get_ajo(self._get_user_id(message.author))
+        ajo = await self.bot.manager.get_ajo(message.author.id)
         if ajo < 1:
             return
 
@@ -39,7 +37,12 @@ class Vampires(Cog):
         random_pct = SystemRandom().uniform(min_damage,max_damage)
         to_pay = ceil(ajo * (random_pct/100))
 
-        await self.bot.manager.add_ajo(self._get_user_id(message.author), -to_pay)
+        await self.bot.manager.add_ajo(
+            message.author.id,
+            f"{message.author.name}#{message.author.discriminator}",
+            -to_pay
+        )
+
         # Feature request: hay un 0.1% de que el vampiro te hace discombolulate y te jode y te quita un 33%.
         await message.reply(
             f"A vampire level {vampire_level} has appeared! You use {to_pay} ajos to defeat him. You are safe... for now."
@@ -47,8 +50,8 @@ class Vampires(Cog):
 
         # Vampire gets more aggresive for this user
         incr_by = 2 if vampire_level == 1 else 1
-        self.bot.manager.redis.incrby(f"vampire:{message.author.id}",incr_by)
-        self.bot.manager.redis.expire(f"vampire:{message.author.id}",min(7200, 600*vampire_level)) #TODO: Improve this 5 minutes thing
+        self.bot.manager.redis.incrby(vampire_key,incr_by)
+        self.bot.manager.redis.expire(vampire_key,min(7200, 600*vampire_level)) #TODO: Improve this 5 minutes thing
 
 
 def setup(bot: Bot) -> None:
