@@ -80,9 +80,9 @@ class AjoManager:
 
         names = self.redis.mget(ids)
         for i in range(len(names)):
-            name = name.decode("utf-8")
+            name = names[i].decode("utf-8")
             embed.add_field(
-                name=f"{j} . {names[i][:-5]}",
+                name=f"{j} . {name[:-5]}",
                 value=f"{AJO} {scores[i]}",
                 inline=True,
             )
@@ -131,7 +131,7 @@ class AjoManager:
                 reply = "You do not have enough ajos to pay that much."
             case "OK":
                 amount = int(res)
-                reply = f"{AJO} You paid {amount} ajos to {to_user} {AJO}"
+                reply = f"{AJO} You paid {amount} ajos to {to_user_id} {AJO}"
 
         return reply
 
@@ -187,10 +187,10 @@ class AjoManager:
                 reply = f"You do not have enough ajos to discombobulate that much."
             case "offer":
                 min_offer = int(res)
-                reply = f"You have not offered enough ajos to discombobulate @{to_user}, needs {min_offer}."
+                reply = f"You have not offered enough ajos to discombobulate @{to_user_id}, needs {min_offer}."
             case "OK":
                 dmg = int(res)
-                reply = f"{AJO} You discombobulate {from_user} for {dmg} damage. {AJO}" \
+                reply = f"{AJO} You discombobulate {to_user_id} for {dmg} damage. {AJO}" \
                         "https://i.imgur.com/f2SsEqU.gif"
 
         return reply

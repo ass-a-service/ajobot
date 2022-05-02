@@ -20,7 +20,8 @@ class Vampires(Cog):
             return
 
         # Depending on the vampire level of the user, it has more chance to be triggered
-        vampire_level = self.bot.manager.redis.get(f"vampire:{message.author.id}") or 1
+        vampire_key = f"{message.author.id}:vampire"
+        vampire_level = self.bot.manager.redis.get(vampire_key) or 1
         vampire_level = int(vampire_level) # TODO: Fixme
         appear_chance = 1 if vampire_level == 1 else log(vampire_level,10)*20
         if appear_chance < SystemRandom().uniform(0,100):
@@ -49,8 +50,8 @@ class Vampires(Cog):
 
         # Vampire gets more aggresive for this user
         incr_by = 2 if vampire_level == 1 else 1
-        self.bot.manager.redis.incrby(f"vampire:{message.author.id}",incr_by)
-        self.bot.manager.redis.expire(f"vampire:{message.author.id}",min(7200, 600*vampire_level)) #TODO: Improve this 5 minutes thing
+        self.bot.manager.redis.incrby(vampire_key,incr_by)
+        self.bot.manager.redis.expire(vampire_key,min(7200, 600*vampire_level)) #TODO: Improve this 5 minutes thing
 
 
 def setup(bot: Bot) -> None:
