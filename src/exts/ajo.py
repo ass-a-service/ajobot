@@ -14,21 +14,25 @@ class Ajo(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        # this message is not interesting
         contains_ajo = await self.bot.manager.contains_ajo(message)
-        if not contains_ajo:
-            return
 
+        # Relevant message
         if contains_ajo:
+            # 1. Log the message into the timeseries redis
+
+            # Log the guild +1 ajo message
+            self.bot.manager.redis_ts.add(f"ajoseries:{message.guild.id}:{message.author.id}", int(message.created_at.timestamp()), 1, labels={"guild": message.guild.id, "author": message.author.id})
+
+            # 2. Process the message
             await self.bot.manager.add_ajo(
                 message.author.id,
                 f"{message.author.name}#{message.author.discriminator}",
                 1
             )
 
-        is_begging = await self.bot.manager.is_begging_for_ajo(message)
-        if is_begging:
-            await message.add_reaction(AJO)
+            is_begging = await self.bot.manager.is_begging_for_ajo(message)
+            if is_begging:
+                await message.add_reaction(AJO)
 
     # AJO/VERAJO
     @command(name="ajo", description="Get your count of ajos.")
