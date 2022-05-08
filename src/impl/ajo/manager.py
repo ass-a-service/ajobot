@@ -29,6 +29,7 @@ LEADERBOARD = "lb"
 class AjoManager:
     def __init__(self) -> None:
         self.redis = redis.Redis(host=environ['REDIS_HOST'])
+        self.redis_ts = redis.Redis(host=environ['REDIS_HOST']).ts()
         logger.info("Connected to the database.")
 
     def __get_seed(self) -> int:
