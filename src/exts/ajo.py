@@ -14,11 +14,9 @@ class Ajo(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        # this message is not interesting
         contains_ajo = await self.bot.manager.contains_ajo(message)
-        if not contains_ajo:
-            return
 
+        # Relevant message
         if contains_ajo:
             await self.bot.manager.add_ajo(
                 message.author.id,
@@ -26,9 +24,9 @@ class Ajo(Cog):
                 1
             )
 
-        is_begging = await self.bot.manager.is_begging_for_ajo(message)
-        if is_begging:
-            await message.add_reaction(AJO)
+            is_begging = await self.bot.manager.is_begging_for_ajo(message)
+            if is_begging:
+                await message.add_reaction(AJO)
 
     # AJO/VERAJO
     @command(name="ajo", description="Get your count of ajos.")
