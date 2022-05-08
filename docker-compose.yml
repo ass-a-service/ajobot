@@ -1,15 +1,23 @@
 version: "3"
 
 services:
-  bot:
-    build: .
-    restart: always
-    env_file: .env
-    depends_on:
-      - redis
   redis:
     image: redislabs/redistimeseries
     restart: unless-stopped
-    command: redis-server --appendonly yes --loglevel warning
+    links:
+      - logger
+    logging:
+      driver: "fluentd"
+      options:
+        tag: redis
+        fluentd-address: localhost:24224
     ports:
       - '6379:6379'
+    depends_on:
+      - logger
+  logger:
+    image: fluent/fluentd
+    restart: unless-stopped
+    ports:
+      - 24224:24224/tcp
+      - 24224:24224/udp
