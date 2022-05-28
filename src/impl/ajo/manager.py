@@ -206,8 +206,7 @@ class AjoManager:
             exp_key,
             from_user_id,
             to_user_id,
-            amount,
-            self.__get_seed()
+            amount
         )
 
         match err.decode("utf-8"):
@@ -215,12 +214,9 @@ class AjoManager:
                 reply = "You cannot steal this amount."
             case "ttl":
                 td = timedelta(seconds=int(res))
-                reply = f"You cannot steal yet, next in {td}."
+                reply = f"You are stealing someone else already! Next steal in {td}."
             case "funds":
-                reply = f"You do not have enough ajos to steal that much."
-            case "offer":
-                min_offer = int(res)
-                reply = f"You have not offered enough ajos to steal [[TO_USER]], needs {min_offer}."
+                reply = f"[[TO_USER]] does not have enough ajos to steal that much."
             case "OK":
                 dmg = int(res)
                 reply = f"{AJO} You steal [[TO_USER]] for {dmg} damage. {AJO}" \
