@@ -196,3 +196,34 @@ class AjoManager:
                         "https://i.imgur.com/f2SsEqU.gif"
 
         return reply
+
+    async def steal(self, from_user_id: str, to_user_id: str, amount: int) -> str:
+        exp_key = f"{from_user_id}:steal"
+        err, res = self.redis.evalsha(
+            SCRIPTS["steal"],
+            2,
+            LEADERBOARD,
+            exp_key,
+            from_user_id,
+            to_user_id,
+            amount,
+            self.__get_seed()
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = "You cannot steal this amount."
+            case "ttl":
+                td = timedelta(seconds=int(res))
+                reply = f"You cannot steal yet, next in {td}."
+            case "funds":
+                reply = f"You do not have enough ajos to steal that much."
+            case "offer":
+                min_offer = int(res)
+                reply = f"You have not offered enough ajos to steal [[TO_USER]], needs {min_offer}."
+            case "OK":
+                dmg = int(res)
+                reply = f"{AJO} You steal [[TO_USER]] for {dmg} damage. {AJO}" \
+                        "https://i.imgur.com/f2SsEqU.gif"
+
+        return reply

@@ -132,6 +132,11 @@ class Ajo(Cog):
         reply = await self.bot.manager.discombobulate(from_user.id, to_user.id, amount)
         return reply.replace("[[TO_USER]]", f"{to_user}")
 
+    # STEAL
+    async def __steal(self, from_user: User, to_user: User, amount: int) -> str:
+        reply = await self.bot.manager.discombobulate(from_user.id, to_user.id, amount)
+        return reply.replace("[[TO_USER]]", f"{to_user}")
+
     @command(name="discombobulate", description="Discombobulate someone.")
     async def discombobulate_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
         await ctx.reply(await self.__discombobulate(ctx.author, user, amount))
@@ -144,6 +149,19 @@ class Ajo(Cog):
         amount: int = Param(description="The amount to offer."),
     ) -> None:
         await itr.send(await self.__discombobulate(itr.author, user, amount))
+
+    @command(name="steal", description="Steal ajos from someone.")
+    async def steal_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
+        await ctx.reply(await self.__steal(ctx.author, user, amount))
+
+    @slash_command(name="steal", description="Steal ajos from someone.")
+    async def steal(
+        self,
+        itr: CommandInteraction,
+        user: User = Param(description="The user to steal."),
+        amount: int = Param(description="The amount to attempt to steal."),
+    ) -> None:
+        await itr.send(await self.__steal(itr.author, user, amount))
 
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))
