@@ -159,6 +159,7 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__discombobulate(itr.author, user, amount))
 
+<<<<<<< HEAD
     # ROULETTE
     async def __roulette(self) -> str:
         return await self.bot.manager.roulette()
@@ -187,5 +188,14 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__roulette_shot(itr.author, roulette_id))
 
+=======
+    @slash_command(name="inventory", description="Get inventory")
+    async def inventory(
+        self,
+        itr: CommandInteraction,
+    ) -> None:
+        await itr.send(await self.bot.manager.get_inventory(itr.author.id))
+        
+>>>>>>> fcb7bfd... WIP: Inventory
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))
