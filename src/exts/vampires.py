@@ -29,6 +29,8 @@ class Vampires(Cog):
 
         ajo = await self.bot.manager.get_ajo(message.author.id)
         if ajo < 1:
+            # if you're spamming, the vampire still remains
+            self.bot.manager.redis.expire(vampire_key,min(7200, 600*vampire_level)) #TODO: Improve this 5 minutes thing
             return
 
         # Depending on the vempire level of the user, it has more chance to hit harder
