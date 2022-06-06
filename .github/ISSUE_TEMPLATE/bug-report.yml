@@ -1,0 +1,48 @@
+name: Bug Report
+description: Something isn't working quite right.
+labels: [not confirmed]
+body:
+- type: markdown
+  attributes:
+    value: |
+      Bug reports should only be used for reporting issues with how the software works. For assistance installing this software, please use our [Discord server](https://discord.gg/DXEVMwdTVV).
+
+- type: textarea      
+  attributes:
+    label: Current Behavior
+    description: Please provide a clear & concise description of the issue.
+  validations:
+    required: true
+
+- type: textarea      
+  attributes:
+    label: Expected Behavior
+    description: Please describe what you expected to happen.
+  validations:
+    required: true
+
+- type: textarea      
+  attributes:
+    label: Steps to Reproduce
+    description: Please be as detailed as possible when providing steps to reproduce, failure to provide steps will result in this issue being closed.
+  validations:
+    required: true
+
+- type: textarea      
+  attributes:
+    label: Extra informatio that you want to share.
+    description: Any relevant information that you think can be interesting to know related this issue.
+  validations:
+    required: false
+        
+- type: checkboxes
+  attributes:
+    label: Is there an existing issue for this?
+    description: Please [search here](https://github.com/ass-a-service/ajobot/issues) to see if an issue already exists for your problem.
+    options:
+    - label: I have searched the existing issues before opening this issue.
+      required: true
+    - label: I have provided all relevant details, including the specific game and Docker images I am using if this issue is related to running a server.
+      required: true
+    - label: I have checked in the Discord server and believe this is a bug with the software, and not a configuration issue with my specific system.
+      required: true
