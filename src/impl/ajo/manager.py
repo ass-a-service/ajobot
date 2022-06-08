@@ -95,7 +95,7 @@ class AjoManager:
     async def gamble_ajo(self, user_id: str, amount: str) -> str:
         if amount.isnumeric():
             amount = int(amount)
-        else if amount == "all":
+        elif amount == "all":
             amount = await self.get_ajo(self, user_id)
         else:
             amount = 0
