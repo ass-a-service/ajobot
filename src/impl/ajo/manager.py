@@ -92,7 +92,14 @@ class AjoManager:
 
         return embed
 
-    async def gamble_ajo(self, user_id: str, amount: int) -> str:
+    async def gamble_ajo(self, user_id: str, amount: str) -> str:
+        if amount.isnumeric():
+            amount = int(amount)
+        else if amount == "all":
+            amount = await self.get_ajo(self, user_id)
+        else:
+            amount = 0
+
         err, res = self.redis.evalsha(
             SCRIPTS["gamble"],
             1,

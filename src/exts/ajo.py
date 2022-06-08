@@ -75,20 +75,20 @@ class Ajo(Cog):
         await itr.send(embed=await self.bot.manager.get_leaderboard())
 
     # GAMBLE
-    async def __gamble(self, user: User, amount: int) -> str:
+    async def __gamble(self, user: User, amount: str) -> str:
         return await self.bot.manager.gamble_ajo(user.id, amount)
 
     @command(name="gamble", description="Gamble your ajos.")
-    async def gamble_command(self, ctx: Context[Bot], amount: int) -> None:
+    async def gamble_command(self, ctx: Context[Bot], amount: str) -> None:
         await ctx.reply(await self.__gamble(ctx.author, amount))
 
     @slash_command(name="gamble", description="Gamble your ajos.")
     async def gamble(
         self,
         itr: CommandInteraction,
-        amount: int = Param(description="How much ajos to gamble.")
+        amount: str = Param(description="How much ajos to gamble.")
     ) -> None:
-        await itr.send(await self.__gamble(itr.author, amount))
+        await itr.send(await self.__gamble(itr.author, str))
 
     # PAY
     async def __pay(self, from_user: User, to_user: User, amount: int) -> str:
