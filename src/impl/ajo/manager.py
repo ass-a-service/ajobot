@@ -21,10 +21,13 @@ SCRIPTS = {
     "gamble": environ['GAMBLE_SHA'],
     "pay": environ['PAY_SHA'],
     "reward": environ['TIMELY_SHA'],
-    "setne": environ['SETNE_SHA']
+    "setne": environ['SETNE_SHA'],
+    "steal": environ['STEAL_SHA']
 }
 
 LEADERBOARD = "lb"
+
+STEAL_QUEUE_KEY = "steal"
 
 class AjoManager:
     def __init__(self) -> None:
@@ -200,6 +203,35 @@ class AjoManager:
             case "OK":
                 dmg = int(res)
                 reply = f"{AJO} You discombobulate [[TO_USER]] for {dmg} damage. {AJO}" \
+                        "https://i.imgur.com/f2SsEqU.gif"
+
+        return reply
+
+    async def steal(self, from_user_id: str, to_user_id: str, amount: int) -> str:
+        exp_key = f"{from_user_id}:steal"
+        steal_queue_key = self.STEAL_QUEUE_KEY
+        err, res = self.redis.evalsha(
+            SCRIPTS["steal"],
+            3,
+            LEADERBOARD,
+            exp_key,
+            steal_queue_key,
+            from_user_id,
+            to_user_id,
+            amount
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = "You cannot steal this amount."
+            case "ttl":
+                td = timedelta(seconds=int(res))
+                reply = f"You are stealing someone else already! Next steal in {td}."
+            case "funds":
+                reply = f"[[TO_USER]] does not have enough ajos to steal that much."
+            case "OK":
+                dmg = int(res)
+                reply = f"{AJO} You steal [[TO_USER]] for {dmg} damage. {AJO}" \
                         "https://i.imgur.com/f2SsEqU.gif"
 
         return reply

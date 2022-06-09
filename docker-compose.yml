@@ -10,6 +10,5 @@ services:
   redis:
     image: redislabs/redistimeseries
     restart: unless-stopped
-    command: redis-server --appendonly yes --loglevel warning
     ports:
       - '6379:6379'
