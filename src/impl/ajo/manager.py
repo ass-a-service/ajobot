@@ -21,10 +21,13 @@ SCRIPTS = {
     "gamble": environ['GAMBLE_SHA'],
     "pay": environ['PAY_SHA'],
     "reward": environ['TIMELY_SHA'],
-    "setne": environ['SETNE_SHA']
+    "setne": environ['SETNE_SHA'],
+    "steal": environ['STEAL_SHA']
 }
 
 LEADERBOARD = "lb"
+
+STEAL_QUEUE_KEY = "steal"
 
 class AjoManager:
     def __init__(self) -> None:
@@ -199,11 +202,13 @@ class AjoManager:
 
     async def steal(self, from_user_id: str, to_user_id: str, amount: int) -> str:
         exp_key = f"{from_user_id}:steal"
+        steal_queue_key = self.STEAL_QUEUE_KEY
         err, res = self.redis.evalsha(
             SCRIPTS["steal"],
-            2,
+            3,
             LEADERBOARD,
             exp_key,
+            steal_queue_key,
             from_user_id,
             to_user_id,
             amount
