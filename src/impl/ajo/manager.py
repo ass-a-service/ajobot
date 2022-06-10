@@ -218,9 +218,9 @@ class AjoManager:
         )
 
         match err.decode("utf-8"):
-            case "err"
+            case "err":
                 reply = "Too many roulettes..."
-            case "OK"
+            case "OK":
                 reply = f"{AJO} Roulette {hex} created. {AJO}"
 
         return reply
