@@ -253,10 +253,25 @@ class AjoManager:
                 reply = "Ded."
 
         return reply
-    async def get_inventory(self, user_id: str) -> int:
+
+    async def get_inventory(self, user_id: str) -> Embed:
             res = self.redis.hget(f"{user_id}:inventory", "items")
             if not res:
                 # First time? Create it.
                 res = self.redis.hset(f"{user_id}:inventory", "items", json.dumps({}))
                 res = json.dumps({})
-            return res
+
+            embed = Embed(
+                title="Inventory",
+                colour=0x87CEEB,
+            )
+
+            res = res.decode('utf-8')
+            for item_name, item_amount in json.loads(res).items():
+                embed.add_field(
+                    name=f"{item_name}",
+                    value=f"{item_amount}",
+                    inline=True,
+                )
+
+            return embed

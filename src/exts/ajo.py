@@ -192,11 +192,11 @@ class Ajo(Cog):
         self,
         itr: CommandInteraction,
     ) -> None:
-        await itr.send(await self.bot.manager.get_inventory(itr.author.id))
+        await itr.send(embed = await self.bot.manager.get_inventory(itr.author.id))
 
     @command(name="inventory", description="inventory someone.")
     async def inventory_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(await self.bot.manager.get_inventory(ctx.author))
+        await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author))
 
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))
