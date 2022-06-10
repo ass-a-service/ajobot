@@ -237,11 +237,11 @@ class AjoManager:
         )
 
         match err.decode("utf-8"):
-            case "err"
+            case "err":
                 reply = "Not the roulette you are looking for."
-            case "OK"
+            case "OK":
                 reply = "You survived this shot."
-            case "shot"
+            case "shot":
                 reply = "Ded."
 
         reply = f"{AJO} You began a roulette with [[TO_USER]]. {AJO}"
