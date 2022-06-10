@@ -151,5 +151,34 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__discombobulate(itr.author, user, amount))
 
+    # ROULETTE
+    async def __roulette(self, from_user: User, to_user: User, amount: int) -> str:
+        reply = await self.bot.manager.roulette(from_user.id, to_user.id)
+        return reply.replace("[[TO_USER]]", f"{to_user}")
+
+    @command(name="roulette", description="Challenge someone to a roulette")
+    async def roulette_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
+        await ctx.reply(await self.__roulette(ctx.author, user))
+
+    @slash_command(name="roulette", description="Challenge someone to a roulette")
+    async def roulette(
+        self,
+        itr: CommandInteraction,
+        user: User = Param(description="The user to challenge."),
+    ) -> None:
+        await itr.send(await self.__roulette(itr.author, user))
+
+    # ROULETTE SHOT
+    async def __roulette_shot(self, user: User) -> str:
+        return await self.bot.manager.roulette_shot(user.id)
+
+    @command(name="roulette_shot", description="Try your luck")
+    async def daily_command(self, ctx: Context[Bot]) -> None:
+        await ctx.reply(await self.__roulette_shot(ctx.author))
+
+    @slash_command(name="roulette_shot", description="Try your luck")
+    async def daily(self, itr: CommandInteraction) -> None:
+        await itr.send(await self.__roulette_shot(itr.author))
+
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))
