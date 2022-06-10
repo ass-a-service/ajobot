@@ -207,26 +207,27 @@ class AjoManager:
 
         return reply
 
-    async def roulette(self, user_id: str) -> str:
-        hex = secrets.token_hex(4)
-        roulette_key = f"roulette:{hex}"
+    async def roulette(self) -> str:
+        roulette_id = secrets.token_hex(4)
+        roulette_key = f"roulette:{roulette_id}"
         err, res = self.redis.evalsha(
             SCRIPTS["roulette"],
             1,
             roulette_key,
-            self.__get_seed()
+            self.__get_seed(),
+            600
         )
 
         match err.decode("utf-8"):
             case "err":
                 reply = "Too many roulettes..."
             case "OK":
-                reply = f"{AJO} Roulette {hex} created. {AJO}"
+                reply = f"{AJO} Roulette {roulette_id} created. {AJO}"
 
         return reply
 
-    async def roulette_shot(self, hex: str) -> str:
-        roulette_key = f"roulette:{hex}"
+    async def roulette_shot(self, user_id: str, roulette_id: str) -> str:
+        roulette_key = f"roulette:{roulette_id}"
         err, res = self.redis.evalsha(
             SCRIPTS["roulette_shot"],
             2,
