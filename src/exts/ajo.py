@@ -152,16 +152,16 @@ class Ajo(Cog):
         await itr.send(await self.__discombobulate(itr.author, user, amount))
 
     # ROULETTE
-    async def __roulette(self, user: User) -> str:
-        return await self.bot.manager.roulette(user.id)
+    async def __roulette(self) -> str:
+        return await self.bot.manager.roulette()
 
     @command(name="roulette", description="Create a roulette")
-    async def roulette_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
-        await ctx.reply(await self.__roulette(ctx.author))
+    async def roulette_command(self, ctx: Context[Bot]) -> None:
+        await ctx.reply(await self.__roulette())
 
     @slash_command(name="roulette", description="Create a roulette")
     async def roulette(self, itr: CommandInteraction) -> None:
-        await itr.send(await self.__roulette(itr.author))
+        await itr.send(await self.__roulette())
 
     # ROULETTE SHOT
     async def __roulette_shot(self, user: User, roulette_id: str) -> str:
