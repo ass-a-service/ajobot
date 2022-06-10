@@ -6,7 +6,7 @@ local name = ARGV[1]
 
 -- sanity, does the roulette already exist?
 local shot = redis.call("exists", group_key)
-if tonumber(shot) ~= 0 then
+if tonumber(shot) == 0 then
     return {"err", false}
 end
 
