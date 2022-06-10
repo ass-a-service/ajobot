@@ -245,5 +245,4 @@ class AjoManager:
             case "shot":
                 reply = "Ded."
 
-        reply = f"{AJO} You began a roulette with [[TO_USER]]. {AJO}"
         return reply
