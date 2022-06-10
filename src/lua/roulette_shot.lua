@@ -13,10 +13,10 @@ end
 -- decrement the group key
 local res = redis.call("decrby", group_key)
 if res > 0 then
-    return {"OK", nil}
+    return {"OK", true}
 end
 
 -- kill the person, remove the roulette
 redis.call("zrem", lb_key, name)
 redis.call("del", group_key)
-return {"shot", nil}
+return {"shot", true}

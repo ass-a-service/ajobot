@@ -209,6 +209,7 @@ class AjoManager:
 
     async def roulette(self) -> str:
         roulette_id = secrets.token_hex(4)
+        print(roulette_id)
         roulette_key = f"roulette:{roulette_id}"
         err, res = self.redis.evalsha(
             SCRIPTS["roulette"],
@@ -220,7 +221,7 @@ class AjoManager:
 
         match err.decode("utf-8"):
             case "err":
-                reply = "Too many roulettes..."
+                reply = f"Too many roulettes... {roulette_id}"
             case "OK":
                 reply = f"{AJO} Roulette {roulette_id} created. {AJO}"
 
