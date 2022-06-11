@@ -1,13 +1,52 @@
+import json
 from disnake import CommandInteraction, Message, User
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
+from disnake.ext import tasks
 
 from src.impl.bot import Bot
 
 AJO = "🧄"
+AJO_EVENT_BUS = "bus:ajo"
 
 class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
+        self.farm.start()
+
+    @tasks.loop(seconds=0.50)
+    async def farm(self):
+        redis = self.bot.manager.redis
+        events = redis.lpop('queue', 10)
+        if events is None:
+            return
+
+        for event in events:
+            msg = json.loads(event)
+            author_id = msg['author_id']
+            author_name = msg['author_name']
+            author_discriminator = msg['author_discriminator']
+            guild_id = msg['guild_id']
+            created_at_timestamp = msg['created_at']
+
+            # 1. Log the message into the timeseries redis
+            # Hotfix
+            vampire_key = f"{author_id}:vampire"
+            vampire_level = self.bot.manager.redis.get(vampire_key) or 1
+            vampire_level = int(vampire_level) # TODO: Fixme
+            if vampire_level > 69:
+                return
+
+            # Log the guild +1 ajo message
+            # self.bot.manager.redis_ts.add(f"ajoseries:{guild_id}:{author_id}", int(created_at_timestamp), 1, labels={"guild": guild_id, "author": author_id})
+
+            # 2. Process the message
+            num_ajos = await self.bot.manager.add_ajo(
+                author_id,
+                f"{author_name}#{author_discriminator}",
+                1
+            )
+
+            self.bot.manager.redis.publish(f"{AJO_EVENT_BUS}:obtained", json.dumps({"v": 1, "obtained": 1, "total": num_ajos, "guild_id": guild_id, "author_id": author_id, "author_name": author_name, "author_discriminator": author_discriminator }))
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:
@@ -18,24 +57,7 @@ class Ajo(Cog):
 
         # Relevant message
         if contains_ajo:
-            # 1. Log the message into the timeseries redis
-            # Hotfix
-            vampire_key = f"{message.author.id}:vampire"
-            vampire_level = self.bot.manager.redis.get(vampire_key) or 1
-            vampire_level = int(vampire_level) # TODO: Fixme
-            if vampire_level > 69:
-                return
-
-            # Log the guild +1 ajo message
-            self.bot.manager.redis_ts.add(f"ajoseries:{message.guild.id}:{message.author.id}", int(message.created_at.timestamp()), 1, labels={"guild": message.guild.id, "author": message.author.id})
-
-            # 2. Process the message
-            await self.bot.manager.add_ajo(
-                message.author.id,
-                f"{message.author.name}#{message.author.discriminator}",
-                1
-            )
-
+            self.bot.manager.redis.publish(f"{AJO_EVENT_BUS}:farmed", json.dumps({"v": 1, "created_at": message.created_at.strftime('%s'), "message_id": message.id, "guild_id": message.guild.id, "author_id": message.author.id, "author_name": message.author.name, "author_discriminator": message.author.discriminator }))
             is_begging = await self.bot.manager.is_begging_for_ajo(message)
             if is_begging:
                 await message.add_reaction(AJO)
