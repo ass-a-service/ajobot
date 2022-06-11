@@ -2,6 +2,7 @@ from datetime import timedelta
 from math import ceil
 from os import environ
 import time
+import secrets
 
 from disnake import Embed, Message
 from loguru import logger
@@ -21,7 +22,9 @@ SCRIPTS = {
     "gamble": environ['GAMBLE_SHA'],
     "pay": environ['PAY_SHA'],
     "reward": environ['TIMELY_SHA'],
-    "setne": environ['SETNE_SHA']
+    "setne": environ['SETNE_SHA'],
+    "roulette": environ['ROULETTE_SHA'],
+    "roulette_shot": environ['ROULETTE_SHOT_SHA']
 }
 
 LEADERBOARD = "lb"
@@ -201,5 +204,45 @@ class AjoManager:
                 dmg = int(res)
                 reply = f"{AJO} You discombobulate [[TO_USER]] for {dmg} damage. {AJO}" \
                         "https://i.imgur.com/f2SsEqU.gif"
+
+        return reply
+
+    async def roulette(self) -> str:
+        roulette_id = secrets.token_hex(4)
+        print(roulette_id)
+        roulette_key = f"roulette:{roulette_id}"
+        err, res = self.redis.evalsha(
+            SCRIPTS["roulette"],
+            1,
+            roulette_key,
+            self.__get_seed(),
+            600
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = f"Too many roulettes... {roulette_id}"
+            case "OK":
+                reply = f"{AJO} Roulette {roulette_id} created. {AJO}"
+
+        return reply
+
+    async def roulette_shot(self, user_id: str, roulette_id: str) -> str:
+        roulette_key = f"roulette:{roulette_id}"
+        err, res = self.redis.evalsha(
+            SCRIPTS["roulette_shot"],
+            2,
+            LEADERBOARD,
+            roulette_key,
+            user_id
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = "Not the roulette you are looking for."
+            case "OK":
+                reply = "You survived this shot."
+            case "shot":
+                reply = "Ded."
 
         return reply

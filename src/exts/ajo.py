@@ -151,5 +151,33 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__discombobulate(itr.author, user, amount))
 
+    # ROULETTE
+    async def __roulette(self) -> str:
+        return await self.bot.manager.roulette()
+
+    @command(name="roulette", description="Create a roulette")
+    async def roulette_command(self, ctx: Context[Bot]) -> None:
+        await ctx.reply(await self.__roulette())
+
+    @slash_command(name="roulette", description="Create a roulette")
+    async def roulette(self, itr: CommandInteraction) -> None:
+        await itr.send(await self.__roulette())
+
+    # ROULETTE SHOT
+    async def __roulette_shot(self, user: User, roulette_id: str) -> str:
+        return await self.bot.manager.roulette_shot(user.id, roulette_id)
+
+    @command(name="roulette_shot", description="Try your luck")
+    async def roulette_shot_command(self, ctx: Context[Bot], roulette_id: str) -> None:
+        await ctx.reply(await self.__roulette_shot(ctx.author, roulette_id))
+
+    @slash_command(name="roulette_shot", description="Try your luck")
+    async def roulette_shot(
+        self,
+        itr: CommandInteraction,
+        roulette_id: str = Param(description="The roulette id")
+    ) -> None:
+        await itr.send(await self.__roulette_shot(itr.author, roulette_id))
+
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))
