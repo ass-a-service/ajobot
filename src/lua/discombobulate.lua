@@ -2,8 +2,8 @@
 local lb_key = KEYS[1]
 local exp_key = KEYS[2]
 
-local from_name = ARGV[1]
-local to_name = ARGV[2]
+local source_id = ARGV[1]
+local target_id = ARGV[2]
 local offer = math.ceil(tonumber(ARGV[3]))
 local seed = tonumber(ARGV[4])
 
@@ -19,15 +19,15 @@ if ttl > 0 then
 end
 
 -- can we discombobulate that much?
-local from_current = tonumber(redis.call("zscore", lb_key, from_name))
-if not from_current or from_current < offer then
+local source_amount = tonumber(redis.call("zscore", lb_key, source_id))
+if not source_amount or source_amount < offer then
     return {"funds", false}
 end
 
 -- minimum offer is 35% of the victim
-local to_current = tonumber(redis.call("zscore", lb_key, to_name))
-local min_offer = math.ceil((35 / 100) * to_current)
-if not to_current or offer < min_offer then
+local target_amount = tonumber(redis.call("zscore", lb_key, target_id))
+local min_offer = math.ceil((35 / 100) * target_amount)
+if not target_amount or offer < min_offer then
     return {"offer", min_offer}
 end
 
@@ -35,12 +35,12 @@ end
 math.randomseed(seed)
 local percent = math.random(69, 200)
 local dmg = math.floor(percent / 100 * offer)
-if to_current - dmg < 0 then
-  dmg = to_current
+if target_amount - dmg < 0 then
+  dmg = target_amount
 end
 
 -- lock for percentage done in hours
-redis.call("zincrby", lb_key, -offer, from_name)
-redis.call("zincrby", lb_key, -dmg, to_name)
+redis.call("zincrby", lb_key, -offer, source_id)
+redis.call("zincrby", lb_key, -dmg, target_id)
 redis.call("set", exp_key, 1, "ex", percent * 1800)
 return {"OK", dmg}

@@ -1,7 +1,7 @@
 --! file: gamble.lua
 local lb_key = KEYS[1]
 
-local name = ARGV[1]
+local id = ARGV[1]
 local amount = math.ceil(tonumber(ARGV[2]))
 local seed = tonumber(ARGV[3])
 
@@ -11,7 +11,7 @@ if amount < 1 then
 end
 
 -- can we gamble that much?
-local current = tonumber(redis.call("zscore", lb_key, name))
+local current = tonumber(redis.call("zscore", lb_key, id))
 if not current or current < amount then
   return {"funds", false}
 end
@@ -25,5 +25,5 @@ else
   change = -amount
 end
 
-redis.call("zincrby", lb_key, change, name)
+redis.call("zincrby", lb_key, change, id)
 return {"OK", change}
