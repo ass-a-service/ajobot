@@ -35,6 +35,14 @@ class Ajo(Cog):
                 f"{message.author.name}#{message.author.discriminator}",
                 1
             )
+            self.bot.manager.redis.xadd(
+                "ajobus",
+                "*",
+                "user_id",
+                message.author.id,
+                "amount",
+                1
+            )
 
             is_begging = await self.bot.manager.is_begging_for_ajo(message)
             if is_begging:

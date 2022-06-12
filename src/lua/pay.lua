@@ -1,5 +1,6 @@
 --! file: pay.lua
-local lb_key = KEYS[1]
+local strm_key = KEYS[1]
+local lb_key = KEYS[2]
 
 local source_id = ARGV[1]
 local target_id = ARGV[2]
@@ -18,4 +19,8 @@ end
 
 redis.call("zincrby", lb_key, -amount, source_id)
 redis.call("zincrby", lb_key, amount, target_id)
+--
+-- append data to stream
+redis.call("xadd", strm_key, "*", "user_id", source_id, "amount", -amount)
+redis.call("xadd", strm_key, "*", "user_id", target_id, "amount", amount)
 return {"OK", amount}

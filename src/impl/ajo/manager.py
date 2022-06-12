@@ -28,6 +28,7 @@ SCRIPTS = {
 }
 
 LEADERBOARD = "lb"
+AJOBUS = "ajobus"
 
 class AjoManager:
     def __init__(self) -> None:
@@ -105,7 +106,8 @@ class AjoManager:
 
         err, res = self.redis.evalsha(
             SCRIPTS["gamble"],
-            1,
+            2,
+            AJOBUS,
             LEADERBOARD,
             user_id,
             amount,
@@ -129,7 +131,8 @@ class AjoManager:
     async def pay_ajo(self, from_user_id: str, to_user_id: str, amount: int) -> str:
         err, res = self.redis.evalsha(
             SCRIPTS["pay"],
-            1,
+            2,
+            AJOBUS,
             LEADERBOARD,
             from_user_id,
             to_user_id,
@@ -152,7 +155,8 @@ class AjoManager:
         reward, expire = TIMELY[type]
         err, res = self.redis.evalsha(
             SCRIPTS["reward"],
-            2,
+            3,
+            AJOBUS,
             LEADERBOARD,
             exp_key,
             user_id,
@@ -180,7 +184,8 @@ class AjoManager:
         exp_key = f"{from_user_id}:discombobulate"
         err, res = self.redis.evalsha(
             SCRIPTS["discombobulate"],
-            2,
+            3,
+            AJOBUS,
             LEADERBOARD,
             exp_key,
             from_user_id,
@@ -231,7 +236,8 @@ class AjoManager:
         roulette_key = f"roulette:{roulette_id}"
         err, res = self.redis.evalsha(
             SCRIPTS["roulette_shot"],
-            2,
+            3,
+            AJOBUS,
             LEADERBOARD,
             roulette_key,
             user_id

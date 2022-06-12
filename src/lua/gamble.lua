@@ -1,5 +1,6 @@
 --! file: gamble.lua
-local lb_key = KEYS[1]
+local strm_key = KEYS[1]
+local lb_key = KEYS[2]
 
 local id = ARGV[1]
 local amount = math.ceil(tonumber(ARGV[2]))
@@ -26,4 +27,7 @@ else
 end
 
 redis.call("zincrby", lb_key, change, id)
+
+-- append data to stream
+redis.call("xadd", strm_key, "*", "user_id", id, "amount", change)
 return {"OK", change}

@@ -1,6 +1,7 @@
 --! discombobulate.lua
-local lb_key = KEYS[1]
-local exp_key = KEYS[2]
+local strm_key = KEYS[1]
+local lb_key = KEYS[2]
+local exp_key = KEYS[3]
 
 local source_id = ARGV[1]
 local target_id = ARGV[2]
@@ -43,4 +44,8 @@ end
 redis.call("zincrby", lb_key, -offer, source_id)
 redis.call("zincrby", lb_key, -dmg, target_id)
 redis.call("set", exp_key, 1, "ex", percent * 1800)
+
+-- append data to stream
+redis.call("xadd", strm_key, "*", "user_id", source_id, "amount", -offer)
+redis.call("xadd", strm_key, "*", "user_id", target_id, "amount", -dmg)
 return {"OK", dmg}

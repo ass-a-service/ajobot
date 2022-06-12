@@ -1,6 +1,7 @@
 --! file: timely_reward.lua
-local lb_key = KEYS[1]
-local timely_key = KEYS[2]
+local strm_key = KEYS[1]
+local lb_key = KEYS[2]
+local timely_key = KEYS[3]
 
 local id = ARGV[1]
 local reward = math.ceil(tonumber(ARGV[2]))
@@ -14,4 +15,7 @@ end
 
 redis.call("zincrby", lb_key, reward, id)
 redis.call("set", timely_key, 1, "ex", expire)
+
+-- append data to stream
+redis.call("xadd", strm_key, "*", "user_id", id, "amount", reward)
 return {"OK", reward}

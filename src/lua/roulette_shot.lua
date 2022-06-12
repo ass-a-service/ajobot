@@ -1,6 +1,7 @@
 --! file: roulette_shot.lua
-local lb_key = KEYS[1]
-local group_key = KEYS[2]
+local strm_key = KEYS[1]
+local lb_key = KEYS[2]
+local group_key = KEYS[3]
 
 local id = ARGV[1]
 
@@ -17,6 +18,10 @@ if rem > 0 then
 end
 
 -- kill the person, remove the roulette
+local dmg = redis.call("zscore", lb_key, id)
 redis.call("zrem", lb_key, id)
 redis.call("del", group_key)
+
+-- append data to stream
+redis.call("xadd", strm_key, "*", "user_id", id, "amount", -dmg)
 return {"shot", true}
