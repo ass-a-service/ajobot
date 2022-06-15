@@ -1,13 +1,43 @@
 from disnake import CommandInteraction, Message, User
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
+from disnake.ext import tasks
+from redis.exceptions import ResponseError
 
 from src.impl.bot import Bot
+import time
+from os import environ
 
 AJO = "🧄"
 
 class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
+        self.on_ajo.start()
+
+    @tasks.loop(seconds=5)
+    async def on_ajo(self) -> None:
+        redis = self.bot.manager.redis
+
+        # Create the xreadgroup once
+        # TODO: better do this outside of this fn
+        try:
+            redis.xgroup_create("ajobus","ajo-python",0)
+        except ResponseError as e:
+            if str(e) != "BUSYGROUP Consumer Group name already exists":
+                raise e
+
+        ajos = redis.xreadgroup("ajo-python","ajo.py",streams={"ajobus": ">"},count=100)
+        print(ajos)
+        for _, ajo in ajos:
+            for _, ajo_info in ajo:
+                redis.evalsha(
+                    environ['FARM_INVENTORY_SHA'],
+                    2,
+                    "todo",
+                    ajo_info[b'user_id'].decode()+":inventory",
+                    time.time_ns()-(int(time.time())*1000000000)
+                )
+
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:
