@@ -213,7 +213,6 @@ class AjoManager:
 
         return reply
 
-<<<<<<< HEAD
     async def roulette(self) -> str:
         roulette_id = secrets.token_hex(4)
         print(roulette_id)
@@ -254,7 +253,6 @@ class AjoManager:
                 reply = "Ded."
 
         return reply
-=======
     async def get_inventory(self, user_id: str) -> int:
             res = self.redis.hget(f"{user_id}:inventory", "items")
             if not res:
@@ -262,4 +260,3 @@ class AjoManager:
                 res = self.redis.hset(f"{user_id}:inventory", "items", json.dumps({}))
                 res = json.dumps({})
             return res
->>>>>>> fcb7bfd... WIP: Inventory
