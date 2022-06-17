@@ -8,6 +8,7 @@ local seed = tonumber(ARGV[2])
 -- implement here the items to potentially earn
 local cucu = ":cucumber:"
 local gato = ":pouting_cat:"
+local item
 
 -- 25% chance to win a item
 math.randomseed(seed)
