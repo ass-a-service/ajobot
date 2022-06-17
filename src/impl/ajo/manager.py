@@ -1,4 +1,5 @@
 from datetime import timedelta
+import json
 from math import ceil
 from os import environ
 import time
@@ -252,3 +253,25 @@ class AjoManager:
                 reply = "Ded."
 
         return reply
+
+    async def get_inventory(self, user_id: str) -> Embed:
+            res = self.redis.hgetall(f"{user_id}:inventory")
+            if not res:
+                # First time? Create it.
+                res = {}
+
+            embed = Embed(
+                title="Inventory",
+                colour=0x87CEEB,
+            )
+            print(res.items())
+            print("gato")
+            print(res)
+            for item_name, item_amount in res.items():
+                embed.add_field(
+                    name=f"{item_name.decode()}",
+                    value=f"{int(item_amount)}",
+                    inline=True,
+                )
+
+            return embed

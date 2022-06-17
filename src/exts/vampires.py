@@ -44,13 +44,11 @@ class Vampires(Cog):
             f"{message.author.name}#{message.author.discriminator}",
             -to_pay
         )
+
         self.bot.manager.redis.xadd(
             "ajobus",
+            {"amount": -to_pay, "user_id": message.author.id},
             "*",
-            "user_id",
-            message.author.id,
-            "amount",
-            -to_pay
         )
 
         # Feature request: hay un 0.1% de que el vampiro te hace discombolulate y te jode y te quita un 33%.
