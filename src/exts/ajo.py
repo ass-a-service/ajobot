@@ -35,6 +35,7 @@ class Ajo(Cog):
                     2,
                     "ajobus-inventory",
                     ajo_info[b'user_id'].decode()+":inventory",
+                    ajo_info[b'user_id'].decode(),
                     time.time_ns()-(int(time.time())*1000000000)
                 )
 
@@ -57,7 +58,7 @@ class Ajo(Cog):
                 return
 
             # Log the guild +1 ajo message
-            self.bot.manager.redis_ts.add(f"ajoseries:{message.guild.id}:{message.author.id}", int(message.created_at.timestamp()), 1, labels={"guild": message.guild.id, "author": message.author.id})
+            #self.bot.manager.redis_ts.add(f"ajoseries:{message.guild.id}:{message.author.id}", int(message.created_at.timestamp()), 1, labels={"guild": message.guild.id, "author": message.author.id})
 
             # 2. Process the message
             await self.bot.manager.add_ajo(
@@ -224,7 +225,7 @@ class Ajo(Cog):
 
     @command(name="inventory", description="inventory someone.")
     async def inventory_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author))
+        await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author.id))
 
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))

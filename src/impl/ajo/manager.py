@@ -255,18 +255,19 @@ class AjoManager:
         return reply
 
     async def get_inventory(self, user_id: str) -> Embed:
-            res = self.redis.zrange(f"{user_id}:inventory", 0, -1, withscores=True)
+            res = self.redis.hgetall(f"{user_id}:inventory")
             if not res:
                 # First time? Create it.
-                res = self.redis.hset(f"{user_id}:inventory", "items", json.dumps({}))
                 res = {}
 
             embed = Embed(
                 title="Inventory",
                 colour=0x87CEEB,
             )
-
-            for item_name, item_amount in res:
+            print(res.items())
+            print("gato")
+            print(res)
+            for item_name, item_amount in res.items():
                 embed.add_field(
                     name=f"{item_name.decode()}",
                     value=f"{int(item_amount)}",
