@@ -19,6 +19,7 @@ def main() -> None:
         intents=intents,
         command_prefix=("a/", "ajo ", "ajo/"),
         help_command=None,
+        case_insensitive=True,
         allowed_mentions=AllowedMentions.none(),
     )
 
