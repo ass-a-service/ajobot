@@ -33,7 +33,7 @@ class Ajo(Cog):
                 redis.evalsha(
                     environ['FARM_INVENTORY_SHA'],
                     2,
-                    "todo",
+                    "ajobus-inventory",
                     ajo_info[b'user_id'].decode()+":inventory",
                     time.time_ns()-(int(time.time())*1000000000)
                 )
