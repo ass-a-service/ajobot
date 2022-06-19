@@ -14,7 +14,7 @@ class Ajo(Cog):
         self.bot = bot
         self.on_ajo.start()
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(seconds=1)
     async def on_ajo(self) -> None:
         redis = self.bot.manager.redis
 
