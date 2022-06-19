@@ -227,5 +227,21 @@ class Ajo(Cog):
     async def inventory_command(self, ctx: Context[Bot]) -> None:
         await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author.id))
 
+    # INVENTORY USE
+    async def __use(self, user: User, item: str) -> str:
+        return await self.bot.manager.use(user.id, item)
+
+    @command(name="use", description="Use an item from the inventory")
+    async def use_command(self, ctx: Context[Bot], item: str) -> None:
+        await ctx.reply(await self.__use(ctx.author, item))
+
+    @slash_command(name="use", description="Use an item from the inventory")
+    async def use(
+        self,
+        itr: CommandInteraction,
+        item: str = Param(description="The item to use")
+    ) -> None:
+        await itr.send(await self.__use(itr.author, item))
+
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))

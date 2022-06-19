@@ -275,3 +275,16 @@ class AjoManager:
                 )
 
             return embed
+
+    async def use(self, user_id: str, item: str) -> str:
+        # TODO Pass this to Lua
+        inventory = self.redis.hgetall(f"{user_id}:inventory")
+        # Has the item?
+        item_from_inventory = inventory.get(str.encode(item))
+        if item_from_inventory is None:
+            return "No tienes de eso, manuel"
+        # Use it
+        if item == ":athletic_shoe:":
+            self.redis.set('zapatacos', "si")
+        self.redis.hincrby(f"{user_id}:inventory", item, -1)
+        return f"You have used {item}"

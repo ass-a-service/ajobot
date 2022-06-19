@@ -6,17 +6,23 @@ local id = tonumber(ARGV[1])
 local seed = tonumber(ARGV[2])
 
 -- implement here the items to potentially earn
-local cucu = ":cucumber:"
-local gato = ":pouting_cat:"
+local chopsticks = ":chopsticks:"
+local cross = ":cross:"
 local item
 
--- 25% chance to win a item
+-- destellos / linterna
 math.randomseed(seed)
-local rand = math.random(0, 3)
-if rand == 1 then
-    item = cucu
-elseif rand == 2 then
-    item = gato
+local rand = math.random(0, 100000)
+if rand == 0 then
+    item = ":sauropod:" -- easter egg. It's just a beautiful dinosaur.
+elseif rand <= 5 then
+    item = chopsticks -- resets your vampire level to 0
+elseif rand <= 250 then
+    item = cross -- decrements your vampire level by 1
+elseif rand <= 300 then
+    item = ":bomb:" -- plants a bomb and a) the next person that farms will get the bomb or b) after x minutes (seteable) the last person that farmed will take the damage.
+elseif rand <= 500 then
+    item = "\xf0\x9f\x91\x9f" -- You farm twice as much for 5 minutes.
 else
     return {"err", false}
 end
