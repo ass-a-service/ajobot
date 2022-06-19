@@ -21,7 +21,7 @@ class Ajo(Cog):
         # Create the xreadgroup once
         # TODO: better do this outside of this fn
         try:
-            redis.xgroup_create("ajobus","ajo-python",0)
+            redis.xgroup_create("ajobus","ajo-python",0, mkstream=True)
         except ResponseError as e:
             if str(e) != "BUSYGROUP Consumer Group name already exists":
                 raise e
