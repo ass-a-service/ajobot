@@ -230,7 +230,6 @@ class AjoManager:
 
     async def roulette(self) -> str:
         roulette_id = secrets.token_hex(4)
-        print(roulette_id)
         roulette_key = f"roulette:{roulette_id}"
         err, res = self.redis.evalsha(
             SCRIPTS["roulette"],
@@ -279,9 +278,6 @@ class AjoManager:
                 title="Inventory",
                 colour=0x87CEEB,
             )
-            print(res.items())
-            print("gato")
-            print(res)
             for item_name, item_amount in res.items():
                 embed.add_field(
                     name=f"{item_name.decode()}",

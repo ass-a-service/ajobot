@@ -27,6 +27,8 @@ class Ajo(Cog):
             if str(e) != "BUSYGROUP Consumer Group name already exists":
                 raise e
 
+        # TODO: this should only listen to the farm event, not other events such
+        # as gamble, pay, discombobulate...
         ajos = redis.xreadgroup("ajo-python","ajo.py",streams={"ajobus": ">"},count=100)
         for _, ajo in ajos:
             for _, ajo_info in ajo:
