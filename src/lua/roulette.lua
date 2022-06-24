@@ -1,6 +1,5 @@
 --! file: roulette.lua
-local strm_key = KEYS[1]
-local group_key = KEYS[2]
+local group_key = KEYS[1]
 
 local seed = tonumber(ARGV[1])
 local expire = tonumber(ARGV[2])
