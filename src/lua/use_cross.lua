@@ -11,7 +11,7 @@ if not stack or stack < 1 then
 end
 
 -- use the item, decrease stack
-redis.call("hdecrby", inventory_key, item, 1)
+redis.call("hincrby", inventory_key, item, -1)
 
 -- if there is no vampire, you just used the item
 local vampire_level = tonumber(redis.call("get", vampire_key))

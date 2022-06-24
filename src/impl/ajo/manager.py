@@ -44,7 +44,7 @@ class AjoManager:
     def __get_seed(self) -> int:
         return time.time_ns()-(int(time.time())*1000000000)
 
-    def __translate_emoji(txt: str) -> str:
+    def __translate_emoji(self, txt: str) -> str:
         match txt:
             case "🥢":
                 txt = ":chopsticks:"

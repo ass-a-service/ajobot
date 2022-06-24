@@ -11,6 +11,6 @@ if not stack or stack < 1 then
 end
 
 -- decrease stack and vampire level
-redis.call("hdecrby", inventory_key, item, 1)
+redis.call("hincrby", inventory_key, item, -1)
 local res = redis.call("del", vampire_key)
 return {"OK", res}
