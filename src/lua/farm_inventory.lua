@@ -17,10 +17,10 @@ end
 -- implement here the items to potentially earn
 local items = {
     -- structure is { <%% chance>, <max stack> }
-    [":sauropod:"] = {1, 1},
-    [":chopsticks:"] = {6, 5},
-    [":cross:"] = {500, 10},
-    [":bomb:"] = {200, 1}
+    [":sauropod:"] = {"chance"=1, "max_stack"=1},
+    [":chopsticks:"] = {"chance"=6, "max_stack"=5},
+    [":cross:"] = {"chance"=500, "max_stack"=10},
+    [":bomb:"] = {"chance"=200, "max_stack"=1}
 }
 
 -- destellos / linterna
@@ -30,8 +30,8 @@ local acc = 0
 local stack, chance, max_stack
 
 for item, data in pairs(items) do
-    chance = data[0]
-    max_stack = data[1]
+    chance = data["chance"]
+    max_stack = data["max_stack"]
 
     -- increase our chance of receiving something
     acc = acc + chance
