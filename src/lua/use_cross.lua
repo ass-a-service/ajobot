@@ -19,6 +19,15 @@ if not vampire_level or vampire_level < 1 then
     return {"OK", 0}
 end
 
+-- FIXME: due to how the legacy vampire system works, we have to delete the
+-- vampire key when it's 2 or lower
+local res
+if vampire_level <= 2 then
+    redis.call("del", vampire_key)
+    res = 0
+else
+    res = redis.call("decrby", vampire_key, 1)
+end
+
 -- actually decrease stack and vampire level
-local res = redis.call("decrby", vampire_key, 1)
 return {"OK", res}
