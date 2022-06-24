@@ -10,7 +10,7 @@ from loguru import logger
 import redis
 
 AJO = "🧄"
-CRUZ = "✝️"
+CRUZ = '✝️'
 CHOP = "🥢"
 
 # timely rewards, type: [reward, expire_seconds]
@@ -28,7 +28,7 @@ SCRIPTS = {
     "setne": environ['SETNE_SHA'],
     "roulette": environ['ROULETTE_SHA'],
     "roulette_shot": environ['ROULETTE_SHOT_SHA'],
-    "use_cross": environ['USE_CROSS'],
+    "use_cross": environ['USE_CROSS_SHA'],
     "use_chopsticks": environ['USE_CHOPSTICKS_SHA']
 }
 
@@ -285,7 +285,7 @@ class AjoManager:
         vampire_key = f"{user_id}:vampire"
 
         match item:
-            case "chopsticks" | "cross" | ":chopsticks:" | ":cross:" | CRUZ | CHOP:
+            case "chopsticks" | "cross" | ":chopsticks:" | ":cross:" :
                 script = f"use_{item}"
                 err, res = self.redis.evalsha(
                     SCRIPTS[script],
@@ -299,8 +299,8 @@ class AjoManager:
 
         match err.decode("utf-8"):
             case "err":
-                reply = "You do not have enough {item}."
+                reply = f"You do not have enough {item}."
             case "OK":
-                reply = "You have used {item}."
+                reply = f"You have used {item}."
 
         return reply

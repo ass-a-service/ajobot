@@ -12,6 +12,6 @@ while True:
     seed_1 = time.time_ns()-(int(time.time())*1000000000)
     #seed_2 = str(int.from_bytes(os.urandom(16), 'big'))
     #seed_3 = seed_1[::-1]
-    result = r.evalsha('333d5850c1efbca2b2f7502d91a8d88873c209ee', '2', "ajobus-inventory", "468516898309537792:inventory", "78313426", seed_1)
+    result = r.evalsha('d185c435f3af6c86f61a8a80a14fa379a52770b4', '3', "ajobus-inventory", "lb", "468516898309537792:inventory", "468516898309537792", seed_1)
     print(f"{i}: {result}")
     i = i+1

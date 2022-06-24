@@ -8,6 +8,7 @@ import time
 from os import environ
 
 AJO = "🧄"
+LEADERBOARD = "lb"
 
 class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
