@@ -14,7 +14,7 @@ end
 -- can we pay that much?
 local source_amount = tonumber(redis.call("zscore", lb_key, source_id))
 if not source_amount or source_amount < amount then
-  return {"funds", false}
+    return {"funds", false}
 end
 
 redis.call("zincrby", lb_key, -amount, source_id)
