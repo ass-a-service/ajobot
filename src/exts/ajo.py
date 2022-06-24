@@ -27,15 +27,16 @@ class Ajo(Cog):
                 raise e
 
         ajos = redis.xreadgroup("ajo-python","ajo.py",streams={"ajobus": ">"},count=100)
-        print(ajos)
         for _, ajo in ajos:
             for _, ajo_info in ajo:
+                user_id = ajo_info[b'user_id'].decode()
                 redis.evalsha(
                     environ['FARM_INVENTORY_SHA'],
-                    2,
+                    3,
                     "ajobus-inventory",
-                    ajo_info[b'user_id'].decode()+":inventory",
-                    ajo_info[b'user_id'].decode(),
+                    LEADERBOARD,
+                    user_id + ":inventory",
+                    user_id,
                     time.time_ns()-(int(time.time())*1000000000)
                 )
 

@@ -1,9 +1,18 @@
 --! file: farm_inventory.lua
 local strm_key = KEYS[1]
-local inventory_key = KEYS[2]
+local lb_key = KEYS[2]
+local inventory_key = KEYS[3]
 
 local id = tonumber(ARGV[1])
 local seed = tonumber(ARGV[2])
+
+-- you need at least some ajos to farm
+-- avoids the spam with 0 ajos
+local min_ajos = 100
+local current = tonumber(redis.call("zscore", lb_key, id))
+if not current or current < min_ajos then
+    return {"funds", false}
+end
 
 -- implement here the items to potentially earn
 local items = {
@@ -30,4 +39,4 @@ for item, chance in pairs(items) do
     end
 end
 
-return {"err", false}
+return {"none", false}
