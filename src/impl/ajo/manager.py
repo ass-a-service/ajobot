@@ -299,17 +299,20 @@ class AjoManager:
         item = self.__translate_emoji(item)
 
         match item:
-            case ":chopsticks:" | ":cross:":
-                script = f"use_{item}"
-                err, res = self.redis.evalsha(
-                    SCRIPTS[script],
-                    2,
-                    inventory_key,
-                    vampire_key,
-                    item
-                )
+            case ":chopsticks:":
+                script = "use_chopsticks"
+            case ":cross:":
+                script = "use_cross"
             case _:
                 return f"Unknown item {item}."
+
+        err, res = self.redis.evalsha(
+            SCRIPTS[script],
+            2,
+            inventory_key,
+            vampire_key,
+            item
+        )
 
         match err.decode("utf-8"):
             case "err":
