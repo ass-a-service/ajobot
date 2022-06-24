@@ -10,6 +10,8 @@ from loguru import logger
 import redis
 
 AJO = "🧄"
+CRUZ = "✝️"
+CHOP = "🥢"
 
 # timely rewards, type: [reward, expire_seconds]
 TIMELY = {
@@ -25,7 +27,9 @@ SCRIPTS = {
     "reward": environ['TIMELY_SHA'],
     "setne": environ['SETNE_SHA'],
     "roulette": environ['ROULETTE_SHA'],
-    "roulette_shot": environ['ROULETTE_SHOT_SHA']
+    "roulette_shot": environ['ROULETTE_SHOT_SHA'],
+    "use_cross": environ['USE_CROSS'],
+    "use_chopsticks": environ['USE_CHOPSTICKS_SHA']
 }
 
 LEADERBOARD = "lb"
@@ -125,7 +129,7 @@ class AjoManager:
                 if change > 0:
                     reply = f"{AJO} You won {change} ajos! {AJO}"
                 else:
-                    reply = f"{AJO} You lost {abs(change)} ajos {AJO}"
+                    reply = f"{AJO} You lost {abs(change)} ajos. {AJO}"
 
         return reply
 
@@ -147,7 +151,7 @@ class AjoManager:
                 reply = "You do not have enough ajos to pay that much."
             case "OK":
                 amount = int(res)
-                reply = f"{AJO} You paid {amount} ajos to [[TO_USER]] {AJO}"
+                reply = f"{AJO} You paid {amount} ajos to [[TO_USER]]. {AJO}"
 
         return reply
 
@@ -227,7 +231,7 @@ class AjoManager:
 
         match err.decode("utf-8"):
             case "err":
-                reply = f"Too many roulettes... {roulette_id}"
+                reply = f"Too many roulettes... {roulette_id}."
             case "OK":
                 reply = f"{AJO} Roulette {roulette_id} created. {AJO}"
 
@@ -277,14 +281,26 @@ class AjoManager:
             return embed
 
     async def use(self, user_id: str, item: str) -> str:
-        # TODO Pass this to Lua
-        inventory = self.redis.hgetall(f"{user_id}:inventory")
-        # Has the item?
-        item_from_inventory = inventory.get(str.encode(item))
-        if item_from_inventory is None:
-            return "No tienes de eso, manuel"
-        # Use it
-        if item == ":athletic_shoe:":
-            self.redis.set('zapatacos', "si")
-        self.redis.hincrby(f"{user_id}:inventory", item, -1)
-        return f"You have used {item}"
+        inventory_key = f"{user_id}:inventory"
+        vampire_key = f"{user_id}:vampire"
+
+        match item:
+            case "chopsticks" | "cross" | ":chopsticks:" | ":cross:" | CRUZ | CHOP:
+                script = f"use_{item}"
+                err, res = self.redis.evalsha(
+                    SCRIPTS[script],
+                    2,
+                    inventory_key,
+                    vampire_key,
+                    item
+                )
+            case _:
+                return f"Unknown item {item}."
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = "You do not have enough {item}."
+            case "OK":
+                reply = "You have used {item}."
+
+        return reply

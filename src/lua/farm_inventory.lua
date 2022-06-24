@@ -16,26 +16,37 @@ end
 
 -- implement here the items to potentially earn
 local items = {
-    [":sauropod:"] = 1, -- 0.001,
-    [":chopsticks:"] = 6, -- 0.006,
-    [":cross:"] = 500, -- 0.5,
-    [":bomb:"] = 200, -- 0.2
+    -- structure is { <%% chance>, <max stack> }
+    [":sauropod:"] = {1, 1},
+    [":chopsticks:"] = {6, 5},
+    [":cross:"] = {500, 10},
+    [":bomb:"] = {200, 1}
 }
 
 -- destellos / linterna
 math.randomseed(seed)
 local rand = math.random(1, 100000)
 local acc = 0
+local stack
 
-for item, chance in pairs(items) do
-    -- pass to the next item
+for item, data in pairs(items) do
+    chance = data[0]
+    max_stack = data[1]
+
+    -- increase our chance of receiving something
     acc = acc + chance
 
-    -- if we are lower than the current chance, get the item
+    -- if we're lower than the current chance, we got the item
     if rand <= acc then
-        local res = redis.call("hincrby", inventory_key, item, 1)
-        redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", 1)
-        return {"OK", {item, res}}
+        -- ensure we did not reach max stack
+        stack = tonumber(redis.call("hget", inventory_key, item))
+        if not stack or stack < max_stack then
+            stack = redis.call("hincrby", inventory_key, item, 1)
+            redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", 1)
+            return {"OK", {item, stack}}
+        end
+
+        return {"stack", false}
     end
 end
 
