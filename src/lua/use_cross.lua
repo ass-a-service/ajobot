@@ -1,4 +1,4 @@
---! file: farm_inventory.lua
+--! file: use_cross.lua
 local inventory_key = KEYS[1]
 local vampire_key = KEYS[2]
 
