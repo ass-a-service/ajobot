@@ -44,6 +44,17 @@ class AjoManager:
     def __get_seed(self) -> int:
         return time.time_ns()-(int(time.time())*1000000000)
 
+    def __translate_emoji(txt: str) -> str:
+        match txt:
+            case "🥢":
+                txt = ":chopsticks:"
+            case "✝️":
+                txt = ":cross:"
+            case "🧄":
+                txt = ":garlic:"
+
+        return txt
+
     async def __setne_name(self, user_id: str, user_name: str) -> None:
         # ensure the name we have is correct
         self.redis.evalsha(
@@ -284,8 +295,11 @@ class AjoManager:
         inventory_key = f"{user_id}:inventory"
         vampire_key = f"{user_id}:vampire"
 
+        # translate the emojis to redis compatible
+        item = self.__translate_emoji(item)
+
         match item:
-            case "chopsticks" | "cross" | ":chopsticks:" | ":cross:" :
+            case ":chopsticks:" | ":cross:":
                 script = f"use_{item}"
                 err, res = self.redis.evalsha(
                     SCRIPTS[script],
