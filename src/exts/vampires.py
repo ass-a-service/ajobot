@@ -45,6 +45,12 @@ class Vampires(Cog):
             -to_pay
         )
 
+        self.bot.manager.redis.xadd(
+            "ajobus",
+            {"amount": -to_pay, "user_id": message.author.id},
+            "*",
+        )
+
         # Feature request: hay un 0.1% de que el vampiro te hace discombolulate y te jode y te quita un 33%.
         await message.reply(
             f"A vampire level {vampire_level} has appeared! You use {to_pay} ajos to defeat him. You are safe... for now."

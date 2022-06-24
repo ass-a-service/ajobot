@@ -155,6 +155,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "dotenv"
+version = "0.0.5"
+description = "Handle .env files"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "filelock"
 version = "3.6.0"
 description = "A platform independent file lock."
@@ -457,7 +465,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "5f324233e2a0a11688e85a85db72fd5b4d43c708668d90282ee7006404f84cb7"
+content-hash = "222b2b534399d5edec4b7259648377c273dd1cd69644e2483fde3ec064f8a8c0"
 
 [metadata.files]
 aiohttp = [
@@ -577,6 +585,9 @@ disnake = [
 distlib = [
     {file = "distlib-0.3.4-py2.py3-none-any.whl", hash = "sha256:6564fe0a8f51e734df6333d08b8b94d4ea8ee6b99b5ed50613f731fd4089f34b"},
     {file = "distlib-0.3.4.zip", hash = "sha256:e4b58818180336dc9c529bfb9a0b58728ffc09ad92027a3f30b7cd91e3458579"},
+]
+dotenv = [
+    {file = "dotenv-0.0.5.tar.gz", hash = "sha256:b58d2ab3f83dbd4f8a362b21158a606bee87317a9444485566b3c8f0af847091"},
 ]
 filelock = [
     {file = "filelock-3.6.0-py3-none-any.whl", hash = "sha256:f8314284bfffbdcfa0ff3d7992b023d4c628ced6feb957351d4c48d059f56bc0"},

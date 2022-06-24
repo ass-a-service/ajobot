@@ -1,13 +1,48 @@
 from disnake import CommandInteraction, Message, User
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
+from disnake.ext import tasks
+from redis.exceptions import ResponseError
 
 from src.impl.bot import Bot
+import time
+from os import environ
 
 AJO = "🧄"
+LEADERBOARD = "lb"
 
 class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
+        self.on_ajo.start()
+
+    @tasks.loop(seconds=1)
+    async def on_ajo(self) -> None:
+        redis = self.bot.manager.redis
+
+        # Create the xreadgroup once
+        # TODO: better do this outside of this fn
+        try:
+            redis.xgroup_create("ajobus","ajo-python",0, mkstream=True)
+        except ResponseError as e:
+            if str(e) != "BUSYGROUP Consumer Group name already exists":
+                raise e
+
+        # TODO: this should only listen to the farm event, not other events such
+        # as gamble, pay, discombobulate...
+        ajos = redis.xreadgroup("ajo-python","ajo.py",streams={"ajobus": ">"},count=100)
+        for _, ajo in ajos:
+            for _, ajo_info in ajo:
+                user_id = ajo_info[b'user_id'].decode()
+                redis.evalsha(
+                    environ['FARM_INVENTORY_SHA'],
+                    3,
+                    "ajobus-inventory",
+                    LEADERBOARD,
+                    user_id + ":inventory",
+                    user_id,
+                    time.time_ns()-(int(time.time())*1000000000)
+                )
+
 
     @Cog.listener()
     async def on_message(self, message: Message) -> None:
@@ -27,13 +62,19 @@ class Ajo(Cog):
                 return
 
             # Log the guild +1 ajo message
-            self.bot.manager.redis_ts.add(f"ajoseries:{message.guild.id}:{message.author.id}", int(message.created_at.timestamp()), 1, labels={"guild": message.guild.id, "author": message.author.id})
+            #self.bot.manager.redis_ts.add(f"ajoseries:{message.guild.id}:{message.author.id}", int(message.created_at.timestamp()), 1, labels={"guild": message.guild.id, "author": message.author.id})
 
             # 2. Process the message
             await self.bot.manager.add_ajo(
                 message.author.id,
                 f"{message.author.name}#{message.author.discriminator}",
                 1
+            )
+
+            self.bot.manager.redis.xadd(
+                "ajobus",
+                {"amount": 1, "user_id": message.author.id},
+                "*",
             )
 
             is_begging = await self.bot.manager.is_begging_for_ajo(message)
@@ -178,6 +219,33 @@ class Ajo(Cog):
         roulette_id: str = Param(description="The roulette id")
     ) -> None:
         await itr.send(await self.__roulette_shot(itr.author, roulette_id))
+
+    @slash_command(name="inventory", description="Get inventory")
+    async def inventory(
+        self,
+        itr: CommandInteraction,
+    ) -> None:
+        await itr.send(embed = await self.bot.manager.get_inventory(itr.author.id))
+
+    @command(name="inventory", description="inventory someone.")
+    async def inventory_command(self, ctx: Context[Bot]) -> None:
+        await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author.id))
+
+    # INVENTORY USE
+    async def __use(self, user: User, item: str) -> str:
+        return await self.bot.manager.use(user.id, item)
+
+    @command(name="use", description="Use an item from the inventory")
+    async def use_command(self, ctx: Context[Bot], item: str) -> None:
+        await ctx.reply(await self.__use(ctx.author, item))
+
+    @slash_command(name="use", description="Use an item from the inventory")
+    async def use(
+        self,
+        itr: CommandInteraction,
+        item: str = Param(description="The item to use")
+    ) -> None:
+        await itr.send(await self.__use(itr.author, item))
 
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))

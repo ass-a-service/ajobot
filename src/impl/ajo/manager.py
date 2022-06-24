@@ -1,4 +1,5 @@
 from datetime import timedelta
+import json
 from math import ceil
 from os import environ
 import time
@@ -9,6 +10,8 @@ from loguru import logger
 import redis
 
 AJO = "🧄"
+CRUZ = '✝️'
+CHOP = "🥢"
 
 # timely rewards, type: [reward, expire_seconds]
 TIMELY = {
@@ -24,10 +27,13 @@ SCRIPTS = {
     "reward": environ['TIMELY_SHA'],
     "setne": environ['SETNE_SHA'],
     "roulette": environ['ROULETTE_SHA'],
-    "roulette_shot": environ['ROULETTE_SHOT_SHA']
+    "roulette_shot": environ['ROULETTE_SHOT_SHA'],
+    "use_cross": environ['USE_CROSS_SHA'],
+    "use_chopsticks": environ['USE_CHOPSTICKS_SHA']
 }
 
 LEADERBOARD = "lb"
+AJOBUS = "ajobus"
 
 class AjoManager:
     def __init__(self) -> None:
@@ -37,6 +43,17 @@ class AjoManager:
 
     def __get_seed(self) -> int:
         return time.time_ns()-(int(time.time())*1000000000)
+
+    def __translate_emoji(self, txt: str) -> str:
+        match txt:
+            case "🥢":
+                txt = ":chopsticks:"
+            case "✝️":
+                txt = ":cross:"
+            case "🧄":
+                txt = ":garlic:"
+
+        return txt
 
     async def __setne_name(self, user_id: str, user_name: str) -> None:
         # ensure the name we have is correct
@@ -105,7 +122,8 @@ class AjoManager:
 
         err, res = self.redis.evalsha(
             SCRIPTS["gamble"],
-            1,
+            2,
+            AJOBUS,
             LEADERBOARD,
             user_id,
             amount,
@@ -122,14 +140,15 @@ class AjoManager:
                 if change > 0:
                     reply = f"{AJO} You won {change} ajos! {AJO}"
                 else:
-                    reply = f"{AJO} You lost {abs(change)} ajos {AJO}"
+                    reply = f"{AJO} You lost {abs(change)} ajos. {AJO}"
 
         return reply
 
     async def pay_ajo(self, from_user_id: str, to_user_id: str, amount: int) -> str:
         err, res = self.redis.evalsha(
             SCRIPTS["pay"],
-            1,
+            2,
+            AJOBUS,
             LEADERBOARD,
             from_user_id,
             to_user_id,
@@ -143,7 +162,7 @@ class AjoManager:
                 reply = "You do not have enough ajos to pay that much."
             case "OK":
                 amount = int(res)
-                reply = f"{AJO} You paid {amount} ajos to [[TO_USER]] {AJO}"
+                reply = f"{AJO} You paid {amount} ajos to [[TO_USER]]. {AJO}"
 
         return reply
 
@@ -152,7 +171,8 @@ class AjoManager:
         reward, expire = TIMELY[type]
         err, res = self.redis.evalsha(
             SCRIPTS["reward"],
-            2,
+            3,
+            AJOBUS,
             LEADERBOARD,
             exp_key,
             user_id,
@@ -180,7 +200,8 @@ class AjoManager:
         exp_key = f"{from_user_id}:discombobulate"
         err, res = self.redis.evalsha(
             SCRIPTS["discombobulate"],
-            2,
+            3,
+            AJOBUS,
             LEADERBOARD,
             exp_key,
             from_user_id,
@@ -209,7 +230,6 @@ class AjoManager:
 
     async def roulette(self) -> str:
         roulette_id = secrets.token_hex(4)
-        print(roulette_id)
         roulette_key = f"roulette:{roulette_id}"
         err, res = self.redis.evalsha(
             SCRIPTS["roulette"],
@@ -221,7 +241,7 @@ class AjoManager:
 
         match err.decode("utf-8"):
             case "err":
-                reply = f"Too many roulettes... {roulette_id}"
+                reply = f"Too many roulettes... {roulette_id}."
             case "OK":
                 reply = f"{AJO} Roulette {roulette_id} created. {AJO}"
 
@@ -231,7 +251,8 @@ class AjoManager:
         roulette_key = f"roulette:{roulette_id}"
         err, res = self.redis.evalsha(
             SCRIPTS["roulette_shot"],
-            2,
+            3,
+            AJOBUS,
             LEADERBOARD,
             roulette_key,
             user_id
@@ -244,5 +265,55 @@ class AjoManager:
                 reply = "You survived this shot."
             case "shot":
                 reply = "Ded."
+
+        return reply
+
+    async def get_inventory(self, user_id: str) -> Embed:
+            res = self.redis.hgetall(f"{user_id}:inventory")
+            if not res:
+                # First time? Create it.
+                res = {}
+
+            embed = Embed(
+                title="Inventory",
+                colour=0x87CEEB,
+            )
+            for item_name, item_amount in res.items():
+                embed.add_field(
+                    name=f"{item_name.decode()}",
+                    value=f"{int(item_amount)}",
+                    inline=True,
+                )
+
+            return embed
+
+    async def use(self, user_id: str, item: str) -> str:
+        inventory_key = f"{user_id}:inventory"
+        vampire_key = f"{user_id}:vampire"
+
+        # translate the emojis to redis compatible
+        item = self.__translate_emoji(item)
+
+        match item:
+            case ":chopsticks:":
+                script = "use_chopsticks"
+            case ":cross:":
+                script = "use_cross"
+            case _:
+                return f"Unknown item {item}."
+
+        err, res = self.redis.evalsha(
+            SCRIPTS[script],
+            2,
+            inventory_key,
+            vampire_key,
+            item
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = f"You do not have enough {item}."
+            case "OK":
+                reply = f"You have used {item}."
 
         return reply
