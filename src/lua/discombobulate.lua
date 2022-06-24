@@ -16,7 +16,7 @@ end
 -- can we discombobulate?
 local ttl = tonumber(redis.call("ttl", exp_key))
 if ttl > 0 then
-  return {"ttl", ttl}
+    return {"ttl", ttl}
 end
 
 -- can we discombobulate that much?
@@ -37,7 +37,7 @@ math.randomseed(seed)
 local percent = math.random(69, 200)
 local dmg = math.floor(percent / 100 * offer)
 if target_amount - dmg < 0 then
-  dmg = target_amount
+    dmg = target_amount
 end
 
 -- lock for percentage done in hours

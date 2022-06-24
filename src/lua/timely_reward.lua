@@ -10,7 +10,7 @@ local expire = tonumber(ARGV[3])
 -- is this reward available?
 local ttl = tonumber(redis.call("ttl", timely_key))
 if ttl > 0 then
-  return {"ttl", ttl}
+    return {"ttl", ttl}
 end
 
 redis.call("zincrby", lb_key, reward, id)
