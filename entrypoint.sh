@@ -9,17 +9,18 @@ roulette_shot=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/roulette_sho
 farm_inventory=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/farm_inventory.lua)
 use_chopsticks=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/use_chopsticks.lua)
 use_cross=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/use_cross.lua)
+trade=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/trade.lua)
 
-
-grep DISCOMBOBULATE_SHA .env 1>/dev/null|| echo "DISCOMBOBULATE_SHA=$discombobulate" >> .env
-grep GAMBLE_SHA .env 1>/dev/null|| echo "GAMBLE_SHA=$gamble" >> .env
-grep PAY_SHA .env 1>/dev/null|| echo "PAY_SHA=$pay" >> .env
-grep TIMELY_SHA .env 1>/dev/null|| echo "TIMELY_SHA=$timely" >> .env
-grep SETNE_SHA .env 1>/dev/null|| echo "SETNE_SHA=$setne" >> .env
-grep ROULETTE_SHA .env 1>/dev/null|| echo "ROULETTE_SHA=$roulette" >> .env
-grep ROULETTE_SHOT_SHA .env 1>/dev/null|| echo "ROULETTE_SHOT_SHA=$roulette_shot" >> .env
-grep FARM_INVENTORY_SHA .env 1>/dev/null|| echo "FARM_INVENTORY_SHA=$farm_inventory" >> .env
-grep USE_CHOPSTICKS_SHA .env 1>/dev/null|| echo "USE_CHOPSTICKS_SHA=$use_chopsticks" >> .env
-grep USE_CROSS_SHA .env 1>/dev/null|| echo "USE_CROSS_SHA=$use_cross" >> .env
+sed -i "s/\(DISCOMBOBULATE_SHA\)=\([a-z0-9]\+\)\?/\1=$discombobulate/" .env
+sed -i "s/\(GAMBLE_SHA\)=\([a-z0-9]\+\)\?/\1=$gamble/" .env
+sed -i "s/\(PAY_SHA\)=\([a-z0-9]\+\)\?/\1=$pay/" .env
+sed -i "s/\(TIMELY_SHA\)=\([a-z0-9]\+\)\?/\1=$timely/" .env
+sed -i "s/\(SETNE_SHA\)=\([a-z0-9]\+\)\?/\1=$setne/" .env
+sed -i "s/\(ROULETTE_SHA\)=\([a-z0-9]\+\)\?/\1=$roulette/" .env
+sed -i "s/\(ROULETTE_SHOT_SHA\)=\([a-z0-9]\+\)\?/\1=$roulette_shot/" .env
+sed -i "s/\(FARM_INVENTORY_SHA\)=\([a-z0-9]\+\)\?/\1=$farm_inventory/" .env
+sed -i "s/\(USE_CHOPSTICKS_SHA\)=\([a-z0-9]\+\)\?/\1=$use_chopsticks/" .env
+sed -i "s/\(USE_CROSS_SHA\)=\([a-z0-9]\+\)\?/\1=$use_cross/" .env
+sed -i "s/\(TRADE_SHA\)=\([a-z0-9]\+\)\?/\1=$trade/" .env
 
 poetry run task start
