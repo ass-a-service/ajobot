@@ -230,7 +230,7 @@ class Ajo(Cog):
         self,
         itr: CommandInteraction,
     ) -> None:
-        await itr.send(embed = await self.bot.manager.get_inventory(itr.author.id))
+        await itr.send(embed = await self.bot.manager.get_inventory(itr.author.id), ephemeral=True)
 
     @command(name="verinventory", description="See someone's inventory.")
     async def verinventory_command(self, ctx: Context[Bot], user: User) -> None:
@@ -248,9 +248,9 @@ class Ajo(Cog):
     ) -> None:
         res = await self.bot.manager.see_inventory(itr.author.id, user.id)
         if isinstance(res, str):
-            await itr.send(res)
+            await itr.send(res, ephemeral=True)
         else:
-            await itr.send(embed = res)
+            await itr.send(embed = res, ephemeral=True)
 
     # INVENTORY USE
     async def __use(self, user: User, item: str) -> str:
