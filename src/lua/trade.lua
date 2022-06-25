@@ -1,0 +1,56 @@
+--! file: trade.lua
+local strm_key = KEYS[1]
+local source_inv_key = KEYS[2]
+local target_inv_key = KEYS[3]
+
+local source_id = ARGV[1]
+local target_id = ARGV[2]
+local item = ARGV[3]
+local decr_quantity = math.ceil(tonumber(ARGV[4]))
+
+-- FIXME: move this to redis maybe?
+local items = { -- max stack of items
+    [":sauropod:"] = 1,
+    [":chopsticks:"] = 5,
+    [":cross:"] = 10,
+    [":bomb:"] = 1
+}
+
+-- if the item to trade is unknown, quit
+local max_stack = items[item]
+if not max_stack then
+    return {"unknown", false}
+end
+
+-- sanity checks
+if quantity < 1 then
+    return {"err", false}
+end
+
+-- ensure we actually own the item
+local source_stack = tonumber(redis.call("hget", source_inv_key, item))
+if not source_stack or source_stack < 1 then
+    return {"err", false}
+end
+
+-- ensure we have enough items to trade
+if stack < quantity then
+    return {"funds", stack}
+end
+
+-- verify the target's max stack, max increase is minimised by stack
+local incr_quantity = decr_quantity
+local target_stack = tonumber(redis.call("hget", target_inv_key, item))
+if target_stack > 0 then
+    incr_quantity = math.min(max_stack - target_stack, decr_quantity)
+end
+
+-- decrease source stack, increase target stack, pass it to stream
+redis.call("hincrby", source_inv_key, item, -decr_quantity)
+redis.call("xadd", strm_key, "*", "user_id", source_id, "item", item, "quantity", -decr_quantity)
+if incr_quantity > 0 then
+    redis.call("hincrby", target_inv_key, item, incr_quantity)
+    redis.call("xadd", strm_key, "*", "user_id", target_id, "item", item, "quantity", incr_quantity)
+end
+
+return {"OK", true}

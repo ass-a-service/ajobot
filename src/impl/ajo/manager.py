@@ -29,11 +29,13 @@ SCRIPTS = {
     "roulette": environ['ROULETTE_SHA'],
     "roulette_shot": environ['ROULETTE_SHOT_SHA'],
     "use_cross": environ['USE_CROSS_SHA'],
-    "use_chopsticks": environ['USE_CHOPSTICKS_SHA']
+    "use_chopsticks": environ['USE_CHOPSTICKS_SHA'],
+    "trade": environ['TRADE_SHA']
 }
 
 LEADERBOARD = "lb"
 AJOBUS = "ajobus"
+AJOBUS_INVENTORY = "ajobus-inventory"
 
 class AjoManager:
     def __init__(self) -> None:
@@ -304,9 +306,11 @@ class AjoManager:
 
         err, res = self.redis.evalsha(
             SCRIPTS[script],
-            2,
+            3,
+            AJOBUS_INVENTORY,
             inventory_key,
             vampire_key,
+            user_id,
             item
         )
 
@@ -314,6 +318,33 @@ class AjoManager:
             case "err":
                 reply = f"You do not have enough {item}."
             case "OK":
-                reply = f"You have used {item}."
+                # FIXME: works because the only items apply to vampire for now
+                reply = f"You have used {item}, vampire level is now {res-1}."
+
+        return reply
+
+    async def trade(self, from_user_id: str, to_user_id: str, item: str, qty: int) -> str:
+        # translate the emojis to redis compatible
+        item = self.__translate_emoji(item)
+
+        err, res = self.redis.evalsha(
+            SCRIPTS["trade"],
+            3,
+            AJOBUS_INEVNTORY
+            from_inventory_key,
+            to_inventory_key,
+            from_user_id,
+            to_user_id,
+            item,
+            qty
+        )
+
+        match err.decode("utf-8"):
+            case "unknown":
+                reply = f"No hablo {item}."
+            case "err" | "funds":
+                reply = f"You do not have enough {item}."
+            case "OK":
+                reply = f"You have traded {item} to [[TO_USER]]."
 
         return reply
