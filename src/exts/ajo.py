@@ -228,9 +228,20 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(embed = await self.bot.manager.get_inventory(itr.author.id))
 
-    @command(name="inventory", description="inventory someone.")
+    @command(name="inventory", description="Get inventory.")
     async def inventory_command(self, ctx: Context[Bot]) -> None:
         await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author.id))
+
+    @slash_command(name="verinventory", description="See someone's inventory.")
+    async def inventory(
+        self,
+        itr: CommandInteraction,
+    ) -> None:
+        await itr.send(embed = await self.bot.manager.see_inventory(itr.author.id))
+
+    @command(name="verinventory", description="See someone's inventory.")
+    async def inventory_command(self, ctx: Context[Bot]) -> None:
+        await ctx.reply(embed = await self.bot.manager.see_inventory(ctx.author.id))
 
     # INVENTORY USE
     async def __use(self, user: User, item: str) -> str:

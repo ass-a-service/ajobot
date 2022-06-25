@@ -30,7 +30,8 @@ SCRIPTS = {
     "roulette_shot": environ['ROULETTE_SHOT_SHA'],
     "use_cross": environ['USE_CROSS_SHA'],
     "use_chopsticks": environ['USE_CHOPSTICKS_SHA'],
-    "trade": environ['TRADE_SHA']
+    "trade": environ['TRADE_SHA'],
+    "see_inventory": environ['SEE_INVENTORY_SHA']
 }
 
 LEADERBOARD = "lb"
@@ -270,24 +271,52 @@ class AjoManager:
 
         return reply
 
-    async def get_inventory(self, user_id: str) -> Embed:
-            res = self.redis.hgetall(f"{user_id}:inventory")
-            if not res:
-                # First time? Create it.
-                res = {}
+    async def __build_inventory(self, items) -> Embed:
+        if not items:
+            items = {}
 
-            embed = Embed(
-                title="Inventory",
-                colour=0x87CEEB,
+        embed = Embed(
+            title="Inventory",
+            colour=0x87CEEB,
+        )
+        for item_name, item_amount in items:
+            embed.add_field(
+                name=f"{item_name.decode()}",
+                value=f"{int(item_amount)}",
+                inline=True,
             )
-            for item_name, item_amount in res.items():
-                embed.add_field(
-                    name=f"{item_name.decode()}",
-                    value=f"{int(item_amount)}",
-                    inline=True,
-                )
 
-            return embed
+        return embed
+
+    async def get_inventory(self, user_id: str) -> Embed:
+        res = self.redis.hgetall(f"{user_id}:inventory")
+        return await self.__build_inventory(res.items())
+
+    # same as get_inventory, but you pay for it
+    async def see_inventory(self, user_id: str) -> Embed | None:
+        inventory_key = f"{user_id}:inventory"
+
+        err, res = self.redis.evalsha(
+            SCRIPTS["see_inventory"],
+            3,
+            AJOBUS,
+            LEADERBOARD,
+            inventory_key,
+            user_id
+        )
+
+        match err.decode("utf-8"):
+            case "funds":
+                reply = f"This service is not free, {res} ajos required."
+            case "OK":
+                if not res:
+                    return await self.__build_inventory({})
+
+                items = res[::2]
+                quantities = res[1::2]
+                return await self.__build_inventory(zip(items, quantities))
+
+        return reply
 
     async def use(self, user_id: str, item: str) -> str:
         inventory_key = f"{user_id}:inventory"
