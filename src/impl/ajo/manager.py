@@ -328,7 +328,8 @@ class AjoManager:
         item = self.__translate_emoji(item)
 
         match item:
-            case ":reminder_ribbon:":
+            case ":reminder_ribbon:" | "ajo necklace":
+                item = ":reminder_ribbon:"
                 script = "craft_ajo_necklace"
             case _:
                 return f"Unknown item {item}."
