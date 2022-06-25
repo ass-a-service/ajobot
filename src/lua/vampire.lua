@@ -17,7 +17,7 @@ end
 -- calculate appear chance
 local appear_chance
 if level == 1 then
-    appear_chance = 10
+    appear_chance = 1
 else
     appear_chance = math.log10(level) * 20
 end

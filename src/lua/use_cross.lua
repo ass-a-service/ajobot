@@ -27,6 +27,6 @@ end
 -- reduce the vampire and refresh the ttl
 local new_level = vampire_level - 1
 local ttl = math.min(ttl_per_level * new_level, 7200)
-redis.call("set", vampire_key, new_level, "EX", ttl)
+local res = redis.call("set", vampire_key, new_level, "EX", ttl)
 
 return {"OK", res}
