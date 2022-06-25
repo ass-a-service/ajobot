@@ -296,8 +296,8 @@ class AjoManager:
         return await self.__build_inventory(res.items())
 
     # same as get_inventory, but you pay for it
-    async def see_inventory(self, user_id: str) -> Embed | None:
-        inventory_key = f"{user_id}:inventory"
+    async def see_inventory(self, from_user_id: str, to_user_id: str) -> Embed | str:
+        inventory_key = f"{to_user_id}:inventory"
 
         err, res = self.redis.evalsha(
             SCRIPTS["see_inventory"],
@@ -305,16 +305,13 @@ class AjoManager:
             AJOBUS,
             LEADERBOARD,
             inventory_key,
-            user_id
+            from_user_id
         )
 
         match err.decode("utf-8"):
             case "funds":
                 reply = f"This service is not free, {res} ajos required."
             case "OK":
-                if not res:
-                    return await self.__build_inventory({})
-
                 items = res[::2]
                 quantities = res[1::2]
                 return await self.__build_inventory(zip(items, quantities))
