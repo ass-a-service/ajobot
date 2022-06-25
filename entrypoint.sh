@@ -9,7 +9,7 @@ roulette_shot=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/roulette_sho
 farm_inventory=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/farm_inventory.lua)
 use_chopsticks=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/use_chopsticks.lua)
 use_cross=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/use_cross.lua)
-
+craft_ajo_necklace=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/craft_ajo_necklace.lua)
 
 grep DISCOMBOBULATE_SHA .env 1>/dev/null|| echo "DISCOMBOBULATE_SHA=$discombobulate" >> .env
 grep GAMBLE_SHA .env 1>/dev/null|| echo "GAMBLE_SHA=$gamble" >> .env
@@ -21,5 +21,6 @@ grep ROULETTE_SHOT_SHA .env 1>/dev/null|| echo "ROULETTE_SHOT_SHA=$roulette_shot
 grep FARM_INVENTORY_SHA .env 1>/dev/null|| echo "FARM_INVENTORY_SHA=$farm_inventory" >> .env
 grep USE_CHOPSTICKS_SHA .env 1>/dev/null|| echo "USE_CHOPSTICKS_SHA=$use_chopsticks" >> .env
 grep USE_CROSS_SHA .env 1>/dev/null|| echo "USE_CROSS_SHA=$use_cross" >> .env
+grep CRAFT_AJO_NECKLACE_SHA .env 1>/dev/null|| echo "CRAFT_AJO_NECKLACE_SHA=$craft_ajo_necklace" >> .env
 
 poetry run task start
