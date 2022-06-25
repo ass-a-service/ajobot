@@ -10,6 +10,7 @@ farm_inventory=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/farm_invent
 use_chopsticks=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/use_chopsticks.lua)
 use_cross=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/use_cross.lua)
 trade=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/trade.lua)
+see_inventory=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/see_inventory.lua)
 
 sed -i "s/\(DISCOMBOBULATE_SHA\)=\([a-z0-9]\+\)\?/\1=$discombobulate/" .env
 sed -i "s/\(GAMBLE_SHA\)=\([a-z0-9]\+\)\?/\1=$gamble/" .env
@@ -22,5 +23,6 @@ sed -i "s/\(FARM_INVENTORY_SHA\)=\([a-z0-9]\+\)\?/\1=$farm_inventory/" .env
 sed -i "s/\(USE_CHOPSTICKS_SHA\)=\([a-z0-9]\+\)\?/\1=$use_chopsticks/" .env
 sed -i "s/\(USE_CROSS_SHA\)=\([a-z0-9]\+\)\?/\1=$use_cross/" .env
 sed -i "s/\(TRADE_SHA\)=\([a-z0-9]\+\)\?/\1=$trade/" .env
+sed -i "s/\(SEE_INVENTORY_SHA\)=\([a-z0-9]\+\)\?/\1=$see_inventory/" .env
 
 poetry run task start
