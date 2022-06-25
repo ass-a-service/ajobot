@@ -41,7 +41,6 @@ jobs:
         namespace: 'ajotest'
         chart: 'ajobot'
         token: '${{ github.token }}'
-        repo-alias: 'ajobot'
         repo: 'https://charts.ajobot.com'
         values: |
           botToken: ${{ github.event.inputs.botToken }}
