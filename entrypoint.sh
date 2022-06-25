@@ -29,6 +29,18 @@ grep "CRAFT_AJO_NECKLACE_SHA=" .env > /dev/null 2>&1 || echo "CRAFT_AJO_NECKLACE
 grep "TRADE_SHA=" .env > /dev/null 2>&1 || echo "TRADE_SHA=" >> .env
 grep "SEE_INVENTORY_SHA=" .env > /dev/null 2>&1 || echo "SEE_INVENTORY_SHA=" >> .env
 
+grep "DISCOMBOBULATE_SHA=" .env > /dev/null 2>&1 || echo "DISCOMBOBULATE_SHA=" >> .env
+grep "GAMBLE_SHA=" .env > /dev/null 2>&1 || echo "GAMBLE_SHA=" >> .env
+grep "PAY_SHA=" .env > /dev/null 2>&1 || echo "PAY_SHA=" >> .env
+grep "TIMELY_SHA=" .env > /dev/null 2>&1 || echo "TIMELY_SHA=" >> .env
+grep "SETNE_SHA=" .env > /dev/null 2>&1 || echo "SETNE_SHA=" >> .env
+grep "ROULETTE_SHA=" .env > /dev/null 2>&1 || echo "ROULETTE_SHA=" >> .env
+grep "ROULETTE_SHOT_SHA=" .env > /dev/null 2>&1 || echo "ROULETTE_SHOT_SHA=" >> .env
+grep "FARM_INVENTORY_SHA=" .env > /dev/null 2>&1 || echo "FARM_INVENTORY_SHA=" >> .env
+grep "USE_CHOPSTICKS_SHA=" .env > /dev/null 2>&1 || echo "USE_CHOPSTICKS_SHA=" >> .env
+grep "USE_CROSS_SHA=" .env > /dev/null 2>&1 || echo "USE_CROSS_SHA=" >> .env
+grep "CRAFT_AJO_NECKLACE_SHA=" .env > /dev/null 2>&1 || echo "CRAFT_AJO_NECKLACE_SHA=" >> .env
+
 sed -i "s/\(DISCOMBOBULATE_SHA\)=\([a-z0-9]\+\)\?/\1=$discombobulate/" .env
 sed -i "s/\(GAMBLE_SHA\)=\([a-z0-9]\+\)\?/\1=$gamble/" .env
 sed -i "s/\(PAY_SHA\)=\([a-z0-9]\+\)\?/\1=$pay/" .env
