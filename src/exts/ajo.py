@@ -295,5 +295,21 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__trade(itr.author, user, item, quantity))
 
+    # Craft
+    async def __craft(self, user: User, item: str) -> str:
+        return await self.bot.manager.craft(user.id, item)
+
+    @command(name="craft", description="Craft an item")
+    async def craft_command(self, ctx: Context[Bot], item: str) -> None:
+        await ctx.reply(await self.__craft(ctx.author, item))
+
+    @slash_command(name="craft", description="Craft an item")
+    async def craft(
+        self,
+        itr: CommandInteraction,
+        item: str = Param(description="The item to craft")
+    ) -> None:
+        await itr.send(await self.__craft(itr.author, item))
+
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))

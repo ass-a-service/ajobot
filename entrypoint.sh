@@ -1,4 +1,6 @@
 #!/bin/sh
+set -euo pipefail
+
 discombobulate=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/discombobulate.lua)
 gamble=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/gamble.lua)
 pay=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/pay.lua)
@@ -9,6 +11,7 @@ roulette_shot=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/roulette_sho
 farm_inventory=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/farm_inventory.lua)
 use_chopsticks=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/use_chopsticks.lua)
 use_cross=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/use_cross.lua)
+craft_ajo_necklace=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/craft_ajo_necklace.lua)
 trade=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/trade.lua)
 see_inventory=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/see_inventory.lua)
 
@@ -22,6 +25,7 @@ sed -i "s/\(ROULETTE_SHOT_SHA\)=\([a-z0-9]\+\)\?/\1=$roulette_shot/" .env
 sed -i "s/\(FARM_INVENTORY_SHA\)=\([a-z0-9]\+\)\?/\1=$farm_inventory/" .env
 sed -i "s/\(USE_CHOPSTICKS_SHA\)=\([a-z0-9]\+\)\?/\1=$use_chopsticks/" .env
 sed -i "s/\(USE_CROSS_SHA\)=\([a-z0-9]\+\)\?/\1=$use_cross/" .env
+sed -i "s/\(CRAFT_AJO_NECKLACE_SHA\)=\([a-z0-9]\+\)\?/\1=$craft_ajo_necklace/" .env
 sed -i "s/\(TRADE_SHA\)=\([a-z0-9]\+\)\?/\1=$trade/" .env
 sed -i "s/\(SEE_INVENTORY_SHA\)=\([a-z0-9]\+\)\?/\1=$see_inventory/" .env
 
