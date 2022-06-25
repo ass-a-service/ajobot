@@ -35,16 +35,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: 'Deploy'
-      uses: 'deliverybot/helm@v1'
+      uses: 'deliverybot/helm@master'
       with:
         release: 'dev-${{ github.event.inputs.name }}'
         namespace: 'ajotest'
         chart: 'ajobot'
         token: '${{ github.token }}'
         repo-alias: 'ajobot'
+        helm: helm3
         repo: 'https://charts.ajobot.com'
         values: |
           botToken: ${{ github.event.inputs.botToken }}
+          image:
+            tag: dev-${{ github.event.inputs.name }}
       env:
         KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
     
