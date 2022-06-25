@@ -1,6 +1,4 @@
 #!/bin/sh
-set -euo pipefail
-
 discombobulate=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/discombobulate.lua)
 gamble=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/gamble.lua)
 pay=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/pay.lua)
