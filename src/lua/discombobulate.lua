@@ -46,6 +46,6 @@ redis.call("zincrby", lb_key, -dmg, target_id)
 redis.call("set", exp_key, 1, "ex", percent * 1800)
 
 -- append data to stream
-redis.call("xadd", strm_key, "*", "user_id", source_id, "amount", -offer)
-redis.call("xadd", strm_key, "*", "user_id", target_id, "amount", -dmg)
+redis.call("xadd", strm_key, "*", "user_id", source_id, "amount", -offer, "type", "discombobulator")
+redis.call("xadd", strm_key, "*", "user_id", target_id, "amount", -dmg, "type", "discombobulatee")
 return {"OK", dmg}

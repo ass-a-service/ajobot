@@ -17,5 +17,5 @@ local items = redis.call("hgetall", inventory_key)
 
 -- pay the fee and append to stream
 redis.call("zincrby", lb_key, -fee, id)
-redis.call("xadd", strm_key, "*", "user_id", id, "amount", -fee)
+redis.call("xadd", strm_key, "*", "user_id", id, "amount", -fee, "type", "inventory_fee")
 return {"OK", items}

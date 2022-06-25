@@ -43,7 +43,7 @@ for item, data in pairs(items) do
         stack = tonumber(redis.call("hget", inventory_key, item))
         if not stack or stack < max_stack then
             stack = redis.call("hincrby", inventory_key, item, 1)
-            redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", 1)
+            redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", 1, "type", "item_earned")
             return {"OK", {item, stack}}
         end
 

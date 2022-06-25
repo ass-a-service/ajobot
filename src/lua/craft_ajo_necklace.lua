@@ -30,5 +30,5 @@ redis.call("zincrby", lb_key, -50, user_id)
 
 -- give the item to the user
 stack = redis.call("hincrby", inventory_key, ":reminder_ribbon:", 1)
-redis.call("xadd", strm_key, "*", "user_id", user_id, "item", item, "quantity", 1)
+redis.call("xadd", strm_key, "*", "user_id", user_id, "item", item, "quantity", 1, "type", "item_crafted")
 return {"OK", {item, stack}}

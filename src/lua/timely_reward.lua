@@ -17,5 +17,5 @@ redis.call("zincrby", lb_key, reward, id)
 redis.call("set", timely_key, 1, "ex", expire)
 
 -- append data to stream
-redis.call("xadd", strm_key, "*", "user_id", id, "amount", reward)
+redis.call("xadd", strm_key, "*", "user_id", id, "amount", reward, "type", "timely_reward")
 return {"OK", reward}

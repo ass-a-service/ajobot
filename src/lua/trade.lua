@@ -50,10 +50,10 @@ end
 
 -- decrease source stack, increase target stack, pass it to stream
 redis.call("hincrby", source_inv_key, item, -quantity)
-redis.call("xadd", strm_key, "*", "user_id", source_id, "item", item, "quantity", -quantity)
+redis.call("xadd", strm_key, "*", "user_id", source_id, "item", item, "quantity", -quantity, "type", "trader")
 if incr_quantity > 0 then
     redis.call("hincrby", target_inv_key, item, incr_quantity)
-    redis.call("xadd", strm_key, "*", "user_id", target_id, "item", item, "quantity", incr_quantity)
+    redis.call("xadd", strm_key, "*", "user_id", target_id, "item", item, "quantity", incr_quantity, "type", "tradee")
 end
 
 return {"OK", true}

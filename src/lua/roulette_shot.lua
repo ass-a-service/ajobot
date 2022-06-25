@@ -23,5 +23,5 @@ redis.call("zrem", lb_key, id)
 redis.call("del", group_key)
 
 -- append data to stream
-redis.call("xadd", strm_key, "*", "user_id", id, "amount", -dmg)
+redis.call("xadd", strm_key, "*", "user_id", id, "amount", -dmg, "type", "ded")
 return {"shot", true}

@@ -21,6 +21,6 @@ redis.call("zincrby", lb_key, -amount, source_id)
 redis.call("zincrby", lb_key, amount, target_id)
 --
 -- append data to stream
-redis.call("xadd", strm_key, "*", "user_id", source_id, "amount", -amount)
-redis.call("xadd", strm_key, "*", "user_id", target_id, "amount", amount)
+redis.call("xadd", strm_key, "*", "user_id", source_id, "amount", -amount, "type", "payer")
+redis.call("xadd", strm_key, "*", "user_id", target_id, "amount", amount, "type", "payee")
 return {"OK", amount}

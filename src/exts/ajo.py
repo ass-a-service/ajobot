@@ -73,7 +73,7 @@ class Ajo(Cog):
 
             self.bot.manager.redis.xadd(
                 "ajobus",
-                {"amount": 1, "user_id": message.author.id},
+                {"amount": 1, "user_id": message.author.id, "type": "farm"},
                 "*",
             )
 

@@ -47,7 +47,7 @@ class Vampires(Cog):
 
         self.bot.manager.redis.xadd(
             "ajobus",
-            {"amount": -to_pay, "user_id": message.author.id},
+            {"amount": -to_pay, "user_id": message.author.id, "type": "vampire"},
             "*",
         )
 

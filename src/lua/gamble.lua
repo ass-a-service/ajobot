@@ -29,5 +29,5 @@ end
 redis.call("zincrby", lb_key, change, id)
 
 -- append data to stream
-redis.call("xadd", strm_key, "*", "user_id", id, "amount", change)
+redis.call("xadd", strm_key, "*", "user_id", id, "amount", change, "type", "gamble")
 return {"OK", change}

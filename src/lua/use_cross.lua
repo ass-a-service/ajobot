@@ -31,5 +31,5 @@ else
     res = redis.call("decrby", vampire_key, 1)
 end
 
-redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", -1)
+redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", -1, "type", "item_used")
 return {"OK", res}

@@ -14,7 +14,7 @@ end
 
 -- decrease stack and vampire level
 redis.call("hincrby", inventory_key, item, -1)
-redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", -1)
+redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", -1, "type", "item_used")
 
 local res = redis.call("del", vampire_key)
 return {"OK", res}
