@@ -17,7 +17,7 @@ end
 -- do we have another necklace? It cannot stack!
 local stack = tonumber(redis.call("hget", inventory_key, item))
 
-if stack == nil or stack == '' then
+if not stack then
     stack = 0
 end
 
