@@ -234,7 +234,11 @@ class Ajo(Cog):
 
     @command(name="verinventory", description="See someone's inventory.")
     async def verinventory_command(self, ctx: Context[Bot], user: User) -> None:
-        await ctx.reply(embed = await self.bot.manager.see_inventory(user.id))
+        res = await self.bot.manager.see_inventory(ctx.author.id, user.id)
+        if isinstance(res, str):
+            await ctx.reply(res)
+        else:
+            await ctx.reply(embed = res)
 
     @slash_command(name="verinventory", description="See someone's inventory.")
     async def verinventory(
@@ -242,7 +246,11 @@ class Ajo(Cog):
         itr: CommandInteraction,
         user: User = Param(description="The user to spy on.")
     ) -> None:
-        await itr.send(embed = await self.bot.manager.see_inventory(user.id))
+        res = await self.bot.manager.see_inventory(itr.author.id, user.id)
+        if isinstance(res, str):
+            await itr.send(res)
+        else:
+            await itr.send(embed = res)
 
     # INVENTORY USE
     async def __use(self, user: User, item: str) -> str:
