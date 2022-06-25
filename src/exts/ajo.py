@@ -221,6 +221,10 @@ class Ajo(Cog):
         await itr.send(await self.__roulette_shot(itr.author, roulette_id))
 
     # INVENTORY
+    @command(name="inventory", description="Get inventory.")
+    async def inventory_command(self, ctx: Context[Bot]) -> None:
+        await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author.id))
+
     @slash_command(name="inventory", description="Get inventory")
     async def inventory(
         self,
@@ -228,20 +232,17 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(embed = await self.bot.manager.get_inventory(itr.author.id))
 
-    @command(name="inventory", description="Get inventory.")
-    async def inventory_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author.id))
+    @command(name="verinventory", description="See someone's inventory.")
+    async def verinventory_command(self, ctx: Context[Bot], user: User) -> None:
+        await ctx.reply(embed = await self.bot.manager.see_inventory(user.id))
 
     @slash_command(name="verinventory", description="See someone's inventory.")
     async def verinventory(
         self,
         itr: CommandInteraction,
+        user: User = Param(description="The user to spy on.")
     ) -> None:
-        await itr.send(embed = await self.bot.manager.see_inventory(itr.author.id))
-
-    @command(name="verinventory", description="See someone's inventory.")
-    async def verinventory_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(embed = await self.bot.manager.see_inventory(ctx.author.id))
+        await itr.send(embed = await self.bot.manager.see_inventory(user.id))
 
     # INVENTORY USE
     async def __use(self, user: User, item: str) -> str:
