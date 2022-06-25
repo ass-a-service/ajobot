@@ -51,12 +51,13 @@ if items[item]["currency"] == "ajos" then
     redis.call("zincrby", lb_key, -items[item]["price"], user_id)
 else
     -- if inventory: remove inventory
-    for item_loop, data in pairs(items[item]["currency"]) do
-        redis.call("hincrby", inventory_key, items[item_loop]["currency"], -items[item_loop]["price"])
+    for item_loop, amount in pairs(items[item]["currency"]) do
+        --[":cross:"] = {["max_stack"]=10, ["currency"]={[":herb:"]=4}},
+        redis.call("hincrby", inventory_key, item_loop, -amount)
     end
 end
 
 -- give the item to the user
-stack = redis.call("hincrby", inventory_key, ":reminder_ribbon:", 1)
+stack = redis.call("hincrby", inventory_key, item, 1)
 redis.call("xadd", strm_key, "*", "user_id", user_id, "item", item, "quantity", 1)
 return {"OK", {item, stack}}
