@@ -330,7 +330,7 @@ class AjoManager:
         err, res = self.redis.evalsha(
             SCRIPTS["trade"],
             3,
-            AJOBUS_INEVNTORY
+            AJOBUS_INVENTORY,
             from_inventory_key,
             to_inventory_key,
             from_user_id,
