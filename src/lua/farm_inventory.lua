@@ -21,7 +21,8 @@ local items = {
     [":sauropod:"] = {["chance"]=1, ["max_stack"]=1},
     [":chopsticks:"] = {["chance"]=6, ["max_stack"]=5},
     [":cross:"] = {["chance"]=500, ["max_stack"]=10},
-    [":bomb:"] = {["chance"]=200, ["max_stack"]=1}
+    [":bomb:"] = {["chance"]=200, ["max_stack"]=1},
+    [":herb:"] = {["chance"]=1000, ["max_stack"]=20}
 }
 
 -- destellos / linterna

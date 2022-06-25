@@ -30,7 +30,7 @@ SCRIPTS = {
     "roulette_shot": environ['ROULETTE_SHOT_SHA'],
     "use_cross": environ['USE_CROSS_SHA'],
     "use_chopsticks": environ['USE_CHOPSTICKS_SHA'],
-    "craft_ajo_necklace": environ['CRAFT_AJO_NECKLACE_SHA'],
+    "craft": environ['CRAFT_SHA'],
     "trade": environ['TRADE_SHA'],
     "see_inventory": environ['SEE_INVENTORY_SHA']
 }
@@ -58,6 +58,8 @@ class AjoManager:
                 txt = ":garlic:"
             case "🎗️":
                 txt = ":reminder_ribbon:"
+            case "🌿":
+                txt = ":herb:"
 
         return txt
 
@@ -389,12 +391,13 @@ class AjoManager:
         match item:
             case ":reminder_ribbon:" | "ajo_necklace":
                 item = ":reminder_ribbon:"
-                script = "craft_ajo_necklace"
+            case ":cross:" | "cross":
+                item = ":cross:"
             case _:
                 return f"Unknown item {item}."
 
-        err, res = self.redis.evalsha(
-            SCRIPTS[script],
+        err, _ = self.redis.evalsha(
+            SCRIPTS["craft"],
             3,
             "ajobus-inventory",
             inventory_key,
@@ -409,7 +412,7 @@ class AjoManager:
             case "OK":
                 reply = f"You have crafted {item} successfully."
             case "funds":
-                reply = f"You do not have enough ajos."
+                reply = f"You do not have enough materials."
             case "stack":
                 reply = f"You cannot craft more {item}!"
 
