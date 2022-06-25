@@ -13,7 +13,8 @@ local items = { -- max stack of items
     [":sauropod:"] = 1,
     [":chopsticks:"] = 5,
     [":cross:"] = 10,
-    [":bomb:"] = 1
+    [":bomb:"] = 1,
+    [":reminder_ribbon:"] = 1
 }
 
 -- if the item to trade is unknown, quit
