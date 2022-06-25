@@ -55,4 +55,4 @@ sed -i "s/\(CRAFT_AJO_NECKLACE_SHA\)=\([a-z0-9]\+\)\?/\1=$craft_ajo_necklace/" .
 sed -i "s/\(TRADE_SHA\)=\([a-z0-9]\+\)\?/\1=$trade/" .env
 sed -i "s/\(SEE_INVENTORY_SHA\)=\([a-z0-9]\+\)\?/\1=$see_inventory/" .env
 
-#poetry run task start
+poetry run task start
