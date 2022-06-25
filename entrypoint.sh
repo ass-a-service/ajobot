@@ -1,5 +1,5 @@
-#!/bin/sh
-set -euo pipefail
+#!/bin/bash
+set -euf -o pipefail
 
 discombobulate=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/discombobulate.lua)
 gamble=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/gamble.lua)
