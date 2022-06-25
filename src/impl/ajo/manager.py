@@ -333,7 +333,7 @@ class AjoManager:
             case _:
                 return f"Unknown item {item}."
 
-        err, _ = self.redis.evalsha(
+        err, res = self.redis.evalsha(
             SCRIPTS[script],
             3,
             AJOBUS_INVENTORY,
@@ -348,7 +348,7 @@ class AjoManager:
                 reply = f"You do not have enough {item}."
             case "OK":
                 # FIXME: works because the only items apply to vampire for now
-                reply = f"You have used {item}, vampire level is now {res-1}."
+                reply = f"You have used {item}, vampire level is now {max(res-1,0)}."
 
         return reply
 
