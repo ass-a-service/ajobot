@@ -35,14 +35,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: 'Deploy'
-      uses: 'deliverybot/helm@master'
+      uses: 'glopezep/helm@v1.7.1'
       with:
         release: 'dev-${{ github.event.inputs.name }}'
         namespace: 'ajotest'
         chart: 'ajobot'
         token: '${{ github.token }}'
         repo-alias: 'ajobot'
-        helm: helm3
         repo: 'https://charts.ajobot.com'
         values: |
           botToken: ${{ github.event.inputs.botToken }}
