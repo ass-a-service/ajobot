@@ -1,8 +1,10 @@
 --! file: use_cross.lua
-local inventory_key = KEYS[1]
-local vampire_key = KEYS[2]
+local strm_key = KEYS[1]
+local inventory_key = KEYS[2]
+local vampire_key = KEYS[3]
 
-local item = ARGV[1]
+local id = ARGV[1]
+local item = ARGV[2]
 
 -- ensure we actually own the item
 local stack = tonumber(redis.call("hget", inventory_key, item))
@@ -29,5 +31,5 @@ else
     res = redis.call("decrby", vampire_key, 1)
 end
 
--- actually decrease stack and vampire level
+redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", -1)
 return {"OK", res}
