@@ -34,7 +34,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-     - name: 'Deploy'
+    - name: 'Deploy'
       uses: 'deliverybot/helm@v1'
       with:
         release: 'dev-${{ github.event.inputs.name }}'
