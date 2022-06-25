@@ -11,6 +11,7 @@ roulette_shot=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/roulette_sho
 farm_inventory=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/farm_inventory.lua)
 use_chopsticks=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/use_chopsticks.lua)
 use_cross=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/use_cross.lua)
+craft_ajo_necklace=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/craft_ajo_necklace.lua)
 
 sed -i "s/\(DISCOMBOBULATE_SHA\)=\([a-z0-9]\+\)\?/\1=$discombobulate/" .env
 sed -i "s/\(GAMBLE_SHA\)=\([a-z0-9]\+\)\?/\1=$gamble/" .env
@@ -22,5 +23,6 @@ sed -i "s/\(ROULETTE_SHOT_SHA\)=\([a-z0-9]\+\)\?/\1=$roulette_shot/" .env
 sed -i "s/\(FARM_INVENTORY_SHA\)=\([a-z0-9]\+\)\?/\1=$farm_inventory/" .env
 sed -i "s/\(USE_CHOPSTICKS_SHA\)=\([a-z0-9]\+\)\?/\1=$use_chopsticks/" .env
 sed -i "s/\(USE_CROSS_SHA\)=\([a-z0-9]\+\)\?/\1=$use_cross/" .env
+sed -i "s/\(CRAFT_AJO_NECKLACE_SHA\)=\([a-z0-9]\+\)\?/\1=$craft_ajo_necklace/" .env
 
 poetry run task start

@@ -29,7 +29,8 @@ SCRIPTS = {
     "roulette": environ['ROULETTE_SHA'],
     "roulette_shot": environ['ROULETTE_SHOT_SHA'],
     "use_cross": environ['USE_CROSS_SHA'],
-    "use_chopsticks": environ['USE_CHOPSTICKS_SHA']
+    "use_chopsticks": environ['USE_CHOPSTICKS_SHA'],
+    "craft_ajo_necklace": environ['CRAFT_AJO_NECKLACE_SHA']
 }
 
 LEADERBOARD = "lb"
@@ -52,6 +53,8 @@ class AjoManager:
                 txt = ":cross:"
             case "🧄":
                 txt = ":garlic:"
+            case "🎗️":
+                txt = ":reminder_ribbon:"
 
         return txt
 
@@ -302,7 +305,7 @@ class AjoManager:
             case _:
                 return f"Unknown item {item}."
 
-        err, res = self.redis.evalsha(
+        err, _ = self.redis.evalsha(
             SCRIPTS[script],
             2,
             inventory_key,
@@ -315,5 +318,40 @@ class AjoManager:
                 reply = f"You do not have enough {item}."
             case "OK":
                 reply = f"You have used {item}."
+
+        return reply
+
+    async def craft(self, user_id: str, item: str) -> str:
+        inventory_key = f"{user_id}:inventory"
+
+        # translate the emojis to redis compatible
+        item = self.__translate_emoji(item)
+
+        match item:
+            case ":reminder_ribbon:" | "ajo_necklace":
+                item = ":reminder_ribbon:"
+                script = "craft_ajo_necklace"
+            case _:
+                return f"Unknown item {item}."
+
+        err, res = self.redis.evalsha(
+            SCRIPTS[script],
+            3,
+            "ajobus-inventory",
+            inventory_key,
+            LEADERBOARD,
+            item,
+            user_id
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = f"You cannot craft the {item} item."
+            case "OK":
+                reply = f"You have crafted {item} successfully."
+            case "funds":
+                reply = f"You do not have enough ajos."
+            case "stack":
+                reply = f"You cannot craft more {item}!"
 
         return reply
