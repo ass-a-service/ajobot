@@ -326,6 +326,8 @@ class AjoManager:
     async def trade(self, from_user_id: str, to_user_id: str, item: str, qty: int) -> str:
         # translate the emojis to redis compatible
         item = self.__translate_emoji(item)
+        from_inventory_key = f"{from_user_id}:inventory"
+        to_inventory_key = f"{to_user_id}:inventory"
 
         err, res = self.redis.evalsha(
             SCRIPTS["trade"],

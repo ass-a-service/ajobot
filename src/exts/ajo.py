@@ -220,6 +220,7 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__roulette_shot(itr.author, roulette_id))
 
+    # INVENTORY
     @slash_command(name="inventory", description="Get inventory")
     async def inventory(
         self,
@@ -246,6 +247,42 @@ class Ajo(Cog):
         item: str = Param(description="The item to use")
     ) -> None:
         await itr.send(await self.__use(itr.author, item))
+
+    # INVENTORY TRADE
+    async def __trade(
+        self,
+        from_user: User,
+        to_user: User,
+        item: str,
+        quantity: int
+    ) -> str:
+        reply = await self.bot.manager.trade(
+            from_user.id,
+            to_user.id,
+            item,
+            quantity
+        )
+        return reply.replace("[[TO_USER]]", f"{to_user}")
+
+    @command(name="trade", description="Trade an item from the inventory")
+    async def trade_command(
+        self,
+        ctx: Context[Bot],
+        user: User,
+        item: str,
+        quantity: int
+    ) -> None:
+        await ctx.reply(await self.__trade(ctx.author, user, item, quantity))
+
+    @slash_command(name="trade", description="Trade an item from the inventory")
+    async def trade(
+        self,
+        itr: CommandInteraction,
+        user: User = Param(description="The user to trade to."),
+        item: str = Param(description="The item to trade."),
+        quantity: int = Param(description="The quantity to trade."),
+    ) -> None:
+        await itr.send(await self.__trade(itr.author, user, item, quantity))
 
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))
