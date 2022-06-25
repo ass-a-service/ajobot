@@ -220,16 +220,37 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__roulette_shot(itr.author, roulette_id))
 
+    # INVENTORY
+    @command(name="inventory", description="Get inventory.")
+    async def inventory_command(self, ctx: Context[Bot]) -> None:
+        await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author.id))
+
     @slash_command(name="inventory", description="Get inventory")
     async def inventory(
         self,
         itr: CommandInteraction,
     ) -> None:
-        await itr.send(embed = await self.bot.manager.get_inventory(itr.author.id))
+        await itr.send(embed = await self.bot.manager.get_inventory(itr.author.id), ephemeral=True)
 
-    @command(name="inventory", description="inventory someone.")
-    async def inventory_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author.id))
+    @command(name="verinventory", description="See someone's inventory.")
+    async def verinventory_command(self, ctx: Context[Bot], user: User) -> None:
+        res = await self.bot.manager.see_inventory(ctx.author.id, user.id)
+        if isinstance(res, str):
+            await ctx.reply(res)
+        else:
+            await ctx.reply(embed = res)
+
+    @slash_command(name="verinventory", description="See someone's inventory.")
+    async def verinventory(
+        self,
+        itr: CommandInteraction,
+        user: User = Param(description="The user to spy on.")
+    ) -> None:
+        res = await self.bot.manager.see_inventory(itr.author.id, user.id)
+        if isinstance(res, str):
+            await itr.send(res, ephemeral=True)
+        else:
+            await itr.send(embed = res, ephemeral=True)
 
     # INVENTORY USE
     async def __use(self, user: User, item: str) -> str:
@@ -246,6 +267,42 @@ class Ajo(Cog):
         item: str = Param(description="The item to use")
     ) -> None:
         await itr.send(await self.__use(itr.author, item))
+
+    # INVENTORY TRADE
+    async def __trade(
+        self,
+        from_user: User,
+        to_user: User,
+        item: str,
+        quantity: int
+    ) -> str:
+        reply = await self.bot.manager.trade(
+            from_user.id,
+            to_user.id,
+            item,
+            quantity
+        )
+        return reply.replace("[[TO_USER]]", f"{to_user}")
+
+    @command(name="trade", description="Trade an item from the inventory")
+    async def trade_command(
+        self,
+        ctx: Context[Bot],
+        user: User,
+        item: str,
+        quantity: int
+    ) -> None:
+        await ctx.reply(await self.__trade(ctx.author, user, item, quantity))
+
+    @slash_command(name="trade", description="Trade an item from the inventory")
+    async def trade(
+        self,
+        itr: CommandInteraction,
+        user: User = Param(description="The user to trade to."),
+        item: str = Param(description="The item to trade."),
+        quantity: int = Param(description="The quantity to trade."),
+    ) -> None:
+        await itr.send(await self.__trade(itr.author, user, item, quantity))
 
     # Craft
     async def __craft(self, user: User, item: str) -> str:

@@ -30,11 +30,14 @@ SCRIPTS = {
     "roulette_shot": environ['ROULETTE_SHOT_SHA'],
     "use_cross": environ['USE_CROSS_SHA'],
     "use_chopsticks": environ['USE_CHOPSTICKS_SHA'],
-    "craft_ajo_necklace": environ['CRAFT_AJO_NECKLACE_SHA']
+    "craft_ajo_necklace": environ['CRAFT_AJO_NECKLACE_SHA'],
+    "trade": environ['TRADE_SHA'],
+    "see_inventory": environ['SEE_INVENTORY_SHA']
 }
 
 LEADERBOARD = "lb"
 AJOBUS = "ajobus"
+AJOBUS_INVENTORY = "ajobus-inventory"
 
 class AjoManager:
     def __init__(self) -> None:
@@ -271,24 +274,49 @@ class AjoManager:
 
         return reply
 
-    async def get_inventory(self, user_id: str) -> Embed:
-            res = self.redis.hgetall(f"{user_id}:inventory")
-            if not res:
-                # First time? Create it.
-                res = {}
+    async def __build_inventory(self, items) -> Embed:
+        if not items:
+            items = {}
 
-            embed = Embed(
-                title="Inventory",
-                colour=0x87CEEB,
+        embed = Embed(
+            title="Inventory",
+            colour=0x87CEEB,
+        )
+        for item_name, item_amount in items:
+            embed.add_field(
+                name=f"{item_name.decode()}",
+                value=f"{int(item_amount)}",
+                inline=True,
             )
-            for item_name, item_amount in res.items():
-                embed.add_field(
-                    name=f"{item_name.decode()}",
-                    value=f"{int(item_amount)}",
-                    inline=True,
-                )
 
-            return embed
+        return embed
+
+    async def get_inventory(self, user_id: str) -> Embed:
+        res = self.redis.hgetall(f"{user_id}:inventory")
+        return await self.__build_inventory(res.items())
+
+    # same as get_inventory, but you pay for it
+    async def see_inventory(self, from_user_id: str, to_user_id: str) -> Embed | str:
+        inventory_key = f"{to_user_id}:inventory"
+
+        err, res = self.redis.evalsha(
+            SCRIPTS["see_inventory"],
+            3,
+            AJOBUS,
+            LEADERBOARD,
+            inventory_key,
+            from_user_id
+        )
+
+        match err.decode("utf-8"):
+            case "funds":
+                reply = f"This service is not free, {res} ajos required."
+            case "OK":
+                items = res[::2]
+                quantities = res[1::2]
+                return await self.__build_inventory(zip(items, quantities))
+
+        return reply
 
     async def use(self, user_id: str, item: str) -> str:
         inventory_key = f"{user_id}:inventory"
@@ -305,11 +333,13 @@ class AjoManager:
             case _:
                 return f"Unknown item {item}."
 
-        err, _ = self.redis.evalsha(
+        err, res = self.redis.evalsha(
             SCRIPTS[script],
-            2,
+            3,
+            AJOBUS_INVENTORY,
             inventory_key,
             vampire_key,
+            user_id,
             item
         )
 
@@ -317,7 +347,36 @@ class AjoManager:
             case "err":
                 reply = f"You do not have enough {item}."
             case "OK":
-                reply = f"You have used {item}."
+                # FIXME: works because the only items apply to vampire for now
+                reply = f"You have used {item}, vampire level is now {max(res-1,0)}."
+
+        return reply
+
+    async def trade(self, from_user_id: str, to_user_id: str, item: str, qty: int) -> str:
+        # translate the emojis to redis compatible
+        item = self.__translate_emoji(item)
+        from_inventory_key = f"{from_user_id}:inventory"
+        to_inventory_key = f"{to_user_id}:inventory"
+
+        err, res = self.redis.evalsha(
+            SCRIPTS["trade"],
+            3,
+            AJOBUS_INVENTORY,
+            from_inventory_key,
+            to_inventory_key,
+            from_user_id,
+            to_user_id,
+            item,
+            qty
+        )
+
+        match err.decode("utf-8"):
+            case "unknown":
+                reply = f"No hablo {item}."
+            case "err" | "funds":
+                reply = f"You do not have enough {item}."
+            case "OK":
+                reply = f"You have traded {item} to [[TO_USER]]."
 
         return reply
 

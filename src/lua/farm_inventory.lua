@@ -15,6 +15,7 @@ if not current or current < min_ajos then
 end
 
 -- implement here the items to potentially earn
+-- FIXME: move this to redis maybe?
 local items = {
     -- structure is { <%% chance>, <max stack> }
     [":sauropod:"] = {["chance"]=1, ["max_stack"]=1},
