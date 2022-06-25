@@ -34,18 +34,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - name: 'Deploy'
-      uses: 'glopezep/helm@v1.7.1'
+    - name: Deploy
+      uses: WyriHaximus/github-action-helm3@v2
       with:
-        release: 'dev-${{ github.event.inputs.name }}'
-        namespace: 'ajotest'
-        chart: 'ajobot'
-        token: '${{ github.token }}'
-        repo: 'https://charts.ajobot.com'
-        values: |
-          botToken: ${{ github.event.inputs.botToken }}
-          image:
-            tag: dev-${{ github.event.inputs.name }}
-      env:
-        KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
+        exec: |
+          helm repo add ajobot https://charts.ajobot.com
+          helm repo update
+          helm upgrade --install dev-${{ github.event.inputs.name }} ajobot/ajobot -n ajotest --set image.tag=dev-${{ github.event.inputs.name }} --set botToken=${{ github.event.inputs.botToken }}
+        kubeconfig: '${{ secrets.KUBECONFIG }}'
     
