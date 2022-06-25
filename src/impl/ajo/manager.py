@@ -19,22 +19,6 @@ TIMELY = {
     "weekly": [256, 604800]
 }
 
-# script sha values
-SCRIPTS = {
-    "discombobulate": environ['DISCOMBOBULATE_SHA'],
-    "gamble": environ['GAMBLE_SHA'],
-    "pay": environ['PAY_SHA'],
-    "reward": environ['TIMELY_SHA'],
-    "setne": environ['SETNE_SHA'],
-    "roulette": environ['ROULETTE_SHA'],
-    "roulette_shot": environ['ROULETTE_SHOT_SHA'],
-    "use_cross": environ['USE_CROSS_SHA'],
-    "use_chopsticks": environ['USE_CHOPSTICKS_SHA'],
-    "craft_ajo_necklace": environ['CRAFT_AJO_NECKLACE_SHA'],
-    "trade": environ['TRADE_SHA'],
-    "see_inventory": environ['SEE_INVENTORY_SHA']
-}
-
 LEADERBOARD = "lb"
 AJOBUS = "ajobus"
 AJOBUS_INVENTORY = "ajobus-inventory"
@@ -64,7 +48,7 @@ class AjoManager:
     async def __setne_name(self, user_id: str, user_name: str) -> None:
         # ensure the name we have is correct
         self.redis.evalsha(
-            SCRIPTS["setne"],
+            environ["setne"],
             1,
             user_id,
             user_name
@@ -127,7 +111,7 @@ class AjoManager:
             amount = 0
 
         err, res = self.redis.evalsha(
-            SCRIPTS["gamble"],
+            environ["gamble"],
             2,
             AJOBUS,
             LEADERBOARD,
@@ -152,7 +136,7 @@ class AjoManager:
 
     async def pay_ajo(self, from_user_id: str, to_user_id: str, amount: int) -> str:
         err, res = self.redis.evalsha(
-            SCRIPTS["pay"],
+            environ["pay"],
             2,
             AJOBUS,
             LEADERBOARD,
@@ -176,7 +160,7 @@ class AjoManager:
         exp_key = f"{user_id}:{type}"
         reward, expire = TIMELY[type]
         err, res = self.redis.evalsha(
-            SCRIPTS["reward"],
+            environ["timely_reward"],
             3,
             AJOBUS,
             LEADERBOARD,
@@ -205,7 +189,7 @@ class AjoManager:
     async def discombobulate(self, from_user_id: str, to_user_id: str, amount: int) -> str:
         exp_key = f"{from_user_id}:discombobulate"
         err, res = self.redis.evalsha(
-            SCRIPTS["discombobulate"],
+            entry["discombobulate"],
             3,
             AJOBUS,
             LEADERBOARD,
@@ -238,7 +222,7 @@ class AjoManager:
         roulette_id = secrets.token_hex(4)
         roulette_key = f"roulette:{roulette_id}"
         err, res = self.redis.evalsha(
-            SCRIPTS["roulette"],
+            environ["roulette"],
             1,
             roulette_key,
             self.__get_seed(),
@@ -256,7 +240,7 @@ class AjoManager:
     async def roulette_shot(self, user_id: str, roulette_id: str) -> str:
         roulette_key = f"roulette:{roulette_id}"
         err, res = self.redis.evalsha(
-            SCRIPTS["roulette_shot"],
+            environ["roulette_shot"],
             3,
             AJOBUS,
             LEADERBOARD,
@@ -300,7 +284,7 @@ class AjoManager:
         inventory_key = f"{to_user_id}:inventory"
 
         err, res = self.redis.evalsha(
-            SCRIPTS["see_inventory"],
+            environ["see_inventory"],
             3,
             AJOBUS,
             LEADERBOARD,
@@ -334,7 +318,7 @@ class AjoManager:
                 return f"Unknown item {item}."
 
         err, res = self.redis.evalsha(
-            SCRIPTS[script],
+            environ[script],
             3,
             AJOBUS_INVENTORY,
             inventory_key,
@@ -359,7 +343,7 @@ class AjoManager:
         to_inventory_key = f"{to_user_id}:inventory"
 
         err, res = self.redis.evalsha(
-            SCRIPTS["trade"],
+            environ["trade"],
             3,
             AJOBUS_INVENTORY,
             from_inventory_key,
@@ -394,7 +378,7 @@ class AjoManager:
                 return f"Unknown item {item}."
 
         err, res = self.redis.evalsha(
-            SCRIPTS[script],
+            environ[script],
             3,
             "ajobus-inventory",
             inventory_key,
