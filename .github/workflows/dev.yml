@@ -1,0 +1,45 @@
+name: dev-env
+on: 
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Deployment name'
+        required: true
+      botToken:
+        description: 'Enter the bot discord token here. You can find it in discord developers.'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - uses: crazy-max/ghaction-docker-meta@v1
+      id: docker_meta
+      with: 
+        images: ghcr.io/ass-a-service/ajobot
+    - name: build and push
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: ghcr.io/ass-a-service/ajobot:dev-${{ github.event.inputs.name }}
+        labels: ${{ steps.docker_meta.outputs.labels }}
+  deploy:
+    name: deploy to cluster
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy
+      uses: WyriHaximus/github-action-helm3@v2
+      with:
+        exec: |
+          helm repo add ajobot https://charts.ajobot.com
+          helm repo update
+          helm upgrade --install dev-${{ github.event.inputs.name }} ajobot/ajobot -n ajotest --set image.tag=dev-${{ github.event.inputs.name }} --set botToken=${{ github.event.inputs.botToken }}
+        kubeconfig: '${{ secrets.KUBECONFIG }}'
+    
