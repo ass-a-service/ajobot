@@ -14,7 +14,7 @@ class General(Cog):
 
     @slash_command(name="dame", description="Give movidas.")
     async def dame(self, itr: CommandInteraction, type: str, amount: int) -> None:
-        if environ["DEBUG"] != "1":
+        if not "DEBUG" in environ or environ["DEBUG"] != "1":
             return await itr.send("mongo")
 
         match type:
