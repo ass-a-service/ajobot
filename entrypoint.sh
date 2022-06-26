@@ -1,7 +1,7 @@
 #!/bin/sh
 set -euf
 
-PATHS="discombobulate pay timely_reward setne roulette roulette_shot"
+PATHS="discombobulate gamble pay timely_reward setne roulette roulette_shot"
 PATHS="${PATHS} farm_inventory use_chopsticks use_cross craft_ajo_necklace"
 PATHS="${PATHS} trade see_inventory vampire"
 
