@@ -19,3 +19,9 @@ jobs:
           helm repo update
           helm uninstall dev-${{ github.event.inputs.name }} -n ajotest
         kubeconfig: '${{ secrets.KUBECONFIG }}'
+    - name: delete-package
+      uses: smartsquaregmbh/delete-old-packages@v0.4.0
+      with:
+        version: dev-${{ github.event.inputs.name }}
+        names: |
+          ajobot
