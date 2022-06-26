@@ -8,7 +8,7 @@ on:
       botToken:
         description: 'Enter the bot discord token here. You can find it in discord developers.'
         required: true
-      debug
+      debug:
         type: choice
         description: if you set it in 1 you enable debug mode meaning you will be able to give you ajos, vampire level and more.
         options: 
