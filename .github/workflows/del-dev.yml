@@ -1,0 +1,21 @@
+name: del-dev-env
+on: 
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Deployment name, it needs to exist to success deletion'
+        required: true
+
+jobs:
+  delete:
+    name: delete dev deployment
+    runs-on: ubuntu-latest
+    steps:
+    - name: delete
+      uses: WyriHaximus/github-action-helm3@v2
+      with:
+        exec: |
+          helm repo add ajobot https://charts.ajobot.com
+          helm repo update
+          helm uninstall dev-${{ github.event.inputs.name }} -n ajotest
+        kubeconfig: '${{ secrets.KUBECONFIG }}'

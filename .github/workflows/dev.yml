@@ -8,6 +8,12 @@ on:
       botToken:
         description: 'Enter the bot discord token here. You can find it in discord developers.'
         required: true
+      debug
+        type: choice
+        description: if you set it in 1 you enable debug mode meaning you will be able to give you ajos, vampire level and more.
+        options: 
+        - 0
+        - 1
 
 jobs:
   build:
@@ -40,6 +46,6 @@ jobs:
         exec: |
           helm repo add ajobot https://charts.ajobot.com
           helm repo update
-          helm upgrade --install dev-${{ github.event.inputs.name }} ajobot/ajobot -n ajotest --set image.tag=dev-${{ github.event.inputs.name }} --set botToken=${{ github.event.inputs.botToken }}
+          helm upgrade --install dev-${{ github.event.inputs.name }} ajobot/ajobot -n ajotest --set image.tag=dev-${{ github.event.inputs.name }} --set botToken=${{ github.event.inputs.botToken }} --set debug=${{ github.event.inputs.debug }}
         kubeconfig: '${{ secrets.KUBECONFIG }}'
     
