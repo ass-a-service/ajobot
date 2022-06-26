@@ -189,7 +189,7 @@ class AjoManager:
     async def discombobulate(self, from_user_id: str, to_user_id: str, amount: int) -> str:
         exp_key = f"{from_user_id}:discombobulate"
         err, res = self.redis.evalsha(
-            entry["discombobulate"],
+            environ["discombobulate"],
             3,
             AJOBUS,
             LEADERBOARD,
