@@ -19,9 +19,11 @@ jobs:
           helm repo update
           helm uninstall dev-${{ github.event.inputs.name }} -n ajotest
         kubeconfig: '${{ secrets.KUBECONFIG }}'
-    - name: delete-package
-      uses: smartsquaregmbh/delete-old-packages@v0.4.0
+    - uses: castlabs/get-package-version-id-action@v2.0
+      id: versions
       with:
-        version: dev-${{ github.event.inputs.name }}
-        names: |
-          ajobot
+        versions: "dev-${{ github.event.inputs.name }}"
+    - uses: actions/delete-package-versions@v2
+      if: ${{ steps.versions.outputs.ids != '' }}
+      with:
+        package-version-ids: "${{ steps.versions.outputs.ids }}"
