@@ -22,7 +22,7 @@ jobs:
     - uses: castlabs/get-package-version-id-action@v2.0
       id: versions
       with:
-        versions: "dev-${{ github.event.inputs.name }}"
+        version: "dev-${{ github.event.inputs.name }}"
     - uses: actions/delete-package-versions@v2
       if: ${{ steps.versions.outputs.ids != '' }}
       with:
