@@ -8,6 +8,8 @@ local item = ARGV[2]
 local event_version = ARGV[3]
 local guild_id = ARGV[4]
 
+local ttl_per_level = 600
+
 -- ensure we actually own the item
 local stack = tonumber(redis.call("hget", inventory_key, item))
 if not stack or stack < 1 then
@@ -28,18 +30,13 @@ redis.call(
 
 -- the vampire level in redis is the level which will appear next, not current
 local vampire_level = tonumber(redis.call("get", vampire_key))
-local next_level = 1
-if not vampire_level then
-    return {"OK", next_level}
+if not vampire_level or vampire_level < 2 then
+    -- if there's no vampire or the level is default, nothing to do
+    return {"OK", 1}
 end
 
--- FIXME: the legacy vampire system has a bug: we need to delete the key when
--- the current level is 2 or lower.
--- When the fix in feat/vampire-lua is merged, we can simply remove this if
-if vampire_level <= 2 then
-    redis.call("del", vampire_key)
-else
-    next_level = redis.call("decrby", vampire_key, 1)
-end
-
-return {"OK", res}
+-- reduce the vampire and refresh the ttl
+local new_level = vampire_level - 1
+local ttl = math.min(ttl_per_level * new_level, 7200)
+redis.call("set", vampire_key, new_level, "EX", ttl)
+return {"OK", new_level}
