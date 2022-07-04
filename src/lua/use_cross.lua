@@ -5,6 +5,10 @@ local vampire_key = KEYS[3]
 
 local id = ARGV[1]
 local item = ARGV[2]
+local event_version = ARGV[3]
+local guild_id = ARGV[4]
+
+local ttl_per_level = 600
 
 -- ensure we actually own the item
 local stack = tonumber(redis.call("hget", inventory_key, item))
@@ -14,22 +18,25 @@ end
 
 -- use the item, decrease stack
 redis.call("hincrby", inventory_key, item, -1)
+redis.call(
+    "xadd", strm_key, "*",
+    "version", event_version,
+    "type", "item_used",
+    "user_id", id,
+    "guild_id", guild_id,
+    "item", item,
+    "quantity", -1
+)
 
--- if there is no vampire, you just used the item
+-- the vampire level in redis is the level which will appear next, not current
 local vampire_level = tonumber(redis.call("get", vampire_key))
-if not vampire_level or vampire_level < 1 then
-    return {"OK", 0}
+if not vampire_level or vampire_level < 2 then
+    -- if there's no vampire or the level is default, nothing to do
+    return {"OK", 1}
 end
 
--- FIXME: due to how the legacy vampire system works, we have to delete the
--- vampire key when it's 2 or lower
-local res
-if vampire_level <= 2 then
-    redis.call("del", vampire_key)
-    res = 0
-else
-    res = redis.call("decrby", vampire_key, 1)
-end
-
-redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", -1)
-return {"OK", res}
+-- reduce the vampire and refresh the ttl
+local new_level = vampire_level - 1
+local ttl = math.min(ttl_per_level * new_level, 7200)
+redis.call("set", vampire_key, new_level, "EX", ttl)
+return {"OK", new_level}

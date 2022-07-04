@@ -1,10 +1,16 @@
 from random import randrange, SystemRandom
 from math import ceil, log
+from os import environ
+import time
 
 from disnake import Message, User
 from disnake.ext.commands import Cog
 
 from src.impl.bot import Bot
+
+LEADERBOARD = "lb"
+AJOBUS = "ajobus"
+EVENT_VERSION = 1
 
 class Vampires(Cog):
     def __init__(self, bot: Bot) -> None:
@@ -19,48 +25,25 @@ class Vampires(Cog):
         if not contains_ajo:
             return
 
-        # Depending on the vampire level of the user, it has more chance to be triggered
         vampire_key = f"{message.author.id}:vampire"
-        vampire_level = self.bot.manager.redis.get(vampire_key) or 1
-        vampire_level = int(vampire_level) # TODO: Fixme
-        appear_chance = 1 if vampire_level == 1 else log(vampire_level,10)*20
-        if appear_chance < SystemRandom().uniform(0,100):
-            return
-
-        ajo = await self.bot.manager.get_ajo(message.author.id)
-        if ajo < 1:
-            # if you're spamming, the vampire still remains
-            self.bot.manager.redis.expire(vampire_key,min(7200, 600*vampire_level)) #TODO: Improve this 5 minutes thing
-            return
-
-        # Depending on the vempire level of the user, it has more chance to hit harder
-        min_damage = min(vampire_level*1.2,30)
-        max_damage = min(40,vampire_level*2)
-        random_pct = SystemRandom().uniform(min_damage,max_damage)
-        to_pay = ceil(ajo * (random_pct/100))
-
-        await self.bot.manager.add_ajo(
+        _, res = self.bot.manager.redis.evalsha(
+            environ["vampire"],
+            3,
+            AJOBUS,
+            LEADERBOARD,
+            vampire_key,
             message.author.id,
-            f"{message.author.name}#{message.author.discriminator}",
-            -to_pay
+            EVENT_VERSION,
+            0 if message.guild is None else message.guild.id,
+            time.time_ns()-(int(time.time())*1000000000)
         )
 
-        self.bot.manager.redis.xadd(
-            "ajobus",
-            {"amount": -to_pay, "user_id": message.author.id},
-            "*",
-        )
+        if not res:
+            return
 
-        # Feature request: hay un 0.1% de que el vampiro te hace discombolulate y te jode y te quita un 33%.
         await message.reply(
-            f"A vampire level {vampire_level} has appeared! You use {to_pay} ajos to defeat him. You are safe... for now."
+            f"A vampire level {res[0]} has appeared! You use {res[1]} ajos to defeat him. You are safe... for now."
         )
-
-        # Vampire gets more aggresive for this user
-        incr_by = 2 if vampire_level == 1 else 1
-        self.bot.manager.redis.incrby(vampire_key,incr_by)
-        self.bot.manager.redis.expire(vampire_key,min(7200, 600*vampire_level)) #TODO: Improve this 5 minutes thing
-
 
 def setup(bot: Bot) -> None:
     bot.add_cog(Vampires(bot))

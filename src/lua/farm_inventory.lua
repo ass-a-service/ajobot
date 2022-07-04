@@ -4,7 +4,10 @@ local lb_key = KEYS[2]
 local inventory_key = KEYS[3]
 
 local id = ARGV[1]
-local seed = tonumber(ARGV[2])
+local event_version = ARGV[2]
+local guild_id = ARGV[3]
+local event_id = ARGV[4] -- the redis event_id trigger
+local seed = tonumber(ARGV[5])
 
 -- you need at least some ajos to farm
 -- avoids the spam with 0 ajos
@@ -44,7 +47,16 @@ for item, data in pairs(items) do
         stack = tonumber(redis.call("hget", inventory_key, item))
         if not stack or stack < max_stack then
             stack = redis.call("hincrby", inventory_key, item, 1)
-            redis.call("xadd", strm_key, "*", "user_id", id, "item", item, "quantity", 1)
+            redis.call(
+                "xadd", strm_key, "*",
+                "version", event_version,
+                "type", "item_earned",
+                "user_id", id,
+                "guild_id", guild_id,
+                "event_id", event_id,
+                "item", item,
+                "quantity", 1
+            )
             return {"OK", {item, stack}}
         end
 

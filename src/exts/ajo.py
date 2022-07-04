@@ -1,4 +1,4 @@
-from disnake import CommandInteraction, Message, User
+from disnake import CommandInteraction, Message, User, Guild
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 from disnake.ext import tasks
 from redis.exceptions import ResponseError
@@ -9,6 +9,7 @@ from os import environ
 
 AJO = "🧄"
 LEADERBOARD = "lb"
+EVENT_VERSION = 1
 
 class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
@@ -27,21 +28,26 @@ class Ajo(Cog):
             if str(e) != "BUSYGROUP Consumer Group name already exists":
                 raise e
 
-        # TODO: this should only listen to the farm event, not other events such
-        # as gamble, pay, discombobulate...
-        ajos = redis.xreadgroup("ajo-python","ajo.py",streams={"ajobus": ">"},count=100)
-        for _, ajo in ajos:
-            for _, ajo_info in ajo:
-                user_id = ajo_info[b'user_id'].decode()
-                redis.evalsha(
-                    environ['FARM_INVENTORY_SHA'],
-                    3,
-                    "ajobus-inventory",
-                    LEADERBOARD,
-                    user_id + ":inventory",
-                    user_id,
-                    time.time_ns()-(int(time.time())*1000000000)
-                )
+        data = redis.xreadgroup("ajo-python","ajo.py",streams={"ajobus": ">"},count=100)
+        # stream_name, chunk
+        for _, chunk in data:
+            # entry_id, entry_data
+            for entry_id, entry_data in chunk:
+                entry = await self.parseEntry(entry_data)
+                if entry["type"] == "farm":
+                    user_id = entry["user_id"]
+                    redis.evalsha(
+                        environ['farm_inventory'],
+                        3,
+                        "ajobus-inventory",
+                        LEADERBOARD,
+                        user_id + ":inventory",
+                        user_id,
+                        EVENT_VERSION,
+                        entry["guild_id"],
+                        entry_id,
+                        time.time_ns()-(int(time.time())*1000000000)
+                    )
 
 
     @Cog.listener()
@@ -73,13 +79,29 @@ class Ajo(Cog):
 
             self.bot.manager.redis.xadd(
                 "ajobus",
-                {"amount": 1, "user_id": message.author.id},
+                {
+                    "version": EVENT_VERSION,
+                    "type": "farm",
+                    "user_id": message.author.id,
+                    "guild_id": message.guild.id,
+                    "amount": 1
+                },
                 "*",
             )
 
             is_begging = await self.bot.manager.is_begging_for_ajo(message)
             if is_begging:
                 await message.add_reaction(AJO)
+
+    # util to decode a redis stream entry
+    async def parseEntry(self, data):
+        res = {}
+        for key, value in data.items():
+            res[key.decode("utf-8")] = value
+        return res
+
+    async def getGuildId(self, guild: Guild) -> str:
+        return 0 if guild is None else str(guild.id)
 
     # AJO/VERAJO
     @command(name="ajo", description="Get your count of ajos.")
@@ -116,12 +138,16 @@ class Ajo(Cog):
         await itr.send(embed=await self.bot.manager.get_leaderboard())
 
     # GAMBLE
-    async def __gamble(self, user: User, amount: str) -> str:
-        return await self.bot.manager.gamble_ajo(user.id, amount)
+    async def __gamble(self, user: User, amount: str, guild: Guild) -> str:
+        return await self.bot.manager.gamble_ajo(
+            user.id,
+            amount,
+            await self.getGuildId(guild)
+        )
 
     @command(name="gamble", description="Gamble your ajos.")
     async def gamble_command(self, ctx: Context[Bot], amount: str) -> None:
-        await ctx.reply(await self.__gamble(ctx.author, amount))
+        await ctx.reply(await self.__gamble(ctx.author, amount, ctx.guild))
 
     @slash_command(name="gamble", description="Gamble your ajos.")
     async def gamble(
@@ -129,17 +155,28 @@ class Ajo(Cog):
         itr: CommandInteraction,
         amount: str = Param(description="How much ajos to gamble.")
     ) -> None:
-        await itr.send(await self.__gamble(itr.author, amount))
+        await itr.send(await self.__gamble(itr.author, amount, itr.guild))
 
     # PAY
-    async def __pay(self, from_user: User, to_user: User, amount: int) -> str:
-        reply = await self.bot.manager.pay_ajo(from_user.id, to_user.id, amount)
+    async def __pay(
+        self,
+        from_user: User,
+        to_user: User,
+        amount: int,
+        guild: Guild
+    ) -> str:
+        reply = await self.bot.manager.pay_ajo(
+            from_user.id,
+            to_user.id,
+            amount,
+            await self.getGuildId(guild)
+        )
         return reply.replace("[[TO_USER]]", f"{to_user}")
 
 
     @command(name="pay", description="Pay someone ajos.")
     async def pay_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
-        await ctx.reply(await self.__pay(ctx.author, user, amount))
+        await ctx.reply(await self.__pay(ctx.author, user, amount, ctx.guild))
 
     @slash_command(name="pay", description="Pay someone ajos.")
     async def pay(
@@ -148,40 +185,57 @@ class Ajo(Cog):
         user: User = Param(description="The user to pay."),
         amount: int = Param(description="The amount to pay."),
     ) -> None:
-        await itr.send(await self.__pay(itr.author, user, amount))
+        await itr.send(await self.__pay(itr.author, user, amount, itr.guild))
 
     # WEEKLY CLAIM
-    async def __weekly(self, user: User) -> str:
-        return await self.bot.manager.claim_weekly(user.id)
+    async def __weekly(self, user: User, guild: Guild) -> str:
+        return await self.bot.manager.claim_weekly(
+            user.id,
+            await self.getGuildId(guild)
+        )
 
     @command(name="weekly", description="Claim your weekly ajos.")
     async def weekly_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(await self.__weekly(ctx.author))
+        await ctx.reply(await self.__weekly(ctx.author, ctx.guild))
 
     @slash_command(name="weekly", description="Claim your weekly ajos.")
     async def weekly(self, itr: CommandInteraction) -> None:
-        await itr.send(await self.__weekly(itr.author))
+        await itr.send(await self.__weekly(itr.author, itr.guild))
 
     # DAILY CLAIM
-    async def __daily(self, user: User) -> str:
-        return await self.bot.manager.claim_daily(user.id)
+    async def __daily(self, user: User, guild: Guild) -> str:
+        return await self.bot.manager.claim_daily(
+            user.id,
+            await self.getGuildId(guild)
+        )
 
     @command(name="daily", description="Claim your daily ajos.")
     async def daily_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(await self.__daily(ctx.author))
+        await ctx.reply(await self.__daily(ctx.author, ctx.guild))
 
     @slash_command(name="daily", description="Claim your daily ajos.")
     async def daily(self, itr: CommandInteraction) -> None:
-        await itr.send(await self.__daily(itr.author))
+        await itr.send(await self.__daily(itr.author, itr.guild))
 
     # DISCOMBOBULATE
-    async def __discombobulate(self, from_user: User, to_user: User, amount: int) -> str:
-        reply = await self.bot.manager.discombobulate(from_user.id, to_user.id, amount)
+    async def __discombobulate(
+        self,
+        from_user: User,
+        to_user: User,
+        amount: int,
+        guild: Guild
+    ) -> str:
+        reply = await self.bot.manager.discombobulate(
+            from_user.id,
+            to_user.id,
+            amount,
+            await self.getGuildId(guild)
+        )
         return reply.replace("[[TO_USER]]", f"{to_user}")
 
     @command(name="discombobulate", description="Discombobulate someone.")
     async def discombobulate_command(self, ctx: Context[Bot], user: User, amount: int) -> None:
-        await ctx.reply(await self.__discombobulate(ctx.author, user, amount))
+        await ctx.reply(await self.__discombobulate(ctx.author, user, amount, ctx.guild))
 
     @slash_command(name="discombobulate", description="Discombobulate someone.")
     async def discombobulate(
@@ -190,7 +244,7 @@ class Ajo(Cog):
         user: User = Param(description="The user to discombobulate."),
         amount: int = Param(description="The amount to offer."),
     ) -> None:
-        await itr.send(await self.__discombobulate(itr.author, user, amount))
+        await itr.send(await self.__discombobulate(itr.author, user, amount, itr.guild))
 
     # ROULETTE
     async def __roulette(self) -> str:
@@ -205,12 +259,16 @@ class Ajo(Cog):
         await itr.send(await self.__roulette())
 
     # ROULETTE SHOT
-    async def __roulette_shot(self, user: User, roulette_id: str) -> str:
-        return await self.bot.manager.roulette_shot(user.id, roulette_id)
+    async def __roulette_shot(self, user: User, roulette_id: str, guild: Guild) -> str:
+        return await self.bot.manager.roulette_shot(
+            user.id,
+            roulette_id,
+            await self.getGuildId(guild)
+        )
 
     @command(name="roulette_shot", description="Try your luck")
     async def roulette_shot_command(self, ctx: Context[Bot], roulette_id: str) -> None:
-        await ctx.reply(await self.__roulette_shot(ctx.author, roulette_id))
+        await ctx.reply(await self.__roulette_shot(ctx.author, roulette_id, ctx.guild))
 
     @slash_command(name="roulette_shot", description="Try your luck")
     async def roulette_shot(
@@ -218,7 +276,7 @@ class Ajo(Cog):
         itr: CommandInteraction,
         roulette_id: str = Param(description="The roulette id")
     ) -> None:
-        await itr.send(await self.__roulette_shot(itr.author, roulette_id))
+        await itr.send(await self.__roulette_shot(itr.author, roulette_id, itr.guild))
 
     # INVENTORY
     @command(name="inventory", description="Get inventory.")
@@ -234,7 +292,11 @@ class Ajo(Cog):
 
     @command(name="verinventory", description="See someone's inventory.")
     async def verinventory_command(self, ctx: Context[Bot], user: User) -> None:
-        res = await self.bot.manager.see_inventory(ctx.author.id, user.id)
+        res = await self.bot.manager.see_inventory(
+            ctx.author.id,
+            user.id,
+            await self.getGuildId(ctx.guild)
+        )
         if isinstance(res, str):
             await ctx.reply(res)
         else:
@@ -246,19 +308,27 @@ class Ajo(Cog):
         itr: CommandInteraction,
         user: User = Param(description="The user to spy on.")
     ) -> None:
-        res = await self.bot.manager.see_inventory(itr.author.id, user.id)
+        res = await self.bot.manager.see_inventory(
+            itr.author.id,
+            user.id,
+            await self.getGuildId(itr.guild)
+        )
         if isinstance(res, str):
             await itr.send(res, ephemeral=True)
         else:
             await itr.send(embed = res, ephemeral=True)
 
     # INVENTORY USE
-    async def __use(self, user: User, item: str) -> str:
-        return await self.bot.manager.use(user.id, item)
+    async def __use(self, user: User, item: str, guild: Guild) -> str:
+        return await self.bot.manager.use(
+            user.id,
+            item,
+            await self.getGuildId(guild)
+        )
 
     @command(name="use", description="Use an item from the inventory")
     async def use_command(self, ctx: Context[Bot], item: str) -> None:
-        await ctx.reply(await self.__use(ctx.author, item))
+        await ctx.reply(await self.__use(ctx.author, item, ctx.guild))
 
     @slash_command(name="use", description="Use an item from the inventory")
     async def use(
@@ -266,7 +336,7 @@ class Ajo(Cog):
         itr: CommandInteraction,
         item: str = Param(description="The item to use")
     ) -> None:
-        await itr.send(await self.__use(itr.author, item))
+        await itr.send(await self.__use(itr.author, item, itr.guild))
 
     # INVENTORY TRADE
     async def __trade(
@@ -274,13 +344,15 @@ class Ajo(Cog):
         from_user: User,
         to_user: User,
         item: str,
-        quantity: int
+        quantity: int,
+        guild: Guild
     ) -> str:
         reply = await self.bot.manager.trade(
             from_user.id,
             to_user.id,
             item,
-            quantity
+            quantity,
+            await self.getGuildId(guild)
         )
         return reply.replace("[[TO_USER]]", f"{to_user}")
 
@@ -292,7 +364,7 @@ class Ajo(Cog):
         item: str,
         quantity: int
     ) -> None:
-        await ctx.reply(await self.__trade(ctx.author, user, item, quantity))
+        await ctx.reply(await self.__trade(ctx.author, user, item, quantity, ctx.guild))
 
     @slash_command(name="trade", description="Trade an item from the inventory")
     async def trade(
@@ -302,15 +374,15 @@ class Ajo(Cog):
         item: str = Param(description="The item to trade."),
         quantity: int = Param(description="The quantity to trade."),
     ) -> None:
-        await itr.send(await self.__trade(itr.author, user, item, quantity))
+        await itr.send(await self.__trade(itr.author, user, item, quantity, itr.guild))
 
     # Craft
-    async def __craft(self, user: User, item: str) -> str:
-        return await self.bot.manager.craft(user.id, item)
+    async def __craft(self, user: User, item: str, guild: Guild) -> str:
+        return await self.bot.manager.craft(user.id, item, await self.getGuildId(guild))
 
     @command(name="craft", description="Craft an item")
     async def craft_command(self, ctx: Context[Bot], item: str) -> None:
-        await ctx.reply(await self.__craft(ctx.author, item))
+        await ctx.reply(await self.__craft(ctx.author, item, ctx.guild))
 
     @slash_command(name="craft", description="Craft an item")
     async def craft(
@@ -318,7 +390,7 @@ class Ajo(Cog):
         itr: CommandInteraction,
         item: str = Param(description="The item to craft")
     ) -> None:
-        await itr.send(await self.__craft(itr.author, item))
+        await itr.send(await self.__craft(itr.author, item, itr.guild))
 
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))
