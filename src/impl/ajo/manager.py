@@ -295,11 +295,13 @@ class AjoManager:
             colour=0x87CEEB,
         )
         for item_name, item_amount in items:
-            embed.add_field(
-                name=f"{item_name.decode()}",
-                value=f"{int(item_amount)}",
-                inline=True,
-            )
+            item_amount = int(item_amount)
+            if item_amount > 0:
+                embed.add_field(
+                    name=f"{item_name.decode()}",
+                    value=f"{int(item_amount)}",
+                    inline=True,
+                )
 
         return embed
 
