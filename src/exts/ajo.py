@@ -34,7 +34,7 @@ class Ajo(Cog):
             for _, ajo_info in ajo:
                 user_id = ajo_info[b'user_id'].decode()
                 redis.evalsha(
-                    environ['FARM_INVENTORY_SHA'],
+                    environ['farm_inventory'],
                     3,
                     "ajobus-inventory",
                     LEADERBOARD,
