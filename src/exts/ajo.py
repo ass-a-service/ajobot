@@ -27,21 +27,23 @@ class Ajo(Cog):
             if str(e) != "BUSYGROUP Consumer Group name already exists":
                 raise e
 
-        # TODO: this should only listen to the farm event, not other events such
-        # as gamble, pay, discombobulate...
-        ajos = redis.xreadgroup("ajo-python","ajo.py",streams={"ajobus": ">"},count=100)
-        for _, ajo in ajos:
-            for _, ajo_info in ajo:
-                user_id = ajo_info[b'user_id'].decode()
-                redis.evalsha(
-                    environ['farm_inventory'],
-                    3,
-                    "ajobus-inventory",
-                    LEADERBOARD,
-                    user_id + ":inventory",
-                    user_id,
-                    time.time_ns()-(int(time.time())*1000000000)
-                )
+        data = redis.xreadgroup("ajo-python","ajo.py",streams={"ajobus": ">"},count=100)
+        # stream_name, chunk
+        for _, chunk in data:
+            # entry_id, entry_data
+            for _, entry_data in chunk:
+                entry = await self.parseEntry(entry_data)
+                if entry["type"] == "farm":
+                    user_id = entry["user_id"]
+                    redis.evalsha(
+                        environ['farm_inventory'],
+                        3,
+                        "ajobus-inventory",
+                        LEADERBOARD,
+                        user_id + ":inventory",
+                        user_id,
+                        time.time_ns()-(int(time.time())*1000000000)
+                    )
 
 
     @Cog.listener()
@@ -80,6 +82,13 @@ class Ajo(Cog):
             is_begging = await self.bot.manager.is_begging_for_ajo(message)
             if is_begging:
                 await message.add_reaction(AJO)
+
+    # util to decode a redis stream entry
+    async def parseEntry(self, data):
+        res = {}
+        for key, value in data:
+            res[key.decode("utf-8")] = value
+        return res
 
     # AJO/VERAJO
     @command(name="ajo", description="Get your count of ajos.")
