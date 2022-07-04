@@ -4,7 +4,9 @@ local lb_key = KEYS[2]
 local vampire_key = KEYS[3]
 
 local id = ARGV[1]
-local seed = tonumber(ARGV[2])
+local event_version = ARGV[2]
+local guild_id = ARGV[3]
+local seed = tonumber(ARGV[4])
 
 local ttl_per_level = 600
 
@@ -50,6 +52,13 @@ local dmg = math.ceil(current * (pct_dmg / 100))
 redis.call("set", vampire_key, level + 1, "EX", ttl)
 
 -- apply damage, add to stream
-redis.call("xadd", strm_key, "*", "user_id", id, "amount", -dmg)
 redis.call("zincrby", lb_key, -dmg, id)
+redis.call(
+    "xadd", strm_key, "*",
+    "version", event_version,
+    "type", "vampire",
+    "user_id", id,
+    "guild_id", guild_id,
+    "amount", -dmg
+)
 return {"OK", {level, dmg}}
