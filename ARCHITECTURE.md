@@ -81,7 +81,9 @@ All events include a type describing where the change comes from:
 ```
 
 ## Operation examples
-Most operations run through a LUA script to avoid concurrency.  ### `pay.lua`
+Most operations run through a LUA script to avoid concurrency.
+
+### `pay.lua`
 ```
 # 222 pays 4 to 111, with count check:
 # ensure the user can pay
@@ -95,8 +97,25 @@ Most operations run through a LUA script to avoid concurrency.  ### `pay.lua`
 ```
 # Axl#0001 daily award
 # ensure the user can be rewarded
-> ttl Axl#0001:daily
+> ttl 222:daily
 # reward and block until next
-> zincrby lb 32 Axl#0001
-> set Axl#0001 1 EX 86400
+> zincrby lb 32 222
+> set 222 1 EX 86400
 ```
+
+### Event guidelines
+Events MUST include the following attributes at least:
+* `version` the version of the event
+* `type` the type of the event
+* `user_id` the user identifier to which the event applied
+* `guild_id` the guild identifier where the event applied (0 if none)
+
+### LUA guidelines
+The priority of keys for LUA scripts is the following:
+* first the stream keys
+* next any other key which is required
+
+The priority for arguments of LUA scripts is the following:
+* first the arguments required for the operation
+* next the arguments required for events
+* last the seed used for random if any
