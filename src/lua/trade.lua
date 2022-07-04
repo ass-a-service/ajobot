@@ -7,6 +7,8 @@ local source_id = ARGV[1]
 local target_id = ARGV[2]
 local item = ARGV[3]
 local quantity = math.ceil(tonumber(ARGV[4]))
+local event_version = ARGV[5]
+local guild_id = ARGV[6]
 
 -- FIXME: move this to redis maybe?
 local items = { -- max stack of items
@@ -50,10 +52,26 @@ end
 
 -- decrease source stack, increase target stack, pass it to stream
 redis.call("hincrby", source_inv_key, item, -quantity)
-redis.call("xadd", strm_key, "*", "user_id", source_id, "item", item, "quantity", -quantity, "type", "trader")
+redis.call(
+    "xadd", strm_key, "*",
+    "version", event_version,
+    "type", "trader",
+    "user_id", source_id,
+    "guild_id", guild_id,
+    "item", item,
+    "quantity", -quantity
+)
 if incr_quantity > 0 then
     redis.call("hincrby", target_inv_key, item, incr_quantity)
-    redis.call("xadd", strm_key, "*", "user_id", target_id, "item", item, "quantity", incr_quantity, "type", "tradee")
+    redis.call(
+        "xadd", strm_key, "*",
+        "version", event_version,
+        "type", "tradee",
+        "user_id", target_id,
+        "guild_id", guild_id,
+        "item", item,
+        "quantity", incr_quantity
+    )
 end
 
 return {"OK", true}

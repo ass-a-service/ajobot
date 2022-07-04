@@ -6,6 +6,8 @@ local timely_key = KEYS[3]
 local id = ARGV[1]
 local reward = math.ceil(tonumber(ARGV[2]))
 local expire = tonumber(ARGV[3])
+local event_version = ARGV[4]
+local guild_id = ARGV[5]
 
 -- is this reward available?
 local ttl = tonumber(redis.call("ttl", timely_key))
@@ -17,5 +19,12 @@ redis.call("zincrby", lb_key, reward, id)
 redis.call("set", timely_key, 1, "ex", expire)
 
 -- append data to stream
-redis.call("xadd", strm_key, "*", "user_id", id, "amount", reward, "type", "timely_reward")
+redis.call(
+    "xadd", strm_key, "*",
+    "version", event_version,
+    "type", "timely_reward",
+    "user_id", id,
+    "guild_id", guild_id,
+    "amount", reward
+)
 return {"OK", reward}

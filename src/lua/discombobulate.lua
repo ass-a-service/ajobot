@@ -6,7 +6,9 @@ local exp_key = KEYS[3]
 local source_id = ARGV[1]
 local target_id = ARGV[2]
 local offer = math.ceil(tonumber(ARGV[3]))
-local seed = tonumber(ARGV[4])
+local event_version = ARGV[4]
+local guild_id = ARGV[5]
+local seed = tonumber(ARGV[6])
 
 -- sanity checks
 if offer < 1 then
@@ -46,6 +48,20 @@ redis.call("zincrby", lb_key, -dmg, target_id)
 redis.call("set", exp_key, 1, "ex", percent * 1800)
 
 -- append data to stream
-redis.call("xadd", strm_key, "*", "user_id", source_id, "amount", -offer, "type", "discombobulator")
-redis.call("xadd", strm_key, "*", "user_id", target_id, "amount", -dmg, "type", "discombobulatee")
+redis.call(
+    "xadd", strm_key, "*",
+    "version", event_version,
+    "type", "discombobulator",
+    "user_id", source_id,
+    "guild_id", guild_id,
+    "amount", -offer
+)
+redis.call(
+    "xadd", strm_key, "*",
+    "version", event_version,
+    "type", "discombobulatee",
+    "user_id", target_id,
+    "guild_id", guild_id,
+    "amount", -dmg
+)
 return {"OK", dmg}
