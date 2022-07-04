@@ -4,7 +4,9 @@ local lb_key = KEYS[2]
 
 local id = ARGV[1]
 local amount = math.ceil(tonumber(ARGV[2]))
-local seed = tonumber(ARGV[3])
+local event_version = ARGV[3]
+local guild_id = ARGV[4]
+local seed = tonumber(ARGV[5])
 
 -- sanity checks
 if amount < 1 then
@@ -29,5 +31,12 @@ end
 redis.call("zincrby", lb_key, change, id)
 
 -- append data to stream
-redis.call("xadd", strm_key, "*", "user_id", id, "amount", change)
+redis.call(
+    "xadd", strm_key, "*",
+    "version", event_version,
+    "type", "gamble",
+    "user_id", id,
+    "guild_id", guild_id,
+    "amount", change
+)
 return {"OK", change}

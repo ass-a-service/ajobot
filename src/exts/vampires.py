@@ -10,6 +10,7 @@ from src.impl.bot import Bot
 
 LEADERBOARD = "lb"
 AJOBUS = "ajobus"
+EVENT_VERSION = 1
 
 class Vampires(Cog):
     def __init__(self, bot: Bot) -> None:
@@ -25,13 +26,15 @@ class Vampires(Cog):
             return
 
         vampire_key = f"{message.author.id}:vampire"
-        err, res = self.bot.manager.redis.evalsha(
+        _, res = self.bot.manager.redis.evalsha(
             environ["vampire"],
             3,
             AJOBUS,
             LEADERBOARD,
             vampire_key,
             message.author.id,
+            EVENT_VERSION,
+            0 if message.guild is None else message.guild.id,
             time.time_ns()-(int(time.time())*1000000000)
         )
 
