@@ -3,7 +3,7 @@ set -euf
 
 PATHS="discombobulate gamble pay timely_reward setne roulette roulette_shot"
 PATHS="${PATHS} farm_inventory use_chopsticks use_cross craft_ajo_necklace"
-PATHS="${PATHS} trade see_inventory vampire"
+PATHS="${PATHS} trade see_inventory"
 
 for path in ${PATHS}; do
     sha=$(redis-cli -h ${REDIS_HOST} -x script load < src/lua/$path.lua)
