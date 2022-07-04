@@ -30,7 +30,8 @@ redis.call(
 
 -- the vampire level in redis is the level which will appear next, not current
 local vampire_level = tonumber(redis.call("get", vampire_key))
-if not vampire_level or vampire_level < 1 then
+if not vampire_level or vampire_level < 2 then
+    -- if there's no vampire or the level is default, nothing to do
     return {"OK", 1}
 end
 
