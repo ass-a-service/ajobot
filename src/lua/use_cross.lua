@@ -30,7 +30,7 @@ redis.call(
 
 -- the vampire level in redis is the level which will appear next, not current
 local vampire_level = tonumber(redis.call("get", vampire_key))
-if not vampire_level then
+if not vampire_level or vampire_level < 1 then
     return {"OK", 1}
 end
 
@@ -38,5 +38,4 @@ end
 local new_level = vampire_level - 1
 local ttl = math.min(ttl_per_level * new_level, 7200)
 redis.call("set", vampire_key, new_level, "EX", ttl)
-
 return {"OK", new_level}

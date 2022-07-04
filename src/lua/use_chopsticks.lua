@@ -26,5 +26,5 @@ redis.call(
     "quantity", -1
 )
 
-local res = redis.call("del", vampire_key)
-return {"OK", 0}
+redis.call("del", vampire_key)
+return {"OK", 1}
