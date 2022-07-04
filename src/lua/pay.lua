@@ -13,6 +13,10 @@ if amount < 1 then
     return {"err", false}
 end
 
+if source_id == target_id then
+    return {"futile", false}
+end
+
 -- can we pay that much?
 local source_amount = tonumber(redis.call("zscore", lb_key, source_id))
 if not source_amount or source_amount < amount then

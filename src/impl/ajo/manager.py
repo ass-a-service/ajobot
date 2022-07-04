@@ -164,6 +164,8 @@ class AjoManager:
         match err.decode("utf-8"):
             case "err":
                 reply = "You cannot pay this amount."
+            case "futile":
+                reply = "It is futile."
             case "funds":
                 reply = "You do not have enough ajos to pay that much."
             case "OK":
@@ -229,6 +231,8 @@ class AjoManager:
         match err.decode("utf-8"):
             case "err":
                 reply = "You cannot discombobulate this amount."
+            case "futile":
+                reply = "It is futile."
             case "ttl":
                 td = timedelta(seconds=int(res))
                 reply = f"You cannot discombobulate yet, next in {td}."
@@ -402,6 +406,8 @@ class AjoManager:
                 reply = f"No hablo {item}."
             case "err" | "funds":
                 reply = f"You do not have enough {item}."
+            case "futile":
+                reply = "It is futile."
             case "OK":
                 reply = f"You have traded {item} to [[TO_USER]]."
 

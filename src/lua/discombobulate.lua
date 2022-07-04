@@ -15,6 +15,10 @@ if offer < 1 then
     return {"err", false}
 end
 
+if source_id == target_id then
+    return {"futile", false}
+end
+
 -- can we discombobulate?
 local ttl = tonumber(redis.call("ttl", exp_key))
 if ttl > 0 then

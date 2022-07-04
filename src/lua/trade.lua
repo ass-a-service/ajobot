@@ -30,6 +30,10 @@ if quantity < 1 then
     return {"err", false}
 end
 
+if source_id == target_id then
+    return {"futile", false}
+end
+
 -- ensure we actually own the item
 local source_stack = tonumber(redis.call("hget", source_inv_key, item))
 if not source_stack or source_stack < 1 then
