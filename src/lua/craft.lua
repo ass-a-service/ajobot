@@ -5,6 +5,8 @@ local lb_key = KEYS[3]
 
 local item = ARGV[1]
 local user_id = ARGV[2]
+local event_version = ARGV[3]
+local guild_id = ARGV[4]
 
 -- implement here the items to potentially earn
 -- FIXME: move this to redis maybe?
@@ -59,5 +61,13 @@ end
 
 -- give the item to the user
 stack = redis.call("hincrby", inventory_key, item, 1)
-redis.call("xadd", strm_key, "*", "user_id", user_id, "item", item, "quantity", 1)
+redis.call(
+    "xadd", strm_key, "*",
+    "version", event_version,
+    "type", "item_crafted",
+    "user_id", user_id,
+    "guild_id", guild_id,
+    "item", item,
+    "quantity", 1
+)
 return {"OK", {item, stack}}
