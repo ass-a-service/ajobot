@@ -22,6 +22,7 @@ TIMELY = {
 LEADERBOARD = "lb"
 AJOBUS = "ajobus"
 AJOBUS_INVENTORY = "ajobus-inventory"
+EVENT_VERSION = 1
 
 class AjoManager:
     def __init__(self) -> None:
@@ -102,7 +103,12 @@ class AjoManager:
 
         return embed
 
-    async def gamble_ajo(self, user_id: str, amount: str) -> str:
+    async def gamble_ajo(
+        self,
+        user_id: str,
+        amount: str,
+        guild_id: str
+    ) -> str:
         if amount.isnumeric():
             amount = int(amount)
         elif amount == "all":
@@ -117,6 +123,8 @@ class AjoManager:
             LEADERBOARD,
             user_id,
             amount,
+            EVENT_VERSION,
+            guild_id,
             self.__get_seed()
         )
 
@@ -134,7 +142,13 @@ class AjoManager:
 
         return reply
 
-    async def pay_ajo(self, from_user_id: str, to_user_id: str, amount: int) -> str:
+    async def pay_ajo(
+        self,
+        from_user_id: str,
+        to_user_id: str,
+        amount: int,
+        guild_id: str
+    ) -> str:
         err, res = self.redis.evalsha(
             environ["pay"],
             2,
@@ -142,12 +156,16 @@ class AjoManager:
             LEADERBOARD,
             from_user_id,
             to_user_id,
-            amount
+            amount,
+            EVENT_VERSION,
+            guild_id
         )
 
         match err.decode("utf-8"):
             case "err":
                 reply = "You cannot pay this amount."
+            case "futile":
+                reply = "It is futile."
             case "funds":
                 reply = "You do not have enough ajos to pay that much."
             case "OK":
@@ -156,7 +174,7 @@ class AjoManager:
 
         return reply
 
-    async def __claim_timely(self, user_id: str, type: str,) -> str:
+    async def __claim_timely(self, user_id: str, type: str, guild_id: str) -> str:
         exp_key = f"{user_id}:{type}"
         reward, expire = TIMELY[type]
         err, res = self.redis.evalsha(
@@ -167,7 +185,9 @@ class AjoManager:
             exp_key,
             user_id,
             reward,
-            expire
+            expire,
+            EVENT_VERSION,
+            guild_id
         )
 
         match err.decode("utf-8"):
@@ -180,13 +200,19 @@ class AjoManager:
 
         return reply
 
-    async def claim_daily(self, user_id: int) -> str:
-        return await self.__claim_timely(user_id, "daily")
+    async def claim_daily(self, user_id: int, guild_id: str) -> str:
+        return await self.__claim_timely(user_id, "daily", guild_id)
 
-    async def claim_weekly(self, user_id: int) -> str:
-        return await self.__claim_timely(user_id, "weekly")
+    async def claim_weekly(self, user_id: int, guild_id: str) -> str:
+        return await self.__claim_timely(user_id, "weekly", guild_id)
 
-    async def discombobulate(self, from_user_id: str, to_user_id: str, amount: int) -> str:
+    async def discombobulate(
+        self,
+        from_user_id: str,
+        to_user_id: str,
+        amount: int,
+        guild_id: str
+    ) -> str:
         exp_key = f"{from_user_id}:discombobulate"
         err, res = self.redis.evalsha(
             environ["discombobulate"],
@@ -197,12 +223,16 @@ class AjoManager:
             from_user_id,
             to_user_id,
             amount,
+            EVENT_VERSION,
+            guild_id,
             self.__get_seed()
         )
 
         match err.decode("utf-8"):
             case "err":
                 reply = "You cannot discombobulate this amount."
+            case "futile":
+                reply = "It is futile."
             case "ttl":
                 td = timedelta(seconds=int(res))
                 reply = f"You cannot discombobulate yet, next in {td}."
@@ -237,7 +267,7 @@ class AjoManager:
 
         return reply
 
-    async def roulette_shot(self, user_id: str, roulette_id: str) -> str:
+    async def roulette_shot(self, user_id: str, roulette_id: str, guild_id: str) -> str:
         roulette_key = f"roulette:{roulette_id}"
         err, res = self.redis.evalsha(
             environ["roulette_shot"],
@@ -245,7 +275,9 @@ class AjoManager:
             AJOBUS,
             LEADERBOARD,
             roulette_key,
-            user_id
+            user_id,
+            EVENT_VERSION,
+            guild_id
         )
 
         match err.decode("utf-8"):
@@ -267,11 +299,13 @@ class AjoManager:
             colour=0x87CEEB,
         )
         for item_name, item_amount in items:
-            embed.add_field(
-                name=f"{item_name.decode()}",
-                value=f"{int(item_amount)}",
-                inline=True,
-            )
+            item_amount = int(item_amount)
+            if item_amount > 0:
+                embed.add_field(
+                    name=f"{item_name.decode()}",
+                    value=f"{int(item_amount)}",
+                    inline=True,
+                )
 
         return embed
 
@@ -280,7 +314,7 @@ class AjoManager:
         return await self.__build_inventory(res.items())
 
     # same as get_inventory, but you pay for it
-    async def see_inventory(self, from_user_id: str, to_user_id: str) -> Embed | str:
+    async def see_inventory(self, from_user_id: str, to_user_id: str, guild_id: str) -> Embed | str:
         inventory_key = f"{to_user_id}:inventory"
 
         err, res = self.redis.evalsha(
@@ -289,7 +323,9 @@ class AjoManager:
             AJOBUS,
             LEADERBOARD,
             inventory_key,
-            from_user_id
+            from_user_id,
+            EVENT_VERSION,
+            guild_id
         )
 
         match err.decode("utf-8"):
@@ -302,7 +338,7 @@ class AjoManager:
 
         return reply
 
-    async def use(self, user_id: str, item: str) -> str:
+    async def use(self, user_id: str, item: str, guild_id: str) -> str:
         inventory_key = f"{user_id}:inventory"
         vampire_key = f"{user_id}:vampire"
 
@@ -324,7 +360,9 @@ class AjoManager:
             inventory_key,
             vampire_key,
             user_id,
-            item
+            item,
+            EVENT_VERSION,
+            guild_id
         )
 
         match err.decode("utf-8"):
@@ -336,7 +374,14 @@ class AjoManager:
 
         return reply
 
-    async def trade(self, from_user_id: str, to_user_id: str, item: str, qty: int) -> str:
+    async def trade(
+        self,
+        from_user_id: str,
+        to_user_id: str,
+        item: str,
+        qty: int,
+        guild_id: str
+    ) -> str:
         # translate the emojis to redis compatible
         item = self.__translate_emoji(item)
         from_inventory_key = f"{from_user_id}:inventory"
@@ -351,7 +396,9 @@ class AjoManager:
             from_user_id,
             to_user_id,
             item,
-            qty
+            qty,
+            EVENT_VERSION,
+            guild_id
         )
 
         match err.decode("utf-8"):
@@ -359,12 +406,14 @@ class AjoManager:
                 reply = f"No hablo {item}."
             case "err" | "funds":
                 reply = f"You do not have enough {item}."
+            case "futile":
+                reply = "It is futile."
             case "OK":
                 reply = f"You have traded {item} to [[TO_USER]]."
 
         return reply
 
-    async def craft(self, user_id: str, item: str) -> str:
+    async def craft(self, user_id: str, item: str, guild_id: str) -> str:
         inventory_key = f"{user_id}:inventory"
 
         # translate the emojis to redis compatible
@@ -384,7 +433,9 @@ class AjoManager:
             inventory_key,
             LEADERBOARD,
             item,
-            user_id
+            user_id,
+            EVENT_VERSION,
+            guild_id
         )
 
         match err.decode("utf-8"):

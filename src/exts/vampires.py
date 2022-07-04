@@ -6,6 +6,8 @@ from disnake.ext.commands import Cog
 
 from src.impl.bot import Bot
 
+EVENT_VERSION = 1
+
 class Vampires(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
@@ -47,7 +49,13 @@ class Vampires(Cog):
 
         self.bot.manager.redis.xadd(
             "ajobus",
-            {"amount": -to_pay, "user_id": message.author.id},
+            {
+                "version": EVENT_VERSION,
+                "type": "vampire",
+                "user_id": message.author.id,
+                "guild_id": 0 if message.guild is None else message.guild.id,
+                "amount": -to_pay
+            },
             "*",
         )
 
