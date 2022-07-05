@@ -12,8 +12,9 @@
 | string     | `{id}:daily`       | user daily reward expiration |
 | string     | `{id}:weekly`      | user daily reward expiration |
 | string     | `{id}:vampire`     | user next vampire level |
-| hash       | `items:{item}`     | item data |
-| list       | `drop-rate`        | item drop rate |
+| hash       | `items:{item}`     | item data (bootstrapped) |
+| list       | `craft:{item}`     | item craft data (bootstrapped) |
+| list       | `drop-rate`        | item drop rate (bootstrapped) |
 
 ### Identifier
 The ajo-bot uses discord's user ID, a redis key holds its discord username.
@@ -51,22 +52,34 @@ LUA script since we should not access dynamically generated keys from LUA.
 ```
 # example setup
 > del drop-rate
-> lpush drop-rate ":cross:" 500 10
-> lpush drop-rate ":herb:" 1000 20
+> rpush drop-rate ":cross:" 500 10
+> rpush drop-rate ":herb:" 1000 20
 ```
 
 ### Item data
-This hash contains information on how to craft an item and its max stack.
-It is loaded at bootstrap in redis.
+This hash contains information on items, currently the only worthy information
+is the maximum stack. It is loaded at bootstrap in redis.
 
 Note: since the identifier of some items is a discord emoji, the `:` separation
 standard is not respected.
 
 ```
 # example setup
+> del items::cross:
 > hset items::cross: max_stack 10 currency ":herb:" price 4
 > hset items::reminder_ribbon: max_stack 10 currency ":garlic:" price 50
 > hset items::chopsticks: max_stack 1
+```
+
+### Craft data
+This list contains each currencies and the price required to craft the item.
+It is loaded at bootstrap in redis.
+
+```
+# example setup
+> del craft::cross:
+> rpush craft::cross: ":garlic:" 50
+> rpush craft::reminder_ribbon: ":herb:" 4
 ```
 
 ### User keys
