@@ -14,6 +14,6 @@ for path in ${PATHS}; do
 done
 
 # bootstrap item data
-python bootstrap_items.py | redis-cli -h ${REDIS_HOST} --pipe
+python bootstrap_items.py | redis-cli -h ${REDIS_HOST} --pipe >/dev/null
 
 poetry run task start
