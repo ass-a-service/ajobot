@@ -1,6 +1,21 @@
 # ARCHITECTURE
 
 ## Redis data structure
+### Key list
+| Type       | Format             | Description |
+|------------|--------------------|-------------|
+| sorted set | `lb`               | ajo leaderboard |
+| stream     | `ajobus`           | ajo changes |
+| stream     | `ajobus-inventory` | inventory changes |
+| string     | `{id}`             | user human id |
+| hash       | `{id}:inventory`   | user inventory |
+| string     | `{id}:daily`       | user daily reward expiration |
+| string     | `{id}:weekly`      | user daily reward expiration |
+| string     | `{id}:vampire`     | user next vampire level |
+| hash       | `items:{item}`     | item data (bootstrapped) |
+| list       | `craft:{item}`     | item craft data (bootstrapped) |
+| list       | `drop-rate`        | item drop rate (bootstrapped) |
+
 ### Identifier
 The ajo-bot uses discord's user ID, a redis key holds its discord username.
 This key is checked and changed if necessary on each operation.
@@ -24,6 +39,47 @@ The leaderboard is a redis sorted set connecting a user ID to his score.
 # leaderboard implemented as a sorted set
 > zincrby lb 7 "111"
 > zincrby lb 4 "222"
+```
+
+### Drop rate
+This list contains both items drop rate and their max stack.
+It is loaded at bootstrap in redis.
+
+Note: in practice, we need the farm script to know both the drop rate and the
+max stack possible. The list is here to avoid passing all the item keys to the
+LUA script since we should not access dynamically generated keys from LUA.
+
+```
+# example setup
+> del drop-rate
+> rpush drop-rate ":cross:" 500 10
+> rpush drop-rate ":herb:" 1000 20
+```
+
+### Item data
+This hash contains information on items, currently the only worthy information
+is the maximum stack. It is loaded at bootstrap in redis.
+
+Note: since the identifier of some items is a discord emoji, the `:` separation
+standard is not respected.
+
+```
+# example setup
+> del items::cross:
+> hset items::cross: max_stack 10 currency ":herb:" price 4
+> hset items::reminder_ribbon: max_stack 10 currency ":garlic:" price 50
+> hset items::chopsticks: max_stack 1
+```
+
+### Craft data
+This list contains each currencies and the price required to craft the item.
+It is loaded at bootstrap in redis.
+
+```
+# example setup
+> del craft::cross:
+> rpush craft::cross: ":garlic:" 50
+> rpush craft::reminder_ribbon: ":herb:" 4
 ```
 
 ### User keys

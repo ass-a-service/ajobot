@@ -2,6 +2,7 @@
 local strm_key = KEYS[1]
 local source_inv_key = KEYS[2]
 local target_inv_key = KEYS[3]
+local item_key = KEYS[4]
 
 local source_id = ARGV[1]
 local target_id = ARGV[2]
@@ -10,17 +11,8 @@ local quantity = math.ceil(tonumber(ARGV[4]))
 local event_version = ARGV[5]
 local guild_id = ARGV[6]
 
--- FIXME: move this to redis maybe?
-local items = { -- max stack of items
-    [":sauropod:"] = 1,
-    [":chopsticks:"] = 5,
-    [":cross:"] = 10,
-    [":bomb:"] = 1,
-    [":reminder_ribbon:"] = 1
-}
-
 -- if the item to trade is unknown, quit
-local max_stack = items[item]
+local max_stack = tonumber(redis.call("hget", item_key, "max_stack"))
 if not max_stack then
     return {"unknown", false}
 end

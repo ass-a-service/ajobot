@@ -35,14 +35,16 @@ class AjoManager:
 
     def __translate_emoji(self, txt: str) -> str:
         match txt:
-            case "🥢":
+            case "chopsticks" | "🥢":
                 txt = ":chopsticks:"
-            case "✝️":
+            case "cross" | "✝️":
                 txt = ":cross:"
-            case "🧄":
+            case "ajo" | "garlic" | "🧄":
                 txt = ":garlic:"
-            case "🎗️":
+            case "ajo_necklace" | "🎗️":
                 txt = ":reminder_ribbon:"
+            case "herb" | "🌿":
+                txt = ":herb:"
 
         return txt
 
@@ -386,13 +388,15 @@ class AjoManager:
         item = self.__translate_emoji(item)
         from_inventory_key = f"{from_user_id}:inventory"
         to_inventory_key = f"{to_user_id}:inventory"
+        item_key = f"items:{item}"
 
         err, res = self.redis.evalsha(
             environ["trade"],
-            3,
+            4,
             AJOBUS_INVENTORY,
             from_inventory_key,
             to_inventory_key,
+            item_key,
             from_user_id,
             to_user_id,
             item,
@@ -403,7 +407,7 @@ class AjoManager:
 
         match err.decode("utf-8"):
             case "unknown":
-                reply = f"No hablo {item}."
+                reply = f"Unknown item {item}."
             case "err" | "funds":
                 reply = f"You do not have enough {item}."
             case "futile":
@@ -418,20 +422,18 @@ class AjoManager:
 
         # translate the emojis to redis compatible
         item = self.__translate_emoji(item)
-
-        match item:
-            case ":reminder_ribbon:" | "ajo_necklace":
-                item = ":reminder_ribbon:"
-                script = "craft_ajo_necklace"
-            case _:
-                return f"Unknown item {item}."
+        craft_key = f"craft:{item}"
+        item_key = f"items:{item}"
 
         err, res = self.redis.evalsha(
-            environ[script],
-            3,
-            "ajobus-inventory",
-            inventory_key,
+            environ["craft"],
+            6,
+            AJOBUS,
+            AJOBUS_INVENTORY,
             LEADERBOARD,
+            inventory_key,
+            item_key,
+            craft_key,
             item,
             user_id,
             EVENT_VERSION,
@@ -439,13 +441,15 @@ class AjoManager:
         )
 
         match err.decode("utf-8"):
-            case "err":
-                reply = f"You cannot craft the {item} item."
-            case "OK":
-                reply = f"You have crafted {item} successfully."
-            case "funds":
-                reply = f"You do not have enough ajos."
+            case "unknown":
+                reply = f"Unknown item {item}."
             case "stack":
                 reply = f"You cannot craft more {item}!"
+            case "funds":
+                currency = res[0].decode("utf-8")
+                price = res[1]
+                reply = f"You do not have enough materials, needs {price} {currency}."
+            case "OK":
+                reply = f"You have crafted {item} successfully."
 
         return reply
