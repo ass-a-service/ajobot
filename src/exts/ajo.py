@@ -10,6 +10,8 @@ from os import environ
 AJO = "🧄"
 LEADERBOARD = "lb"
 EVENT_VERSION = 1
+AJOBUS = "ajobus"
+AJOBUS_INVENTORY = "ajobus-inventory"
 
 class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
@@ -23,12 +25,12 @@ class Ajo(Cog):
         # Create the xreadgroup once
         # TODO: better do this outside of this fn
         try:
-            redis.xgroup_create("ajobus","ajo-python",0, mkstream=True)
+            redis.xgroup_create(AJOBUS,"ajo-python",0, mkstream=True)
         except ResponseError as e:
             if str(e) != "BUSYGROUP Consumer Group name already exists":
                 raise e
 
-        data = redis.xreadgroup("ajo-python","ajo.py",streams={"ajobus": ">"},count=100)
+        data = redis.xreadgroup("ajo-python","ajo.py",streams={AJOBUS: ">"},count=100)
         # stream_name, chunk
         for _, chunk in data:
             # entry_id, entry_data
@@ -38,8 +40,8 @@ class Ajo(Cog):
                     user_id = entry["user_id"]
                     redis.evalsha(
                         environ['farm_inventory'],
-                        3,
-                        "ajobus-inventory",
+                        4,
+                        AJOBUS_INVENTORY,
                         "drop-rate",
                         LEADERBOARD,
                         user_id + ":inventory",
@@ -79,7 +81,7 @@ class Ajo(Cog):
             )
 
             self.bot.manager.redis.xadd(
-                "ajobus",
+                AJOBUS,
                 {
                     "version": EVENT_VERSION,
                     "type": "farm",
@@ -98,7 +100,7 @@ class Ajo(Cog):
     async def parseEntry(self, data):
         res = {}
         for key, value in data.items():
-            res[key.decode("utf-8")] = value
+            res[key.decode("utf-8")] = value.decode("utf-8")
         return res
 
     async def getGuildId(self, guild: Guild) -> str:
