@@ -1,68 +1,89 @@
 --! file: craft.lua
-local strm_key = KEYS[1]
-local inventory_key = KEYS[2]
+local ajo_strm_key = KEYS[1]
+local inv_strm_key = KEYS[2]
 local lb_key = KEYS[3]
+local inventory_key = KEYS[4]
+local item_key = KEYS[5]
+local craft_key = KEYS[6]
 
 local item = ARGV[1]
 local user_id = ARGV[2]
 local event_version = ARGV[3]
 local guild_id = ARGV[4]
 
--- implement here the items to potentially earn
--- FIXME: move this to redis maybe?
-local items = {
-    -- structure is { <%% chance>, <max stack> }
-    [":cross:"] = {["max_stack"]=10, ["currency"]={[":herb:"]=4}},
-    [":reminder_ribbon:"] = {["max_stack"]=1, ["currency"]="ajos", ["price"]=50}
-}
-
-local max_stack = items[item]["max_stack"]
-
--- do we have another cross? It cannot stack!
+-- ensure we have not reached the max stack yet
 local stack = tonumber(redis.call("hget", inventory_key, item))
-
 if not stack then
     stack = 0
 end
 
-if stack >= max_stack then
+local max_stack = tonumber(redis.call("hget", item_key, "max_stack"))
+if not max_stack then
+    return {"unknown", false}
+elseif stack >= max_stack then
     return {"stack", false}
 end
 
--- does the user has enough?
-if items[item]["currency"] == "ajos" then
-    -- if it's paid with ajos: do we have enough ajos?
-    local user_ajos = tonumber(redis.call("zscore", lb_key, user_id))
-    if user_ajos < items[item]["price"] then
-        return {"funds", false}
+-- retrieve item data, check if we can pay for everything
+local item_data = redis.call("lrange", craft_key, 0, -1)
+if not item_data then
+    return {"unknown", false}
+end
+
+-- assumes that it is not possible to have the same currency multiple times
+local size = #item_data
+local index = 1
+local pay, funds
+while index < size do
+    currency = vals[index]
+    price = vals[index + 1]
+
+    -- all currencies are from inventory apart from garlics
+    if currency == ":garlic:" then
+        funds = tonumber(redis.call("zscore", lb_key, user_id))
+    else
+        funds = tonumber(redis.call("hget", inventory_key, currency))
     end
-else
-    -- if it's paid with items: do we have enough items?
-    local inventory_funds
-    for item_loop, amount in pairs(items[item]["currency"]) do
-        inventory_funds = tonumber(redis.call("hget", inventory_key, item_loop))
-        if inventory_funds < amount then
-            return {"funds", false}
-        end
+
+    if not funds or funds < price then
+        return {"funds", {currency, price}}
     end
 end
 
--- remove currency from the user
-if items[item]["currency"] == "ajos" then
-    -- if ajos: remove ajos
-    redis.call("zincrby", lb_key, -items[item]["price"], user_id)
-else
-    -- if inventory: remove inventory
-    for item_loop, amount in pairs(items[item]["currency"]) do
-        --[":cross:"] = {["max_stack"]=10, ["currency"]={[":herb:"]=4}},
-        redis.call("hincrby", inventory_key, item_loop, -amount)
+-- now that we know we can pay, decrease all currencies
+while index < size do
+    currency = vals[index]
+    price = vals[index + 1]
+
+    if currency == ":garlic:" then
+        redis.call("zincrby", lb_key, -price, user_id)
+        redis.call(
+            "xadd", ajo_strm_key, "*",
+            "version", event_version,
+            "type", "craft_fee",
+            "user_id", user_id,
+            "guild_id", guild_id,
+            "item", item,
+            "amount", -price
+        )
+    else
+        redis.call("hincrby", inventory_key, currency, -price)
+        redis.call(
+            "xadd", inv_strm_key, "*",
+            "version", event_version,
+            "type", "craft_fee",
+            "user_id", user_id,
+            "guild_id", guild_id,
+            "item", item,
+            "quantity", -price
+        )
     end
 end
 
--- give the item to the user
+-- finally craft the item
 stack = redis.call("hincrby", inventory_key, item, 1)
 redis.call(
-    "xadd", strm_key, "*",
+    "xadd", inv_strm_key, "*",
     "version", event_version,
     "type", "item_crafted",
     "user_id", user_id,

@@ -22,7 +22,7 @@ end
 math.randomseed(seed)
 local rand = math.random(1, 100000)
 local acc = 0
-local item, stack, drop_rate, max_stack
+local item, drop_rate, max_stack
 
 -- retrieve our drop rate from redis
 local vals = redis.call("lrange", items_key, 0, -1)
@@ -40,7 +40,7 @@ while index < size do
     -- if we're lower than the current chance, we got the item
     if rand <= acc then
         -- ensure we did not reach max stack
-        stack = tonumber(redis.call("hget", inventory_key, item))
+        local stack = tonumber(redis.call("hget", inventory_key, item))
         if not stack or stack < max_stack then
             stack = redis.call("hincrby", inventory_key, item, 1)
             redis.call(

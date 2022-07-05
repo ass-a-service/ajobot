@@ -419,6 +419,8 @@ class AjoManager:
 
     async def craft(self, user_id: str, item: str, guild_id: str) -> str:
         inventory_key = f"{user_id}:inventory"
+        craft_key = f"craft:{item}"
+        item_key = f"items:{item}"
 
         # translate the emojis to redis compatible
         item = self.__translate_emoji(item)
@@ -434,9 +436,12 @@ class AjoManager:
         err, _ = self.redis.evalsha(
             environ[script],
             3,
-            "ajobus-inventory",
-            inventory_key,
+            AJOBUS,
+            AJOBUS_INVENTORY,
             LEADERBOARD,
+            inventory_key,
+            item_key,
+            craft_key,
             item,
             user_id,
             EVENT_VERSION,
