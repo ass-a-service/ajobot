@@ -1,10 +1,14 @@
 # this file is used to generate redis protocol in order to bulk load the
 # item data (max stack, currency, prices, chance to appear)
-def proto(hash_name, hash_data) -> None:
-    # stringify the hash
-    strings = ["HSET", hash_name]
-    for key, value in hash_data.items():
-        strings.extend([key, value])
+def proto(cmd, key, data) -> None:
+    # stringify the data
+    strings = [cmd, key]
+    if isinstance(data, list):
+        for value in data:
+            strings.append(value)
+    else:
+        for key, value in data.items():
+            strings.extend([key, value])
 
     # transform to redis proto
     arg_count = len(strings)
@@ -46,20 +50,21 @@ def main() -> None:
     }
 
     protos = []
-    hdrop_rate = {}
+    drop_rate = []
     for item, item_data in data.items():
         # prepare drop rate hash
         if "drop_rate" in item_data:
-            hdrop_rate[item] = str(item_data["drop_rate"])
+            drop_rate.extend([item, str(item_data["drop_rate"]), str(item_data["max_stack"])])
 
         # prototype the item hash
         hitem = {}
         for key, value in item_data.items():
             hitem[key] = str(value)
-        proto("items:{}".format(item), hitem)
+        proto("HSET", "items:{}".format(item), hitem)
 
-    # prototype drop rate
-    proto("drop-rate", hdrop_rate)
+    # prototype drop rate, but clear it first
+    print("*2\r\n$3\r\nDEL\r\n$9\r\ndrop-rate", end="\r\n")
+    proto("RPUSH", "drop-rate", drop_rate)
 
 
 main()

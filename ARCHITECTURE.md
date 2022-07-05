@@ -13,7 +13,7 @@
 | string     | `{id}:weekly`      | user daily reward expiration |
 | string     | `{id}:vampire`     | user next vampire level |
 | hash       | `items:{item}`     | item data |
-| hash       | `drop-rate`        | item drop rate |
+| list       | `drop-rate`        | item drop rate |
 
 ### Identifier
 The ajo-bot uses discord's user ID, a redis key holds its discord username.
@@ -41,16 +41,23 @@ The leaderboard is a redis sorted set connecting a user ID to his score.
 ```
 
 ### Drop rate
-This hash is a list of items and the chance they have to drop when farming.
+This list contains both items drop rate and their max stack.
 It is loaded at bootstrap in redis.
+
+Note: in practice, we need the farm script to know both the drop rate and the
+max stack possible. The list is here to avoid passing all the item keys to the
+LUA script since we should not access dynamically generated keys from LUA.
 
 ```
 # example setup
-> hset drop-rate ":cross:" 500 ":herb:" 1000
+> del drop-rate
+> lpush drop-rate ":cross:" 500 10
+> lpush drop-rate ":herb:" 1000 20
 ```
 
 ### Item data
 This hash contains information on how to craft an item and its max stack.
+It is loaded at bootstrap in redis.
 
 Note: since the identifier of some items is a discord emoji, the `:` separation
 standard is not respected.
