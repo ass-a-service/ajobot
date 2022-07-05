@@ -35,15 +35,15 @@ class AjoManager:
 
     def __translate_emoji(self, txt: str) -> str:
         match txt:
-            case "🥢":
+            case "chopsticks" | "🥢":
                 txt = ":chopsticks:"
-            case "✝️":
+            case "cross" | "✝️":
                 txt = ":cross:"
-            case "🧄":
+            case "ajo" | "garlic" | "🧄":
                 txt = ":garlic:"
-            case "🎗️":
+            case "ajo_necklace" | "🎗️":
                 txt = ":reminder_ribbon:"
-            case "🌿":
+            case "herb" | "🌿":
                 txt = ":herb:"
 
         return txt
@@ -392,7 +392,7 @@ class AjoManager:
 
         err, res = self.redis.evalsha(
             environ["trade"],
-            3,
+            4,
             AJOBUS_INVENTORY,
             from_inventory_key,
             to_inventory_key,
@@ -407,7 +407,7 @@ class AjoManager:
 
         match err.decode("utf-8"):
             case "unknown":
-                reply = f"No hablo {item}."
+                reply = f"Unknown item {item}."
             case "err" | "funds":
                 reply = f"You do not have enough {item}."
             case "futile":
@@ -425,17 +425,9 @@ class AjoManager:
         craft_key = f"craft:{item}"
         item_key = f"items:{item}"
 
-        match item:
-            case ":reminder_ribbon:" | "ajo_necklace":
-                item = ":reminder_ribbon:"
-            case ":cross:" | "cross":
-                item = ":cross:"
-            case _:
-                return f"Unknown item {item}."
-
-        err, _ = self.redis.evalsha(
+        err, res = self.redis.evalsha(
             environ["craft"],
-            3,
+            6,
             AJOBUS,
             AJOBUS_INVENTORY,
             LEADERBOARD,
@@ -449,13 +441,15 @@ class AjoManager:
         )
 
         match err.decode("utf-8"):
-            case "err":
-                reply = f"You cannot craft the {item} item."
-            case "OK":
-                reply = f"You have crafted {item} successfully."
-            case "funds":
-                reply = f"You do not have enough materials."
+            case "unknown":
+                reply = f"Unknown item {item}."
             case "stack":
                 reply = f"You cannot craft more {item}!"
+            case "funds":
+                currency = res[0].decode("utf-8")
+                price = res[1]
+                reply = f"You do not have enough materials, needs {price} {currency}."
+            case "OK":
+                reply = f"You have crafted {item} successfully."
 
         return reply
