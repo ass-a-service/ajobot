@@ -388,6 +388,7 @@ class AjoManager:
         item = self.__translate_emoji(item)
         from_inventory_key = f"{from_user_id}:inventory"
         to_inventory_key = f"{to_user_id}:inventory"
+        item_key = f"items:{item}"
 
         err, res = self.redis.evalsha(
             environ["trade"],
@@ -395,6 +396,7 @@ class AjoManager:
             AJOBUS_INVENTORY,
             from_inventory_key,
             to_inventory_key,
+            item_key,
             from_user_id,
             to_user_id,
             item,
