@@ -33,10 +33,11 @@ end
 -- assumes that it is not possible to have the same currency multiple times
 local size = #item_data
 local index = 1
-local pay, funds
+local currency, price, funds
 while index < size do
-    currency = vals[index]
-    price = vals[index + 1]
+    currency = item_data[index]
+    price = tonumber(item_data[index + 1])
+    index = index + 2
 
     -- all currencies are from inventory apart from garlics
     if currency == ":garlic:" then
@@ -51,9 +52,11 @@ while index < size do
 end
 
 -- now that we know we can pay, decrease all currencies
+index = 1
 while index < size do
-    currency = vals[index]
-    price = vals[index + 1]
+    currency = item_data[index]
+    price = tonumber(item_data[index + 1])
+    index = index + 2
 
     if currency == ":garlic:" then
         redis.call("zincrby", lb_key, -price, user_id)
