@@ -1,7 +1,8 @@
 --! file: farm_inventory.lua
 local strm_key = KEYS[1]
-local lb_key = KEYS[2]
-local inventory_key = KEYS[3]
+local items_key = KEYS[2]
+local lb_key = KEYS[3]
+local inventory_key = KEYS[4]
 
 local id = ARGV[1]
 local event_version = ARGV[2]
@@ -17,29 +18,24 @@ if not current or current < min_ajos then
     return {"funds", current}
 end
 
--- implement here the items to potentially earn
--- FIXME: move this to redis maybe?
-local items = {
-    -- structure is { <%% chance>, <max stack> }
-    [":sauropod:"] = {["chance"]=1, ["max_stack"]=1},
-    [":chopsticks:"] = {["chance"]=6, ["max_stack"]=5},
-    [":cross:"] = {["chance"]=500, ["max_stack"]=10},
-    [":bomb:"] = {["chance"]=200, ["max_stack"]=1},
-    [":herb:"] = {["chance"]=1000, ["max_stack"]=20}
-}
-
--- destellos / linterna
+-- retrieve redis drop rate and maxstack data
 math.randomseed(seed)
 local rand = math.random(1, 100000)
 local acc = 0
-local stack, chance, max_stack
+local item, stack, drop_rate, max_stack
 
-for item, data in pairs(items) do
-    chance = data["chance"]
-    max_stack = data["max_stack"]
+-- retrieve our drop rate from redis
+local vals = redis.call("lrange", items_key, 0, -1)
+local size = #vals
+local index = 1
+while index < size do
+    item = vals[index]
+    drop_rate = tonumber(vals[index + 1])
+    max_stack = tonumber(vals[index + 2])
+    index = index + 3
 
     -- increase our chance of receiving something
-    acc = acc + chance
+    acc = acc + drop_rate
 
     -- if we're lower than the current chance, we got the item
     if rand <= acc then

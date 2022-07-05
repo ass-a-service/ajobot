@@ -40,6 +40,7 @@ class Ajo(Cog):
                         environ['farm_inventory'],
                         3,
                         "ajobus-inventory",
+                        "drop-rate",
                         LEADERBOARD,
                         user_id + ":inventory",
                         user_id,
