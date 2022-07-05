@@ -1,6 +1,20 @@
 # ARCHITECTURE
 
 ## Redis data structure
+### Key list
+| Type       | Format             | Description |
+|------------|--------------------|-------------|
+| sorted set | `lb`               | ajo leaderboard |
+| stream     | `ajobus`           | ajo changes |
+| stream     | `ajobus-inventory` | inventory changes |
+| string     | `{id}`             | user human id |
+| hash       | `{id}:inventory`   | user inventory |
+| string     | `{id}:daily`       | user daily reward expiration |
+| string     | `{id}:weekly`      | user daily reward expiration |
+| string     | `{id}:vampire`     | user next vampire level |
+| hash       | `items:{item}`     | item data |
+| hash       | `drop-rate`        | item drop rate |
+
 ### Identifier
 The ajo-bot uses discord's user ID, a redis key holds its discord username.
 This key is checked and changed if necessary on each operation.
@@ -24,6 +38,28 @@ The leaderboard is a redis sorted set connecting a user ID to his score.
 # leaderboard implemented as a sorted set
 > zincrby lb 7 "111"
 > zincrby lb 4 "222"
+```
+
+### Drop rate
+This hash is a list of items and the chance they have to drop when farming.
+It is loaded at bootstrap in redis.
+
+```
+# example setup
+> hset drop-rate ":cross:" 500 ":herb:" 1000
+```
+
+### Item data
+This hash contains information on how to craft an item and its max stack.
+
+Note: since the identifier of some items is a discord emoji, the `:` separation
+standard is not respected.
+
+```
+# example setup
+> hset items::cross: max_stack 10 currency ":herb:" price 4
+> hset items::reminder_ribbon: max_stack 10 currency ":garlic:" price 50
+> hset items::chopsticks: max_stack 1
 ```
 
 ### User keys
