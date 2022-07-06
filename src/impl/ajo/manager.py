@@ -363,7 +363,7 @@ class AjoManager:
     async def use_shoe(self, user_id: str, item: str, guild_id: str) -> str:
         inventory_key = f"{user_id}:inventory"
         item_key = "items::athletic_shoe:"
-        ajo_gain_key = f"{user_id}:gain"
+        ajo_gain_key = f"{user_id}:ajo-gain"
 
         err = self.redis.evalsha(
             environ["use_shoe"],

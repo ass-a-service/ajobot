@@ -2,20 +2,20 @@
 
 ## Redis data structure
 ### Key list
-| Type       | Format             | Description |
-|------------|--------------------|-------------|
-| sorted set | `lb`               | ajo leaderboard |
-| stream     | `ajobus`           | ajo changes |
-| stream     | `ajobus-inventory` | inventory changes |
-| string     | `{id}`             | user human id |
-| hash       | `{id}:inventory`   | user inventory |
-| string     | `{id}:daily`       | user daily reward expiration |
-| string     | `{id}:weekly`      | user daily reward expiration |
-| string     | `{id}:vampire`     | user next vampire level |
-| string     | `{id}:gain`        | user ajo farm efficiency |
-| hash       | `items:{item}`     | item data (bootstrapped) |
-| list       | `craft:{item}`     | item craft data (bootstrapped) |
-| list       | `drop-rate`        | item drop rate (bootstrapped) |
+| Type       | Format                     | Description |
+|------------|----------------------------|-------------|
+| sorted set | `lb`                       | ajo leaderboard |
+| stream     | `ajobus`                   | ajo changes |
+| stream     | `ajobus-inventory`         | inventory changes |
+| string     | `{id}`                     | user human id |
+| hash       | `{id}:inventory`           | user inventory |
+| string     | `{id}:daily`               | user daily reward expiration |
+| string     | `{id}:weekly`              | user daily reward expiration |
+| string     | `{id}:vampire`             | user next vampire level |
+| string     | `{id}:ajo-gain`            | user ajo farm efficiency |
+| hash       | `items:{item}`             | item data (bootstrapped) |
+| list       | `craft:{item}`             | item craft data (bootstrapped) |
+| list       | `drop-rate`                | item drop rate (bootstrapped) |
 
 ### Identifier
 The ajo-bot uses discord's user ID, a redis key holds its discord username.

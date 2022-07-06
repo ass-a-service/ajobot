@@ -17,7 +17,7 @@ if level and level > 69 then
 end
 
 -- check our effects for ajo efficiency
-local ajo_gain = redis.call("get", ajo_gain_key)
+local ajo_gain = tonumber(redis.call("get", ajo_gain_key))
 if not ajo_gain then
     ajo_gain = 1
 end

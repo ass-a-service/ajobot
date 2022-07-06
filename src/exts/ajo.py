@@ -62,7 +62,7 @@ class Ajo(Cog):
 
         # Relevant message
         if contains_ajo:
-            ajo_gain_key = f"{message.author.id}:gain"
+            ajo_gain_key = f"{message.author.id}:ajo-gain"
             vampire_key = f"{message.author.id}:vampire"
             res = self.bot.manager.redis.evalsha(
                 environ["ajo"],
