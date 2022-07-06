@@ -54,15 +54,6 @@ class AjoManager:
 
         return txt
 
-    async def __setne_name(self, user_id: str, user_name: str) -> None:
-        # ensure the name we have is correct
-        self.redis.evalsha(
-            environ["setne"],
-            1,
-            user_id,
-            user_name
-        )
-
     async def contains_ajo(self, msg: Message) -> bool:
         txt = msg.content
         itxt = txt.lower()
@@ -71,13 +62,6 @@ class AjoManager:
     async def is_begging_for_ajo(self, msg: Message) -> bool:
         itxt = msg.content.lower()
         return "give me garlic" in itxt or "dame ajo" in itxt
-
-    # we only update a user's name if we give him an ajo
-    async def add_ajo(self, user_id: str, user_name: str, amount: int) -> int:
-        # ensure the name we have is correct
-        await self.__setne_name(user_id, user_name)
-        res = self.redis.zincrby(LEADERBOARD, amount, user_id)
-        return int(res)
 
     async def get_ajo(self, user_id: str) -> int:
         res = self.redis.zscore(LEADERBOARD, user_id)

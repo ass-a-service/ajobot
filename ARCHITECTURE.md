@@ -21,7 +21,6 @@ The ajo-bot uses discord's user ID, a redis key holds its discord username.
 This key is checked and changed if necessary on each operation.
 
 ```
-# file: setne.lua
 > set 111 "Zymna#0001"
 > get 111
 "Zymna#0001"
