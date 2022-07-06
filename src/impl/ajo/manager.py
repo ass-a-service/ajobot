@@ -47,17 +47,12 @@ class AjoManager:
                 txt = ":herb:"
             case "bomb" | "💣":
                 txt = ":bomb:"
+            case "eggplant" | "🍆":
+                txt = ":eggplant:"
+            case "shoe" | "👟":
+                txt = ":athletic_shoe:"
 
         return txt
-
-    async def __setne_name(self, user_id: str, user_name: str) -> None:
-        # ensure the name we have is correct
-        self.redis.evalsha(
-            environ["setne"],
-            1,
-            user_id,
-            user_name
-        )
 
     async def contains_ajo(self, msg: Message) -> bool:
         txt = msg.content
@@ -67,13 +62,6 @@ class AjoManager:
     async def is_begging_for_ajo(self, msg: Message) -> bool:
         itxt = msg.content.lower()
         return "give me garlic" in itxt or "dame ajo" in itxt
-
-    # we only update a user's name if we give him an ajo
-    async def add_ajo(self, user_id: str, user_name: str, amount: int) -> int:
-        # ensure the name we have is correct
-        await self.__setne_name(user_id, user_name)
-        res = self.redis.zincrby(LEADERBOARD, amount, user_id)
-        return int(res)
 
     async def get_ajo(self, user_id: str) -> int:
         res = self.redis.zscore(LEADERBOARD, user_id)
@@ -218,12 +206,14 @@ class AjoManager:
         guild_id: str
     ) -> str:
         exp_key = f"{from_user_id}:discombobulate"
+        buff_key = f"{from_user_id}:discombobulate-buff"
         err, res = self.redis.evalsha(
             environ["discombobulate"],
-            3,
+            4,
             AJOBUS,
             LEADERBOARD,
             exp_key,
+            buff_key,
             from_user_id,
             to_user_id,
             amount,
@@ -342,20 +332,15 @@ class AjoManager:
 
         return reply
 
-    async def use(self, user_id: str, item: str, guild_id: str) -> str:
+    async def use_protection(self, user_id: str, item: str, guild_id: str) -> str:
         inventory_key = f"{user_id}:inventory"
         vampire_key = f"{user_id}:vampire"
-
-        # translate the emojis to redis compatible
-        item = self.__translate_emoji(item)
 
         match item:
             case ":chopsticks:":
                 script = "use_chopsticks"
             case ":cross:":
                 script = "use_cross"
-            case _:
-                return f"Unknown item {item}."
 
         err, res = self.redis.evalsha(
             environ[script],
@@ -373,10 +358,75 @@ class AjoManager:
             case "err":
                 reply = f"You do not have enough {item}."
             case "OK":
-                # FIXME: works because the only items apply to vampire for now
                 reply = f"You have used {item}, vampire level is now {res-1}."
 
         return reply
+
+    async def use_shoe(self, user_id: str, item: str, guild_id: str) -> str:
+        inventory_key = f"{user_id}:inventory"
+        item_key = "items::athletic_shoe:"
+        ajo_gain_key = f"{user_id}:ajo-gain"
+
+        err = self.redis.evalsha(
+            environ["use_shoe"],
+            4,
+            AJOBUS_INVENTORY,
+            inventory_key,
+            item_key,
+            ajo_gain_key,
+            user_id,
+            item,
+            EVENT_VERSION,
+            guild_id
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = f"You do not have enough {item}."
+            case "OK":
+                reply = f"You have used {item}."
+
+        return reply
+
+    async def use_eggplant(self, user_id: str, item: str, guild_id: str) -> str:
+        inventory_key = f"{user_id}:inventory"
+        item_key = "items::eggplant:"
+        buff_key = f"{user_id}:discombobulate-buff"
+
+        err = self.redis.evalsha(
+            environ["use_eggplant"],
+            4,
+            AJOBUS_INVENTORY,
+            inventory_key,
+            item_key,
+            buff_key,
+            user_id,
+            item,
+            EVENT_VERSION,
+            guild_id
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = f"You do not have enough {item}."
+            case "OK":
+                reply = f"You have used {item}."
+
+        return reply
+
+    async def use(self, user_id: str, item: str, guild_id: str) -> str:
+        # translate the emojis to redis compatible
+        item = self.__translate_emoji(item)
+
+        match item:
+            case ":chopsticks:" | ":cross:":
+                return await self.use_protection(user_id, item, guild_id)
+            case ":athletic_shoe:":
+                return await self.use_shoe(user_id, item, guild_id)
+            case ":eggplant:":
+                return await self.use_eggplant(user_id, item, guild_id)
+            case _:
+                return f"Unknown item {item}."
 
     async def trade(
         self,

@@ -2,6 +2,7 @@
 local strm_key = KEYS[1]
 local lb_key = KEYS[2]
 local exp_key = KEYS[3]
+local buff_key = KEYS[4]
 
 local source_id = ARGV[1]
 local target_id = ARGV[2]
@@ -38,9 +39,19 @@ if not target_amount or offer < min_offer then
     return {"offer", min_offer}
 end
 
--- dmg is 69 to 200% of offered
+-- dmg is 69 to 200% of offered, but can be buffed
 math.randomseed(seed)
-local percent = math.random(69, 200)
+local min = 69
+local max = 200
+local percent = math.random(min, max)
+local ttl = percent * 1800
+
+-- the damage percent may be buffed (but not its expiration)
+local buff = tonumber(redis.call("get", buff_key))
+if buff and buff > 0 then
+    percent = percent + buff
+end
+
 local dmg = math.floor(percent / 100 * offer)
 if target_amount - dmg < 0 then
     dmg = target_amount
@@ -49,7 +60,7 @@ end
 -- lock for percentage done in hours
 redis.call("zincrby", lb_key, -offer, source_id)
 redis.call("zincrby", lb_key, -dmg, target_id)
-redis.call("set", exp_key, 1, "ex", percent * 1800)
+redis.call("set", exp_key, 1, "ex", ttl)
 
 -- append data to stream
 redis.call(

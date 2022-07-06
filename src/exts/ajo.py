@@ -62,35 +62,24 @@ class Ajo(Cog):
 
         # Relevant message
         if contains_ajo:
-            # 1. Log the message into the timeseries redis
-            # Hotfix
+            ajo_gain_key = f"{message.author.id}:ajo-gain"
             vampire_key = f"{message.author.id}:vampire"
-            vampire_level = self.bot.manager.redis.get(vampire_key) or 1
-            vampire_level = int(vampire_level) # TODO: Fixme
-            if vampire_level > 69:
-                return
-
-            # Log the guild +1 ajo message
-            #self.bot.manager.redis_ts.add(f"ajoseries:{message.guild.id}:{message.author.id}", int(message.created_at.timestamp()), 1, labels={"guild": message.guild.id, "author": message.author.id})
-
-            # 2. Process the message
-            await self.bot.manager.add_ajo(
+            res = self.bot.manager.redis.evalsha(
+                environ["ajo"],
+                5,
+                AJOBUS,
+                LEADERBOARD,
+                ajo_gain_key,
+                vampire_key,
+                message.author.id,
                 message.author.id,
                 f"{message.author.name}#{message.author.discriminator}",
-                1
+                EVENT_VERSION,
+                message.guild.id # farm always has a guild
             )
 
-            self.bot.manager.redis.xadd(
-                AJOBUS,
-                {
-                    "version": EVENT_VERSION,
-                    "type": "farm",
-                    "user_id": message.author.id,
-                    "guild_id": message.guild.id,
-                    "amount": 1
-                },
-                "*",
-            )
+            if not res:
+                return
 
             is_begging = await self.bot.manager.is_begging_for_ajo(message)
             if is_begging:

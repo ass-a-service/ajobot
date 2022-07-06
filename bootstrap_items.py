@@ -20,16 +20,19 @@ def proto(cmd, key, data) -> None:
 def main() -> None:
     data = {
         ":sauropod:": {
+            "description": "It's a sauropod.",
             "drop_rate": 1,
             "tradable": 1,
             "max_stack": 1
         },
         ":chopsticks:": {
+            "description": "Efficient weapon against vampires.",
             "drop_rate": 6,
             "tradable": 1,
             "max_stack": 5
         },
         ":cross:": {
+            "description": "Helps you fight vampires.",
             "drop_rate": 500,
             "tradable": 1,
             "max_stack": 10,
@@ -38,21 +41,39 @@ def main() -> None:
             }
         },
         ":bomb:": {
+            "description": "Plants a bomb, better not be there when it explodes.",
             "drop_rate": 200,
             "tradable": 1,
             "max_stack": 1
         },
         ":herb:": {
+            "description": "Just some herbs.",
             "drop_rate": 1000,
             "tradable": 1,
             "max_stack": 20
         },
         ":reminder_ribbon:": {
+            "description": "Protects you against vampires.",
             "tradable": 1,
             "max_stack": 1,
             "craft": {
                 ":herb:": 4
             }
+        },
+        ":athletic_shoe:": {
+            "description": "Makes you run faster through the ajo fields.",
+            "drop_rate": 250,
+            "tradable": 1,
+            "ttl": 600,
+            "max_stack": 1
+        },
+        ":eggplant:": {
+            "description": "Makes you stronger.",
+            "drop_rate": 30,
+            "tradable": 1,
+            "ttl": 600,
+            "buff": 31,
+            "max_stack": 1
         }
     }
 
