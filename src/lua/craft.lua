@@ -30,8 +30,12 @@ if not item_data then
     return {"unknown", false}
 end
 
--- assumes that it is not possible to have the same currency multiple times
 local size = #item_data
+if size < 1 then
+    return {"unknown", false}
+end
+
+-- assumes that it is not possible to have the same currency multiple times
 local index = 1
 local currency, price, funds
 while index < size do

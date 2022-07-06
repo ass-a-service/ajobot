@@ -45,6 +45,8 @@ class AjoManager:
                 txt = ":reminder_ribbon:"
             case "herb" | "🌿":
                 txt = ":herb:"
+            case "bomb" | "💣":
+                txt = ":bomb:"
 
         return txt
 
