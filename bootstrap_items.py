@@ -21,14 +21,17 @@ def main() -> None:
     data = {
         ":sauropod:": {
             "drop_rate": 1,
+            "tradable": 1,
             "max_stack": 1
         },
         ":chopsticks:": {
             "drop_rate": 6,
+            "tradable": 1,
             "max_stack": 5
         },
         ":cross:": {
             "drop_rate": 500,
+            "tradable": 1,
             "max_stack": 10,
             "craft": {
                 ":garlic:": 50
@@ -36,13 +39,16 @@ def main() -> None:
         },
         ":bomb:": {
             "drop_rate": 200,
+            "tradable": 1,
             "max_stack": 1
         },
         ":herb:": {
             "drop_rate": 1000,
+            "tradable": 1,
             "max_stack": 20
         },
         ":reminder_ribbon:": {
+            "tradable": 1,
             "max_stack": 1,
             "craft": {
                 ":herb:": 4
