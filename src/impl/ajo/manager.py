@@ -206,12 +206,14 @@ class AjoManager:
         guild_id: str
     ) -> str:
         exp_key = f"{from_user_id}:discombobulate"
+        buff_key = f"{from_user_id}:discombobulate-buff"
         err, res = self.redis.evalsha(
             environ["discombobulate"],
-            3,
+            4,
             AJOBUS,
             LEADERBOARD,
             exp_key,
+            buff_key,
             from_user_id,
             to_user_id,
             amount,
@@ -386,6 +388,32 @@ class AjoManager:
 
         return reply
 
+    async def use_eggplant(self, user_id: str, item: str, guild_id: str) -> str:
+        inventory_key = f"{user_id}:inventory"
+        item_key = "items::eggplant:"
+        buff_key = f"{user_id}:discombobulate-buff"
+
+        err = self.redis.evalsha(
+            environ["use_eggplant"],
+            4,
+            AJOBUS_INVENTORY,
+            inventory_key,
+            item_key,
+            buff_key,
+            user_id,
+            item,
+            EVENT_VERSION,
+            guild_id
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = f"You do not have enough {item}."
+            case "OK":
+                reply = f"You have used {item}."
+
+        return reply
+
     async def use(self, user_id: str, item: str, guild_id: str) -> str:
         # translate the emojis to redis compatible
         item = self.__translate_emoji(item)
@@ -395,6 +423,8 @@ class AjoManager:
                 return await self.use_protection(user_id, item, guild_id)
             case ":athletic_shoe:":
                 return await self.use_shoe(user_id, item, guild_id)
+            case ":eggplant:":
+                return await self.use_eggplant(user_id, item, guild_id)
             case _:
                 return f"Unknown item {item}."
 

@@ -71,6 +71,8 @@ def main() -> None:
             "description": "Makes you stronger.",
             "drop_rate": 30,
             "tradable": 1,
+            "ttl": 600,
+            "buff": 31,
             "max_stack": 1
         }
     }
