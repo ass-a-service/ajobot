@@ -60,10 +60,11 @@ def main() -> None:
                 ":herb:": 4
             }
         },
-        ":athletic_shoes:": {
+        ":athletic_shoe:": {
             "description": "Makes you run faster through the ajo fields.",
             "drop_rate": 250,
             "tradable": 1,
+            "ttl": 600,
             "max_stack": 1
         },
         ":eggplant:": {

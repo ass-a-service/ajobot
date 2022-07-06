@@ -12,6 +12,7 @@
 | string     | `{id}:daily`       | user daily reward expiration |
 | string     | `{id}:weekly`      | user daily reward expiration |
 | string     | `{id}:vampire`     | user next vampire level |
+| string     | `{id}:gain`        | user ajo farm efficiency |
 | hash       | `items:{item}`     | item data (bootstrapped) |
 | list       | `craft:{item}`     | item craft data (bootstrapped) |
 | list       | `drop-rate`        | item drop rate (bootstrapped) |

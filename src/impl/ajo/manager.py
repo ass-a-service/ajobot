@@ -49,8 +49,8 @@ class AjoManager:
                 txt = ":bomb:"
             case "eggplant" | "🍆":
                 txt = ":eggplant:"
-            case "shoes" | "👟":
-                txt = ":athletic_shoes:"
+            case "shoe" | "👟":
+                txt = ":athletic_shoe:"
 
         return txt
 
@@ -330,20 +330,15 @@ class AjoManager:
 
         return reply
 
-    async def use(self, user_id: str, item: str, guild_id: str) -> str:
+    async def use_protection(self, user_id: str, item: str, guild_id: str) -> str:
         inventory_key = f"{user_id}:inventory"
         vampire_key = f"{user_id}:vampire"
-
-        # translate the emojis to redis compatible
-        item = self.__translate_emoji(item)
 
         match item:
             case ":chopsticks:":
                 script = "use_chopsticks"
             case ":cross:":
                 script = "use_cross"
-            case _:
-                return f"Unknown item {item}."
 
         err, res = self.redis.evalsha(
             environ[script],
@@ -361,10 +356,47 @@ class AjoManager:
             case "err":
                 reply = f"You do not have enough {item}."
             case "OK":
-                # FIXME: works because the only items apply to vampire for now
                 reply = f"You have used {item}, vampire level is now {res-1}."
 
         return reply
+
+    async def use_shoe(self, user_id: str, item: str, guild_id: str) -> str:
+        inventory_key = f"{user_id}:inventory"
+        item_key = "items::athletic_shoe:"
+        ajo_gain_key = f"{user_id}:gain"
+
+        err = self.redis.evalsha(
+            environ["use_shoe"],
+            4,
+            AJOBUS_INVENTORY,
+            inventory_key,
+            item_key,
+            ajo_gain_key,
+            user_id,
+            item,
+            EVENT_VERSION,
+            guild_id
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = f"You do not have enough {item}."
+            case "OK":
+                reply = f"You have used {item}."
+
+        return reply
+
+    async def use(self, user_id: str, item: str, guild_id: str) -> str:
+        # translate the emojis to redis compatible
+        item = self.__translate_emoji(item)
+
+        match item:
+            case ":chopsticks:" | ":cross:":
+                return await self.use_protection(user_id, item, guild_id)
+            case ":athletic_shoe:":
+                return await self.use_shoe(user_id, item, guild_id)
+            case _:
+                return f"Unknown item {item}."
 
     async def trade(
         self,
