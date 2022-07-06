@@ -47,6 +47,10 @@ class AjoManager:
                 txt = ":herb:"
             case "bomb" | "💣":
                 txt = ":bomb:"
+            case "eggplant" | "🍆":
+                txt = ":eggplant:"
+            case "shoes" | "👟":
+                txt = ":athletic_shoes:"
 
         return txt
 

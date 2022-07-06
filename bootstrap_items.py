@@ -53,6 +53,17 @@ def main() -> None:
             "craft": {
                 ":herb:": 4
             }
+        },
+        ":athletic_shoes:": {
+            "drop_rate": 250,
+            "tradable": 1,
+            "max_stack": 1
+        },
+        ":eggplant:": {
+            "description": "Makes you stronger.",
+            "drop_rate": 30,
+            "tradable": 1,
+            "max_stack": 1
         }
     }
 
