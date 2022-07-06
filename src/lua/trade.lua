@@ -12,9 +12,15 @@ local event_version = ARGV[5]
 local guild_id = ARGV[6]
 
 -- if the item to trade is unknown, quit
-local max_stack = tonumber(redis.call("hget", item_key, "max_stack"))
-if not max_stack then
+local item_data = redis.call("hmget", item_key, "max_stack", "tradable")
+if not item_data then
     return {"unknown", false}
+end
+
+local max_stack = tonumber(item_data[1])
+local tradable = tonumber(item_data[2])
+if tradable ~= 1 then
+    return {"tradable", false}
 end
 
 -- sanity checks

@@ -410,6 +410,8 @@ class AjoManager:
         match err.decode("utf-8"):
             case "unknown":
                 reply = f"Unknown item {item}."
+            case "tradable":
+                reply = f"You cannot trade {item}."
             case "err" | "funds":
                 reply = f"You do not have enough {item}."
             case "futile":
