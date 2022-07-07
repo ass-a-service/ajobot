@@ -15,6 +15,7 @@
 | string     | `{id}:vampire`             | user next vampire level |
 | string     | `{id}:ajo-gain`            | user ajo farm efficiency |
 | string     | `{id}:discombobulate-buff` | user discombobulate buff |
+| string     | `{id}:wand-curse`          | user wand curse |
 | hash       | `items:{item}`             | item data (bootstrapped) |
 | list       | `craft:{item}`             | item craft data (bootstrapped) |
 | list       | `drop-rate`                | item drop rate (bootstrapped) |

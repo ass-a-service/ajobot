@@ -26,12 +26,14 @@ class Vampires(Cog):
             return
 
         vampire_key = f"{message.author.id}:vampire"
+        curse_key = f"{message.author.id}:wand-curse"
         _, res = self.bot.manager.redis.evalsha(
             environ["vampire"],
-            3,
+            4,
             AJOBUS,
             LEADERBOARD,
             vampire_key,
+            curse_key,
             message.author.id,
             EVENT_VERSION,
             0 if message.guild is None else message.guild.id,

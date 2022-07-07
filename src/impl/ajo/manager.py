@@ -51,6 +51,12 @@ class AjoManager:
                 txt = ":eggplant:"
             case "shoe" | "👟":
                 txt = ":athletic_shoe:"
+            case "wand" | "magic_wand" | "🪄":
+                txt = ":magic_wand:"
+            case "tooth" | "🦷":
+                txt = ":tooth:"
+            case "bone" | "🦴":
+                txt = ":bone:"
 
         return txt
 
@@ -414,12 +420,12 @@ class AjoManager:
 
         return reply
 
-    async def use_bomb(self, user_id: str, item: str, time: int, guild_id: str) -> str:
+    async def set_bomb(self, user_id: str, item: str, time: int, guild_id: str) -> str:
         inventory_key = f"{user_id}:inventory"
         item_key = "items::bomb:"
 
         err, res = self.redis.evalsha(
-            environ["use_bomb"],
+            environ["set_bomb"],
             4,
             AJOBUS_INVENTORY,
             inventory_key,
@@ -444,7 +450,33 @@ class AjoManager:
 
         return reply
 
-    async def use(self, user_id: str, item: str, time: int, guild_id: str) -> str:
+    async def curse(self, user_id: str, item: str, target_id: str, guild_id: str) -> str:
+        inventory_key = f"{user_id}:inventory"
+        item_key = "items::magic_wand:"
+        curse_key = f"{target_id}:wand-curse"
+
+        err = self.redis.evalsha(
+            environ["curse"],
+            4,
+            AJOBUS_INVENTORY,
+            inventory_key,
+            item_key,
+            curse_key,
+            user_id,
+            item,
+            EVENT_VERSION,
+            guild_id
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = f"You do not have enough {item}."
+            case "OK":
+                reply = f"You have used {item}."
+
+        return reply
+
+    async def use(self, user_id: str, item: str, guild_id: str) -> str:
         # translate the emojis to redis compatible
         item = self.__translate_emoji(item)
 
@@ -455,8 +487,6 @@ class AjoManager:
                 return await self.use_shoe(user_id, item, guild_id)
             case ":eggplant:":
                 return await self.use_eggplant(user_id, item, guild_id)
-            case ":bomb:":
-                return await self.use_bomb(user_id, item, time, guild_id)
             case _:
                 return f"Unknown item {item}."
 

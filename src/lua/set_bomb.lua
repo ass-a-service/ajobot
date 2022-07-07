@@ -1,4 +1,4 @@
---! file: use_bomb.lua
+--! file: set_bomb.lua
 local strm_key = KEYS[1]
 local inventory_key = KEYS[2]
 local item_key = KEYS[3]

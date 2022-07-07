@@ -336,26 +336,64 @@ class Ajo(Cog):
             await itr.send(embed = res, ephemeral=True)
 
     # INVENTORY USE
-    async def __use(self, user: User, item: str, time: int, guild: Guild) -> str:
+    async def __use(self, user: User, item: str, guild: Guild) -> str:
         return await self.bot.manager.use(
             user.id,
             item,
-            time,
             await self.getGuildId(guild)
         )
 
     @command(name="use", description="Use an item from the inventory")
-    async def use_command(self, ctx: Context[Bot], item: str, time: int = None) -> None:
-        await ctx.reply(await self.__use(ctx.author, item, time, ctx.guild))
+    async def use_command(self, ctx: Context[Bot], item: str) -> None:
+        await ctx.reply(await self.__use(ctx.author, item, ctx.guild))
 
     @slash_command(name="use", description="Use an item from the inventory")
     async def use(
         self,
         itr: CommandInteraction,
-        item: str = Param(description="The item to use"),
-        time: int = Param(description="[bomb only] Seconds until the bomb explodes", default=0)
+        item: str = Param(description="The item to use")
     ) -> None:
-        await itr.send(await self.__use(itr.author, item, time, itr.guild))
+        await itr.send(await self.__use(itr.author, item, itr.guild))
+
+    async def __set_bomb(self, user: User, time: int, guild: Guild) -> str:
+        return await self.bot.manager.set_bomb(
+            user.id,
+            ":bomb:",
+            time,
+            await self.getGuildId(guild)
+        )
+
+    @command(name="set_bomb", description="Set a bomb timer")
+    async def set_bomb_command(self, ctx: Context[Bot], time: int) -> None:
+        await ctx.reply(await self.__set_bomb(ctx.author, time, ctx.guild))
+
+    @slash_command(name="set_bomb", description="Set a bomb timer")
+    async def set_bomb(
+        self,
+        itr: CommandInteraction,
+        time: int = Param(description="Seconds until the bomb explodes")
+    ) -> None:
+        await itr.send(await self.__set_bomb(itr.author, time, itr.guild))
+
+    async def __curse(self, user: User, item: str, target: User, guild: Guild) -> str:
+        return await self.bot.manager.curse(
+            user.id,
+            ":magic_wand:",
+            target.id,
+            await self.getGuildId(guild)
+        )
+
+    @command(name="curse", description="Curse someone")
+    async def curse_command(self, ctx: Context[Bot], target: User) -> None:
+        await ctx.reply(await self.__curse(ctx.author, target, ctx.guild))
+
+    @slash_command(name="curse", description="Curse someone")
+    async def set_bomb(
+        self,
+        itr: CommandInteraction,
+        target: int = Param(description="Target of the curse")
+    ) -> None:
+        await itr.send(await self.__curse(itr.author, target, itr.guild))
 
     # INVENTORY TRADE
     async def __trade(
