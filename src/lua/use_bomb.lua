@@ -9,7 +9,7 @@ local id = ARGV[2]
 local item = ARGV[3]
 local event_version = ARGV[4]
 local guild_id = ARGV[5]
-local seed = ARGV[6]
+local seed = tonumber(ARGV[6])
 
 -- sanity check, the bomb only allows timer for a maximum of 8h
 if ttl < 0 or ttl > 28800 then
