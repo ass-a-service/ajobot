@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 import json
 from math import ceil
 from os import environ
@@ -414,7 +414,37 @@ class AjoManager:
 
         return reply
 
-    async def use(self, user_id: str, item: str, guild_id: str) -> str:
+    async def use_bomb(self, user_id: str, item: str, time: int, guild_id: str) -> str:
+        inventory_key = f"{user_id}:inventory"
+        item_key = "items::bomb:"
+
+        err, res = self.redis.evalsha(
+            environ["use_bomb"],
+            4,
+            AJOBUS_INVENTORY,
+            inventory_key,
+            item_key,
+            "ajocron-bomb",
+            time,
+            user_id,
+            item,
+            EVENT_VERSION,
+            guild_id,
+            self.__get_seed()
+        )
+
+        match err.decode("utf-8"):
+            case "err":
+                reply = f"You do not have enough {item}."
+            case "time":
+                reply = f"You cannot set a bomb at this time."
+            case "OK":
+                date = datetime.fromtimestamp(res)
+                reply = f"You have used {item}, setup at {date}."
+
+        return reply
+
+    async def use(self, user_id: str, item: str, time: int, guild_id: str) -> str:
         # translate the emojis to redis compatible
         item = self.__translate_emoji(item)
 
@@ -425,6 +455,8 @@ class AjoManager:
                 return await self.use_shoe(user_id, item, guild_id)
             case ":eggplant:":
                 return await self.use_eggplant(user_id, item, guild_id)
+            case ":bomb:":
+                return await self.use_bomb(user_id, item, time, guild_id)
             case _:
                 return f"Unknown item {item}."
 
