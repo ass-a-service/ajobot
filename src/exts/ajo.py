@@ -33,8 +33,9 @@ class Ajo(Cog):
             user_id = data[-1]
             redis.set("ajobomb", redis.get(user_id))
 
-        # cleanup the cron
-        redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
+            # cleanup the cron
+            redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
+
 
     @tasks.loop(seconds=1)
     async def on_ajo(self) -> None:
