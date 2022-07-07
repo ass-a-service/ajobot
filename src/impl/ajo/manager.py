@@ -437,7 +437,7 @@ class AjoManager:
             case "err":
                 reply = f"You do not have enough {item}."
             case "time":
-                reply = f"You cannot set a bomb in more than 8h."
+                reply = f"You cannot set a bomb at this time."
             case "OK":
                 date = datetime.fromtimestamp(res)
                 reply = f"You have used {item}, setup at {date}."
