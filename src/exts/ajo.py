@@ -17,6 +17,24 @@ class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
         self.on_ajo.start()
+        self.bomb_cron.start()
+
+    @tasks.loop(seconds=10)
+    async def bomb_cron(self) -> None:
+        redis = self.bot.manager.redis
+
+        # read keys not read yet, assume these are bombs
+        tm = time.time()
+        data = redis.zrangebyscore("ajocron-bomb", "-inf", tm)
+
+        # we only care about the last item, bombs at the same time overwrite
+        if len(data):
+            # setup the bomb flag with the related username
+            user_id = data[-1]
+            redis.set("ajobomb", redis.get(user_id))
+
+        # cleanup the cron
+        redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
 
     @tasks.loop(seconds=1)
     async def on_ajo(self) -> None:
@@ -64,22 +82,28 @@ class Ajo(Cog):
         if contains_ajo:
             ajo_gain_key = f"{message.author.id}:ajo-gain"
             vampire_key = f"{message.author.id}:vampire"
-            res = self.bot.manager.redis.evalsha(
+            bomb_key = "ajobomb"
+            err, res = self.bot.manager.redis.evalsha(
                 environ["ajo"],
-                5,
+                6,
                 AJOBUS,
                 LEADERBOARD,
                 ajo_gain_key,
                 vampire_key,
                 message.author.id,
+                bomb_key,
                 message.author.id,
                 f"{message.author.name}#{message.author.discriminator}",
                 EVENT_VERSION,
                 message.guild.id # farm always has a guild
             )
 
-            if not res:
-                return
+            match err.decode("utf-8"):
+                case "err":
+                    return
+                case "bomb":
+                    bomb_owner = res[0].decode("utf-8")
+                    return await message.reply(f"{bomb_owner}'s bomb explodes! {res[1]} ajos have been burnt.")
 
             is_begging = await self.bot.manager.is_begging_for_ajo(message)
             if is_begging:
@@ -311,24 +335,26 @@ class Ajo(Cog):
             await itr.send(embed = res, ephemeral=True)
 
     # INVENTORY USE
-    async def __use(self, user: User, item: str, guild: Guild) -> str:
+    async def __use(self, user: User, item: str, time: int, guild: Guild) -> str:
         return await self.bot.manager.use(
             user.id,
             item,
+            time,
             await self.getGuildId(guild)
         )
 
     @command(name="use", description="Use an item from the inventory")
-    async def use_command(self, ctx: Context[Bot], item: str) -> None:
-        await ctx.reply(await self.__use(ctx.author, item, ctx.guild))
+    async def use_command(self, ctx: Context[Bot], item: str, time: int = None) -> None:
+        await ctx.reply(await self.__use(ctx.author, item, time, ctx.guild))
 
     @slash_command(name="use", description="Use an item from the inventory")
     async def use(
         self,
         itr: CommandInteraction,
-        item: str = Param(description="The item to use")
+        item: str = Param(description="The item to use"),
+        time: int = Param(description="[bomb only] Seconds until the bomb explodes", default=0)
     ) -> None:
-        await itr.send(await self.__use(itr.author, item, itr.guild))
+        await itr.send(await self.__use(itr.author, item, time, itr.guild))
 
     # INVENTORY TRADE
     async def __trade(

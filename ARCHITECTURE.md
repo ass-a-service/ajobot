@@ -7,6 +7,7 @@
 | sorted set | `lb`                       | ajo leaderboard |
 | stream     | `ajobus`                   | ajo changes |
 | stream     | `ajobus-inventory`         | inventory changes |
+| sorted set | `ajocron-bomb`             | bomb cron |
 | string     | `{id}`                     | user human id |
 | hash       | `{id}:inventory`           | user inventory |
 | string     | `{id}:daily`               | user daily reward expiration |
@@ -17,6 +18,7 @@
 | hash       | `items:{item}`             | item data (bootstrapped) |
 | list       | `craft:{item}`             | item craft data (bootstrapped) |
 | list       | `drop-rate`                | item drop rate (bootstrapped) |
+| string     | `ajobomb`                  | bomb flag |
 
 ### Identifier
 The ajo-bot uses discord's user ID, a redis key holds its discord username.
@@ -81,6 +83,19 @@ It is loaded at bootstrap in redis.
 > del craft::cross:
 > rpush craft::cross: ":garlic:" 50
 > rpush craft::reminder_ribbon: ":herb:" 4
+```
+
+### Bomb
+Each user's bombs are inserted into a sorted set with the score being the
+timestamp at which it should explode. A cron job periodically cleans the sorted
+set and sets the bomb flag to the owner's name.
+
+```
+# bomb setup
+> zadd ajocron-bomb 1657155477 111
+# cron retrieve
+> zrangebyscore ajocron-bomb -inf {time}
+> zremrangebyscore ajocron-bomb -inf {time}
 ```
 
 ### User keys
