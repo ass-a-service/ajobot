@@ -375,7 +375,7 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__set_bomb(itr.author, time, itr.guild))
 
-    async def __curse(self, user: User, item: str, target: User, guild: Guild) -> str:
+    async def __curse(self, user: User, target: User, guild: Guild) -> str:
         return await self.bot.manager.curse(
             user.id,
             ":magic_wand:",
