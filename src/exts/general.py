@@ -19,7 +19,7 @@ class General(Cog):
 
         match type:
             case "ajos":
-                self.bot.manager.redis.zadd("lb", {itr.author.id: amount})
+                await self.bot.manager.redis.zadd("lb", {itr.author.id: amount})
                 return await itr.send(f"Set ajos to {amount}")
             case "chop"|"bomb"|"cross"|"ribb"|"herb"|"sauro"|"eggplant"|"shoe"|"tooth"|"bone"|"magic_wand":
                 inv_key = f"{itr.author.id}:inventory"
@@ -27,11 +27,11 @@ class General(Cog):
                 if not it_type:
                     return await itr.send(f"unk item {type}")
 
-                self.bot.manager.redis.hset(inv_key, it_type, amount)
+                await self.bot.manager.redis.hset(inv_key, it_type, amount)
                 return await itr.send(f"Set {it_type} to {amount}")
             case "vampire":
                 vam_key = f"{itr.author.id}:vampire"
-                self.bot.manager.redis.set(vam_key, amount)
+                await self.bot.manager.redis.set(vam_key, amount)
                 return await itr.send(f"Set vampire to {amount}")
 
         await itr.send("Nothing")

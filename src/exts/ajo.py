@@ -31,10 +31,10 @@ class Ajo(Cog):
         if len(data):
             # setup the bomb flag with the related username
             user_id = data[-1]
-            redis.set("ajobomb", redis.get(user_id))
+            await redis.set("ajobomb", redis.get(user_id))
 
             # cleanup the cron
-            redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
+            await redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
 
 
     @tasks.loop(seconds=1)
