@@ -50,7 +50,7 @@ end
 
 -- calculate damage
 local min = math.min(level * 1.2, 30)
-local max = math.max(40, level * 2)
+local max = math.min(40, level * 2)
 local pct_dmg = math.random(min, max)
 local dmg = math.ceil(current * (pct_dmg / 100))
 
