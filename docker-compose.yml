@@ -8,7 +8,7 @@ services:
     depends_on:
       - redis
   redis:
-    image: redislabs/redistimeseries
+    image: redis:6.2
     restart: unless-stopped
     ports:
       - '6379:6379'

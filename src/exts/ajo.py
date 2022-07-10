@@ -1,7 +1,7 @@
 from disnake import CommandInteraction, Message, User, Guild
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 from disnake.ext import tasks
-from redis.exceptions import ResponseError
+from aioredis.exceptions import ResponseError
 
 from src.impl.bot import Bot
 import time
@@ -25,16 +25,16 @@ class Ajo(Cog):
 
         # read keys not read yet, assume these are bombs
         tm = time.time()
-        data = redis.zrangebyscore("ajocron-bomb", "-inf", tm)
+        data = await redis.zrangebyscore("ajocron-bomb", "-inf", tm)
 
         # we only care about the last item, bombs at the same time overwrite
         if len(data):
             # setup the bomb flag with the related username
             user_id = data[-1]
-            redis.set("ajobomb", redis.get(user_id))
+            await redis.set("ajobomb", redis.get(user_id))
 
             # cleanup the cron
-            redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
+            await redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
 
 
     @tasks.loop(seconds=1)
@@ -44,12 +44,12 @@ class Ajo(Cog):
         # Create the xreadgroup once
         # TODO: better do this outside of this fn
         try:
-            redis.xgroup_create(AJOBUS,"ajo-python",0, mkstream=True)
+            await redis.xgroup_create(AJOBUS,"ajo-python",0, mkstream=True)
         except ResponseError as e:
             if str(e) != "BUSYGROUP Consumer Group name already exists":
                 raise e
 
-        data = redis.xreadgroup("ajo-python","ajo.py",streams={AJOBUS: ">"},count=100)
+        data = await redis.xreadgroup("ajo-python","ajo.py",streams={AJOBUS: ">"},count=100)
         # stream_name, chunk
         for _, chunk in data:
             # entry_id, entry_data
@@ -57,7 +57,7 @@ class Ajo(Cog):
                 entry = await self.parseEntry(entry_data)
                 if entry["type"] == "farm":
                     user_id = entry["user_id"]
-                    redis.evalsha(
+                    await redis.evalsha(
                         environ['farm_inventory'],
                         4,
                         AJOBUS_INVENTORY,
@@ -84,7 +84,7 @@ class Ajo(Cog):
             ajo_gain_key = f"{message.author.id}:ajo-gain"
             vampire_key = f"{message.author.id}:vampire"
             bomb_key = "ajobomb"
-            err, res = self.bot.manager.redis.evalsha(
+            err, res = await self.bot.manager.redis.evalsha(
                 environ["ajo"],
                 6,
                 AJOBUS,

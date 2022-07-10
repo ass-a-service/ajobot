@@ -27,7 +27,7 @@ class Vampires(Cog):
 
         vampire_key = f"{message.author.id}:vampire"
         curse_key = f"{message.author.id}:wand-curse"
-        _, res = self.bot.manager.redis.evalsha(
+        _, res = await self.bot.manager.redis.evalsha(
             environ["vampire"],
             4,
             AJOBUS,

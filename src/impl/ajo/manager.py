@@ -7,7 +7,7 @@ import secrets
 
 from disnake import Embed, Message
 from loguru import logger
-import redis
+import aioredis
 
 AJO = "🧄"
 CRUZ = '✝️'
@@ -26,8 +26,7 @@ EVENT_VERSION = 1
 
 class AjoManager:
     def __init__(self) -> None:
-        self.redis = redis.Redis(host=environ['REDIS_HOST'])
-        self.redis_ts = redis.Redis(host=environ['REDIS_HOST']).ts()
+        self.redis = aioredis.from_url(f"redis://{environ['REDIS_HOST']}")
         logger.info("Connected to the database.")
 
     def __get_seed(self) -> int:
@@ -70,13 +69,13 @@ class AjoManager:
         return "give me garlic" in itxt or "dame ajo" in itxt
 
     async def get_ajo(self, user_id: str) -> int:
-        res = self.redis.zscore(LEADERBOARD, user_id)
+        res = await self.redis.zscore(LEADERBOARD, user_id)
         if res is None:
             return 0
         return int(res)
 
     async def get_leaderboard(self) -> Embed:
-        data = self.redis.zrange(LEADERBOARD, 0, 9, "rev", "withscores")
+        data = await self.redis.zrange(LEADERBOARD, 0, 9, "rev", "withscores")
         embed = Embed(
             title="Ajo Leaderboard",
             colour=0x87CEEB,
@@ -88,7 +87,7 @@ class AjoManager:
             ids.append(id.decode("utf-8"))
             scores.append(int(score))
 
-        names = self.redis.mget(ids)
+        names = await self.redis.mget(ids)
         j = 0
         for i in range(len(names)):
             name = names[i].decode("utf-8")
@@ -114,7 +113,7 @@ class AjoManager:
         else:
             amount = 0
 
-        err, res = self.redis.evalsha(
+        err, res = await self.redis.evalsha(
             environ["gamble"],
             2,
             AJOBUS,
@@ -147,7 +146,7 @@ class AjoManager:
         amount: int,
         guild_id: str
     ) -> str:
-        err, res = self.redis.evalsha(
+        err, res = await self.redis.evalsha(
             environ["pay"],
             2,
             AJOBUS,
@@ -175,7 +174,7 @@ class AjoManager:
     async def __claim_timely(self, user_id: str, type: str, guild_id: str) -> str:
         exp_key = f"{user_id}:{type}"
         reward, expire = TIMELY[type]
-        err, res = self.redis.evalsha(
+        err, res = await self.redis.evalsha(
             environ["timely_reward"],
             3,
             AJOBUS,
@@ -213,7 +212,7 @@ class AjoManager:
     ) -> str:
         exp_key = f"{from_user_id}:discombobulate"
         buff_key = f"{from_user_id}:discombobulate-buff"
-        err, res = self.redis.evalsha(
+        err, res = await self.redis.evalsha(
             environ["discombobulate"],
             4,
             AJOBUS,
@@ -251,7 +250,7 @@ class AjoManager:
     async def roulette(self) -> str:
         roulette_id = secrets.token_hex(4)
         roulette_key = f"roulette:{roulette_id}"
-        err, res = self.redis.evalsha(
+        err, _ = await self.redis.evalsha(
             environ["roulette"],
             1,
             roulette_key,
@@ -269,7 +268,7 @@ class AjoManager:
 
     async def roulette_shot(self, user_id: str, roulette_id: str, guild_id: str) -> str:
         roulette_key = f"roulette:{roulette_id}"
-        err, res = self.redis.evalsha(
+        err, _ = await self.redis.evalsha(
             environ["roulette_shot"],
             3,
             AJOBUS,
@@ -310,14 +309,14 @@ class AjoManager:
         return embed
 
     async def get_inventory(self, user_id: str) -> Embed:
-        res = self.redis.hgetall(f"{user_id}:inventory")
+        res = await self.redis.hgetall(f"{user_id}:inventory")
         return await self.__build_inventory(res.items())
 
     # same as get_inventory, but you pay for it
     async def see_inventory(self, from_user_id: str, to_user_id: str, guild_id: str) -> Embed | str:
         inventory_key = f"{to_user_id}:inventory"
 
-        err, res = self.redis.evalsha(
+        err, res = await self.redis.evalsha(
             environ["see_inventory"],
             3,
             AJOBUS,
@@ -348,7 +347,7 @@ class AjoManager:
             case ":cross:":
                 script = "use_cross"
 
-        err, res = self.redis.evalsha(
+        err, res = await self.redis.evalsha(
             environ[script],
             3,
             AJOBUS_INVENTORY,
@@ -373,7 +372,7 @@ class AjoManager:
         item_key = "items::athletic_shoe:"
         ajo_gain_key = f"{user_id}:ajo-gain"
 
-        err = self.redis.evalsha(
+        err = await self.redis.evalsha(
             environ["use_shoe"],
             4,
             AJOBUS_INVENTORY,
@@ -399,7 +398,7 @@ class AjoManager:
         item_key = "items::eggplant:"
         buff_key = f"{user_id}:discombobulate-buff"
 
-        err = self.redis.evalsha(
+        err = await self.redis.evalsha(
             environ["use_eggplant"],
             4,
             AJOBUS_INVENTORY,
@@ -424,7 +423,7 @@ class AjoManager:
         inventory_key = f"{user_id}:inventory"
         item_key = "items::bomb:"
 
-        err, res = self.redis.evalsha(
+        err, res = await self.redis.evalsha(
             environ["set_bomb"],
             4,
             AJOBUS_INVENTORY,
@@ -455,7 +454,7 @@ class AjoManager:
         item_key = "items::magic_wand:"
         curse_key = f"{target_id}:wand-curse"
 
-        err = self.redis.evalsha(
+        err = await self.redis.evalsha(
             environ["curse"],
             4,
             AJOBUS_INVENTORY,
@@ -504,7 +503,7 @@ class AjoManager:
         to_inventory_key = f"{to_user_id}:inventory"
         item_key = f"items:{item}"
 
-        err, res = self.redis.evalsha(
+        err, _ = await self.redis.evalsha(
             environ["trade"],
             4,
             AJOBUS_INVENTORY,
@@ -541,7 +540,7 @@ class AjoManager:
         craft_key = f"craft:{item}"
         item_key = f"items:{item}"
 
-        err, res = self.redis.evalsha(
+        err, res = await self.redis.evalsha(
             environ["craft"],
             6,
             AJOBUS,
