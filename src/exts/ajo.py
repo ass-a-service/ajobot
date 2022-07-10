@@ -84,7 +84,7 @@ class Ajo(Cog):
             ajo_gain_key = f"{message.author.id}:ajo-gain"
             vampire_key = f"{message.author.id}:vampire"
             bomb_key = "ajobomb"
-            err, res = self.bot.manager.redis.evalsha(
+            err, res = await self.bot.manager.redis.evalsha(
                 environ["ajo"],
                 6,
                 AJOBUS,
