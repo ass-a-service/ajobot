@@ -2,13 +2,12 @@
 local strm_key = KEYS[1]
 local lb_key = KEYS[2]
 local vampire_key = KEYS[3]
+local curse_key = KEYS[4]
 
 local id = ARGV[1]
 local event_version = ARGV[2]
 local guild_id = ARGV[3]
 local seed = tonumber(ARGV[4])
-
-local ttl_per_level = 600
 
 -- grab the vampire level that would appear (not current)
 local level = tonumber(redis.call("get", vampire_key))
@@ -24,6 +23,12 @@ else
     appear_chance = math.log10(level) * 20
 end
 
+-- if the user is cursed, the appear chance is increased
+local curse = tonumber(redis.call("get", curse_key))
+if curse and curse > 0 then
+    appear_chance = appear_chance + curse
+end
+
 -- quit if the vampire does not appear
 math.randomseed(seed)
 local rand = math.random(0, 99)
@@ -32,6 +37,7 @@ if appear_chance < rand then
 end
 
 -- determine damage of the vampire and its ttl
+local ttl_per_level = 600
 local current = tonumber(redis.call("zscore", lb_key, id))
 local ttl = math.min(ttl_per_level * level, 7200)
 

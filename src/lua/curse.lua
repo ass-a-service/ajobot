@@ -1,8 +1,8 @@
---! file: use_eggplant.lua
+--! file: curse.lua
 local strm_key = KEYS[1]
 local inventory_key = KEYS[2]
 local item_key = KEYS[3]
-local buff_key = KEYS[4]
+local curse_key = KEYS[4]
 
 local id = ARGV[1]
 local item = ARGV[2]
@@ -15,13 +15,13 @@ if not stack or stack < 1 then
     return "err"
 end
 
--- the eggplant sets up a buff, find its value and ttl
-local item_data = redis.call("hmget", item_key, "buff", "ttl")
+-- the magic wand sets up a curse, find its value and ttl
+local item_data = redis.call("hmget", item_key, "curse", "ttl")
 if not item_data then
     return "err"
 end
 
--- decrease stack
+-- use the item, decrease stack
 redis.call("hincrby", inventory_key, item, -1)
 redis.call(
     "xadd", strm_key, "*",
@@ -33,7 +33,7 @@ redis.call(
     "quantity", -1
 )
 
-local buff = tonumber(item_data[1])
+local curse = tonumber(item_data[1])
 local ttl = tonumber(item_data[2])
-redis.call("set", buff_key, buff, "EX", ttl)
+redis.call("set", curse_key, curse, "EX", ttl)
 return "OK"

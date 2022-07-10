@@ -74,6 +74,28 @@ def main() -> None:
             "ttl": 600,
             "buff": 31,
             "max_stack": 1
+        },
+        ":bone:": {
+            "description": "A human bone.",
+            "drop_rate": 500,
+            "tradable": 1,
+            "max_stack": 206
+        },
+        ":tooth:": {
+            "description": "A human tooth.",
+            "drop_rate": 400,
+            "tradable": 1,
+            "max_stack": 32
+        },
+        ":magic_wand:": {
+            "description": "Curse your foes.",
+            "ttl": 7200,
+            "curse": 12,
+            "max_stack": 1,
+            "craft": {
+                ":bone:": 10,
+                ":tooth:": 4
+            }
         }
     }
 
