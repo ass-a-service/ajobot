@@ -7,7 +7,7 @@ import secrets
 
 from disnake import Embed, Message
 from loguru import logger
-import redis
+import aioredis
 
 AJO = "🧄"
 CRUZ = '✝️'
