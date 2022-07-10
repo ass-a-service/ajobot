@@ -26,7 +26,6 @@ EVENT_VERSION = 1
 
 class AjoManager:
     def __init__(self) -> None:
-        self.redis_ts = redis.Redis(host=environ['REDIS_HOST']).ts()
         self.redis = aioredis.from_url(f"redis://{environ['REDIS_HOST']}")
         logger.info("Connected to the database.")
 
