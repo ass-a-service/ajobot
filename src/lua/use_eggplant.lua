@@ -15,6 +15,12 @@ if not stack or stack < 1 then
     return "err"
 end
 
+-- the eggplant sets up a buff, find its value and ttl
+local item_data = redis.call("hmget", item_key, "buff", "ttl")
+if not item_data then
+    return "err"
+end
+
 -- decrease stack
 redis.call("hincrby", inventory_key, item, -1)
 redis.call(
@@ -26,12 +32,6 @@ redis.call(
     "item", item,
     "quantity", -1
 )
-
--- the eggplant sets up a buff, find its value and ttl
-local item_data = redis.call("hmget", item_key, "buff", "ttl")
-if not item_data then
-    return "err"
-end
 
 local buff = tonumber(item_data[1])
 local ttl = tonumber(item_data[2])
