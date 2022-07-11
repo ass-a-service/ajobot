@@ -38,8 +38,8 @@ if appear_chance < rand then
 end
 
 -- is it protected with a necklace?
-local has_necklace = tonumber(redis.call("hget", inventory_key, ":reminder_ribbon:"))
-if has_necklace >= 1 then
+local has_necklace = redis.call("hget", inventory_key, ":reminder_ribbon:")
+if has_necklace and tonumber(has_necklace) >= 1 then
     -- Remove the necklace by 1
     redis.call("hincrby", inventory_key, ":reminder_ribbon:", -1)
     return {"NECKLACE", {level, 0}}
