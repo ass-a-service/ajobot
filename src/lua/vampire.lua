@@ -37,15 +37,6 @@ if appear_chance < rand then
     return {"OK", false}
 end
 
--- is it protected with a necklace?
-local has_necklace = redis.call("hget", inventory_key, ":reminder_ribbon:")
-if has_necklace and tonumber(has_necklace) >= 1 then
-    -- Remove the necklace by 1
-    redis.call("hincrby", inventory_key, ":reminder_ribbon:", -1)
-    return {"NECKLACE", {level, 0}}
-end
-
-
 -- determine damage of the vampire and its ttl
 local ttl_per_level = 600
 local current = tonumber(redis.call("zscore", lb_key, id))
@@ -59,10 +50,22 @@ if not current or current < 1 then
 end
 
 -- calculate damage
-local min = math.min(level * 1.2, 30)
-local max = math.min(40, level * 2)
-local pct_dmg = math.random(min, max)
-local dmg = math.ceil(current * (pct_dmg / 100))
+local dmg, min, max, pct_dmg, op_result
+
+-- is it protected with a necklace?
+local has_necklace = redis.call("hget", inventory_key, ":reminder_ribbon:")
+if has_necklace and tonumber(has_necklace) >= 1 then
+    dmg = 0
+    -- Remove the necklace by 1
+    redis.call("hincrby", inventory_key, ":reminder_ribbon:", -1)
+    op_result = "NECKLACE"
+else
+    min = math.min(level * 1.2, 30)
+    max = math.min(40, level * 2)
+    pct_dmg = math.random(min, max)
+    dmg = math.ceil(current * (pct_dmg / 100))
+    op_result = "OK"
+end
 
 -- increase the vampire's level, refresh his ttl
 redis.call("set", vampire_key, level + 1, "EX", ttl)
@@ -77,4 +80,4 @@ redis.call(
     "guild_id", guild_id,
     "amount", -dmg
 )
-return {"OK", {level, dmg}}
+return {op_result, {level, dmg}}
