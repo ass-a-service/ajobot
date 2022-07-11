@@ -3,6 +3,7 @@ local strm_key = KEYS[1]
 local lb_key = KEYS[2]
 local vampire_key = KEYS[3]
 local curse_key = KEYS[4]
+local inventory_key = KEYS[5]
 
 local id = ARGV[1]
 local event_version = ARGV[2]
@@ -35,6 +36,15 @@ local rand = math.random(0, 99)
 if appear_chance < rand then
     return {"OK", false}
 end
+
+-- is it protected with a necklace?
+local has_necklace = tonumber(redis.call("hget", inventory_key, ":reminder_ribbon:"))
+if has_necklace >= 1 then
+    -- Remove the necklace by 1
+    redis.call("hincrby", inventory_key, ":reminder_ribbon:", -1)
+    return {"NECKLACE", {level, 0}}
+end
+
 
 -- determine damage of the vampire and its ttl
 local ttl_per_level = 600
