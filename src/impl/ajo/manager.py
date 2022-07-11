@@ -438,16 +438,19 @@ class AjoManager:
             self.__get_seed()
         )
 
+        embed = Embed(colour=0x87CEEB)
         match err.decode("utf-8"):
             case "err":
-                reply = f"You do not have enough {item}."
+                embed.description = f"You do not have enough {item}."
+                embed.title = "There was an error when setting up the bomb"
             case "time":
-                reply = f"You cannot set a bomb at this time."
+                embed.description = f"You cannot set a bomb at this time."
+                embed.title = "There was an error when setting up the bomb"
             case "OK":
-                date = datetime.fromtimestamp(res)
-                reply = f"You have used {item}, setup at {date}."
-
-        return reply
+                embed.timestamp = datetime.fromtimestamp(res)
+                embed.description = "Detonation time:"
+                embed.title = "The bomb has been planted"
+        return embed
 
     async def curse(self, user_id: str, item: str, target_id: str, guild_id: str) -> str:
         inventory_key = f"{user_id}:inventory"
