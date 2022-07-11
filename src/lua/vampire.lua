@@ -53,11 +53,21 @@ end
 local dmg, min, max, pct_dmg, op_result
 
 -- is it protected with a necklace?
-local has_necklace = redis.call("hget", inventory_key, ":reminder_ribbon:")
+local item = ":reminder_ribbon:"
+local has_necklace = redis.call("hget", inventory_key, item)
 if has_necklace and tonumber(has_necklace) >= 1 then
     dmg = 0
-    -- Remove the necklace by 1
-    redis.call("hincrby", inventory_key, ":reminder_ribbon:", -1)
+    -- Remove the necklace by 1, add to stream
+    redis.call("hincrby", inventory_key, item, -1)
+    redis.call(
+        "xadd", strm_key, "*",
+        "version", event_version,
+        "type", "item_used",
+        "user_id", id,
+        "guild_id", guild_id,
+        "item", item,
+        "quantity", -1
+    )
     op_result = "NECKLACE"
 else
     min = math.min(level * 1.2, 30)
