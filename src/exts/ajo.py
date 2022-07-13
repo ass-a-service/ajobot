@@ -365,7 +365,7 @@ class Ajo(Cog):
 
     @command(name="set_bomb", description="Set a bomb timer")
     async def set_bomb_command(self, ctx: Context[Bot], time: int) -> None:
-        await ctx.reply(await self.__set_bomb(ctx.author, time, ctx.guild))
+        await ctx.reply(embed=await self.__set_bomb(ctx.author, time, ctx.guild))
 
     @slash_command(name="set_bomb", description="Set a bomb timer")
     async def set_bomb(
@@ -373,7 +373,7 @@ class Ajo(Cog):
         itr: CommandInteraction,
         time: int = Param(description="Seconds until the bomb explodes")
     ) -> None:
-        await itr.send(await self.__set_bomb(itr.author, time, itr.guild))
+        await itr.send(ephemeral=True, embed=await self.__set_bomb(itr.author, time, itr.guild))
 
     async def __curse(self, user: User, target: User, guild: Guild) -> str:
         return await self.bot.manager.curse(
