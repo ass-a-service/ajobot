@@ -74,6 +74,24 @@ class AjoManager:
             return 0
         return int(res)
 
+    async def get_effects(self, user_id: str) -> Embed:
+        curse, buff = await self.redis.mget(
+            f"{user_id}:wand-curse",
+            f"{user_id}:discombobulate-buff"
+        )
+
+        embed = Embed(
+            title="Effects",
+            colour=0x87CEEB,
+        )
+        if buff:
+            embed.add_field(name="Discombobulate buff", value=buff.decode("utf-8"), inline=True)
+
+        if curse:
+            embed.add_field(name="Cursed", value=curse.decode("utf-8"), inline=True)
+
+        return embed
+
     async def get_leaderboard(self) -> Embed:
         data = await self.redis.zrange(LEADERBOARD, 0, 9, "rev", "withscores")
         embed = Embed(

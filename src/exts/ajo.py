@@ -449,5 +449,14 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__craft(itr.author, item, itr.guild))
 
+    # EFFECTS
+    @command(name="effects", description="Show your effects")
+    async def effects_command(self, ctx: Context[Bot]) -> None:
+        await ctx.reply(embed=await self.bot.manager.get_effects(ctx.author.id))
+
+    @slash_command(name="effects", description="Show your effects")
+    async def effects(self, itr: CommandInteraction) -> None:
+        await itr.send(embed=await self.bot.manager.get_effects(itr.author.id), ephemeral=True)
+
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))
