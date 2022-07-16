@@ -391,7 +391,7 @@ class Ajo(Cog):
     async def set_bomb(
         self,
         itr: CommandInteraction,
-        target: int = Param(description="Target of the curse")
+        target: User = Param(description="Target of the curse")
     ) -> None:
         await itr.send(await self.__curse(itr.author, target, itr.guild))
 
