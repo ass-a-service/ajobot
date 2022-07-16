@@ -14,10 +14,12 @@ if amount == "all" then
     amount = current
 else
     -- sanity checks
-    amount = math.ceil(tonumber(amount))
-    if amount < 1 then
+    amount = tonumber(amount)
+    if not amount or amount < 1 then
         return {"err", false}
     end
+
+    amount = math.ceil(amount)
 end
 
 -- can we gamble that much?
