@@ -8,7 +8,8 @@ local inventory_key = KEYS[5]
 local id = ARGV[1]
 local event_version = ARGV[2]
 local guild_id = ARGV[3]
-local seed = tonumber(ARGV[4])
+
+redis.replicate_commands()
 
 -- grab the vampire level that would appear (not current)
 local level = tonumber(redis.call("get", vampire_key))
@@ -31,7 +32,6 @@ if curse and curse > 0 then
 end
 
 -- quit if the vampire does not appear
-math.randomseed(seed)
 local rand = math.random(0, 99)
 if appear_chance < rand then
     return {"OK", false}
