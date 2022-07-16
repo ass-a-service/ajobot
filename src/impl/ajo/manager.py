@@ -108,8 +108,6 @@ class AjoManager:
     ) -> str:
         if amount.isnumeric():
             amount = int(amount)
-        elif amount == "all":
-            amount = await self.get_ajo(user_id)
         else:
             amount = 0
 
