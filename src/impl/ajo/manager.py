@@ -106,11 +106,6 @@ class AjoManager:
         amount: str,
         guild_id: str
     ) -> str:
-        if amount.isnumeric():
-            amount = int(amount)
-        else:
-            amount = 0
-
         err, res = await self.redis.evalsha(
             environ["gamble"],
             2,
