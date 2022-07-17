@@ -282,31 +282,26 @@ class AjoManager:
 
         return reply
 
-    async def __build_inventory(self, items) -> Embed:
+    async def __build_inventory(self, items) -> dict:
         if not items:
             items = {}
 
-        embed = Embed(
-            title="Inventory",
-            colour=0x87CEEB,
-        )
+        res = {}
+
         for item_name, item_amount in items:
             item_amount = int(item_amount)
             if item_amount > 0:
-                embed.add_field(
-                    name=f"{item_name.decode()}",
-                    value=f"{int(item_amount)}",
-                    inline=True,
-                )
+                res[item_name.decode()] = int(item_amount)
 
-        return embed
 
-    async def get_inventory(self, user_id: str) -> Embed:
+        return res
+
+    async def get_inventory(self, user_id: str) -> dict:
         res = await self.redis.hgetall(f"{user_id}:inventory")
         return await self.__build_inventory(res.items())
 
     # same as get_inventory, but you pay for it
-    async def see_inventory(self, from_user_id: str, to_user_id: str, guild_id: str) -> Embed | str:
+    async def see_inventory(self, from_user_id: str, to_user_id: str, guild_id: str) -> dict | str:
         inventory_key = f"{to_user_id}:inventory"
 
         err, res = await self.redis.evalsha(

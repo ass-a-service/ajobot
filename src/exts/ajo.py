@@ -161,6 +161,7 @@ class Ajo(Cog):
             j += 1
 
         return embed
+
     # LEADERBOARD
     @command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard_command(self, ctx: Context[Bot]) -> None:
@@ -311,17 +312,32 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__roulette_shot(itr.author, roulette_id, itr.guild))
 
+    async def __get_inventory(self, author_id = None, inventory = None) -> Embed:
+        if not inventory:
+            inventory = await self.bot.manager.get_inventory(author_id)
+        embed = Embed(
+            title="Inventory",
+            colour=0x87CEEB,
+        )
+        for item_name, quantity in inventory.items():
+            embed.add_field(
+                name=item_name,
+                value=quantity,
+                inline=True
+            )
+        return embed
+
     # INVENTORY
     @command(name="inventory", description="Get inventory.")
     async def inventory_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author.id))
+        await ctx.reply(embed = await self.__get_inventory(author_id=ctx.author.id))
 
     @slash_command(name="inventory", description="Get inventory")
     async def inventory(
         self,
         itr: CommandInteraction,
     ) -> None:
-        await itr.send(embed = await self.bot.manager.get_inventory(itr.author.id), ephemeral=True)
+        await itr.send(embed = await self.__get_inventory(author_id=itr.author.id), ephemeral=True)
 
     @command(name="verinventory", description="See someone's inventory.")
     async def verinventory_command(self, ctx: Context[Bot], user: User) -> None:
@@ -333,7 +349,7 @@ class Ajo(Cog):
         if isinstance(res, str):
             await ctx.reply(res)
         else:
-            await ctx.reply(embed = res)
+            await ctx.reply(embed = await self.__get_inventory(inventory=res))
 
     @slash_command(name="verinventory", description="See someone's inventory.")
     async def verinventory(
@@ -349,7 +365,7 @@ class Ajo(Cog):
         if isinstance(res, str):
             await itr.send(res, ephemeral=True)
         else:
-            await itr.send(embed = res, ephemeral=True)
+            await itr.send(embed = await self.__get_inventory(inventory=res), ephemeral=True)
 
     # INVENTORY USE
     async def __use(self, user: User, item: str, guild: Guild) -> str:
