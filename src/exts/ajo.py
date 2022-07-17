@@ -368,7 +368,7 @@ class Ajo(Cog):
             await itr.send(embed = await self.__get_inventory(inventory=res), ephemeral=True)
 
     # INVENTORY USE
-    async def __use(self, user: User, item: str, guild: Guild) -> str:
+    async def __use(self, user: User, item: str, guild: Guild) -> dict | str:
         return await self.bot.manager.use(
             user.id,
             item,
@@ -377,7 +377,11 @@ class Ajo(Cog):
 
     @command(name="use", description="Use an item from the inventory")
     async def use_command(self, ctx: Context[Bot], item: str) -> None:
-        await ctx.reply(await self.__use(ctx.author, item, ctx.guild))
+        res = await self.__use(ctx.author, item, ctx.guild)
+        if isinstance(res, str):
+            await ctx.reply(res)
+        else:
+            await ctx.reply(embed = await self.__build_use_embed(res))
 
     @slash_command(name="use", description="Use an item from the inventory")
     async def use(
@@ -385,7 +389,11 @@ class Ajo(Cog):
         itr: CommandInteraction,
         item: str = Param(description="The item to use")
     ) -> None:
-        await itr.send(await self.__use(itr.author, item, itr.guild))
+        res = await self.__use(itr.author, item, itr.guild)
+        if isinstance(res, str):
+            await itr.send(res, ephemeral=True)
+        else:
+            await itr.send(embed = await self.__build_use_embed(res), ephemeral=True)
 
     async def __set_bomb(self, user: User, time: int, guild: Guild) -> Embed:
         message = await self.bot.manager.set_bomb(
@@ -487,6 +495,47 @@ class Ajo(Cog):
         item: str = Param(description="The item to craft")
     ) -> None:
         await itr.send(await self.__craft(itr.author, item, itr.guild))
+
+    # EFFECTS
+    @command(name="effects", description="Show your effects")
+    async def effects_command(self, ctx: Context[Bot]) -> None:
+        embed = await self.__build_effects(await self.bot.manager.get_effects(ctx.author.id))
+        await ctx.reply(embed=embed)
+
+    @slash_command(name="effects", description="Show your effects")
+    async def effects(self, itr: CommandInteraction) -> None:
+        embed = await self.__build_effects(await self.bot.manager.get_effects(itr.author.id))
+        await itr.send(embed=embed, ephemeral=True)
+
+    async def __build_effects(self, data) -> Embed:
+        embed = Embed(
+            title="Ajo effects",
+            colour=0x87CEEB,
+        )
+
+        for effect, value in data.items():
+            embed.add_field(
+                name=effect,
+                value=value,
+                inline=True
+            )
+
+        return embed
+
+    async def __build_use_embed(self, data) -> Embed:
+        embed = Embed(
+            title="Ajo radar",
+            colour=0x87CEEB,
+        )
+
+        for name, td in data.items():
+            embed.add_field(
+                name=name,
+                value=td,
+                inline=True
+            )
+
+        return embed
 
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))

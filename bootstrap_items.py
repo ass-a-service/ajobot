@@ -96,6 +96,23 @@ def main() -> None:
                 ":bone:": 10,
                 ":tooth:": 4
             }
+        },
+        ":satellite:": {
+            "description": "Enhance your vision.",
+            "tradable": 1,
+            "max_stack": 4,
+            "craft": {
+                ":gear:": 6
+            }
+        },
+        ":gear:": {
+            "description": "A gear.",
+            "drop_rate": 600,
+            "tradable": 1,
+            "max_stack": 20,
+            "craft": {
+                ":garlic:": 30
+            }
         }
     }
 
