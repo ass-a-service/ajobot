@@ -74,12 +74,8 @@ class AjoManager:
             return 0
         return int(res)
 
-    async def get_leaderboard(self) -> Embed:
+    async def get_leaderboard(self) -> dict:
         data = await self.redis.zrange(LEADERBOARD, 0, 9, "rev", "withscores")
-        embed = Embed(
-            title="Ajo Leaderboard",
-            colour=0x87CEEB,
-        )
 
         ids = []
         scores = []
@@ -88,17 +84,14 @@ class AjoManager:
             scores.append(int(score))
 
         names = await self.redis.mget(ids)
-        j = 0
+        res = {}
+        i = 0
         for i in range(len(names)):
             name = names[i].decode("utf-8")
-            embed.add_field(
-                name=f"{j} . {name[:-5]}",
-                value=f"{AJO} {scores[i]}",
-                inline=True,
-            )
-            j += 1
+            res[name] = scores[i]
+            i += 1
 
-        return embed
+        return res
 
     async def gamble_ajo(
         self,

@@ -1,4 +1,4 @@
-from disnake import CommandInteraction, Message, User, Guild
+from disnake import CommandInteraction, Message, User, Guild, Embed
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 from disnake.ext import tasks
 from aioredis.exceptions import ResponseError
@@ -145,14 +145,30 @@ class Ajo(Cog):
         count = await self.bot.manager.get_ajo(user.id)
         await itr.send(f"{AJO} {user} has {count} ajos {AJO}")
 
+    async def __get_leaderboard(self) -> Embed:
+        embed = Embed(
+            title="Ajo Leaderboard",
+            colour=0x87CEEB,
+        )
+        lb = await self.bot.manager.get_leaderboard()
+        j = 0
+        for name,points in lb.items():
+            embed.add_field(
+                name=f"{j} . {name[:-5]}",
+                value=f"{AJO} {points}",
+                inline=True
+            )
+            j += 1
+
+        return embed
     # LEADERBOARD
     @command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(embed=await self.bot.manager.get_leaderboard())
+        await ctx.reply(embed=await self.__get_leaderboard())
 
     @slash_command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard(self, itr: CommandInteraction) -> None:
-        await itr.send(embed=await self.bot.manager.get_leaderboard())
+        await itr.send(embed=await self.__get_leaderboard())
 
     # GAMBLE
     async def __gamble(self, user: User, amount: str, guild: Guild) -> str:
