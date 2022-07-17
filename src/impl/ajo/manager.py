@@ -56,6 +56,8 @@ class AjoManager:
                 txt = ":tooth:"
             case "bone" | "🦴":
                 txt = ":bone:"
+            case "gear" | "⚙️":
+                txt = ":gear:"
 
         return txt
 
