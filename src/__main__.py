@@ -11,13 +11,14 @@ def main() -> None:
     if guild := environ.get("TEST_GUILD"):
         test_guilds = [int(guild)]
 
-    intents = Intents.none()
+    intents = Intents(message_content=True)
     intents.messages = True
 
     bot = Bot(
         test_guilds=test_guilds,
         intents=intents,
         command_prefix=("a/", "ajo ", "ajo/"),
+
         help_command=None,
         case_insensitive=True,
         allowed_mentions=AllowedMentions.none(),
