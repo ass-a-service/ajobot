@@ -27,6 +27,10 @@ class Bot(_Bot):
     async def on_ready(self) -> None:
         logger.info(f"READY event received, connected as {self.user} with {len(self.guilds)} guilds.")
 
+    async def on_guild_join(self, guild) -> None:
+        logger.info(f"Guild {guild} added me. Realoading now.")
+        self.reload = True
+
     def load_extension(self, name: str, *, package: Optional[str] = None) -> None:
         super().load_extension(name, package=package)
 
