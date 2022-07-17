@@ -4,8 +4,8 @@ from math import ceil
 from os import environ
 import time
 import secrets
+from types import SimpleNamespace
 
-from disnake import Embed, Message
 from loguru import logger
 import aioredis
 
@@ -59,13 +59,12 @@ class AjoManager:
 
         return txt
 
-    async def contains_ajo(self, msg: Message) -> bool:
-        txt = msg.content
-        itxt = txt.lower()
-        return "garlic" in itxt or "ajo" in itxt or AJO in txt or ":garlic" in txt
+    async def contains_ajo(self, msg: str) -> bool:
+        itxt = msg.lower()
+        return "garlic" in itxt or "ajo" in itxt or AJO in msg or ":garlic" in msg
 
-    async def is_begging_for_ajo(self, msg: Message) -> bool:
-        itxt = msg.content.lower()
+    async def is_begging_for_ajo(self, msg: str) -> bool:
+        itxt = msg.lower()
         return "give me garlic" in itxt or "dame ajo" in itxt
 
     async def get_ajo(self, user_id: str) -> int:
@@ -426,19 +425,22 @@ class AjoManager:
             self.__get_seed()
         )
 
-        embed = Embed(colour=0x87CEEB)
+        ret = SimpleNamespace()
+
         match err.decode("utf-8"):
             case "err":
-                embed.description = f"You do not have enough {item}."
-                embed.title = "There was an error when setting up the bomb"
+                ret.description = f"You do not have enough {item}."
+                ret.title = "There was an error when setting up the bomb"
+                ret.timestamp = None
             case "time":
-                embed.description = f"You cannot set a bomb at this time."
-                embed.title = "There was an error when setting up the bomb"
+                ret.timestamp = None
+                ret.description = f"You cannot set a bomb at this time."
+                ret.title = "There was an error when setting up the bomb"
             case "OK":
-                embed.timestamp = datetime.fromtimestamp(res)
-                embed.description = "Detonation time:"
-                embed.title = "The bomb has been planted"
-        return embed
+                ret.timestamp = datetime.fromtimestamp(res)
+                ret.description = "Detonation time:"
+                ret.title = "The bomb has been planted"
+        return ret
 
     async def curse(self, user_id: str, item: str, target_id: str, guild_id: str) -> str:
         inventory_key = f"{user_id}:inventory"

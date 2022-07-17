@@ -77,7 +77,7 @@ class Ajo(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        contains_ajo = await self.bot.manager.contains_ajo(message)
+        contains_ajo = await self.bot.manager.contains_ajo(message.content)
 
         # Relevant message
         if contains_ajo:
@@ -106,7 +106,7 @@ class Ajo(Cog):
                     bomb_owner = res[0].decode("utf-8")
                     return await message.reply(f"{bomb_owner}'s bomb explodes! {res[1]} ajos have been burnt.")
 
-            is_begging = await self.bot.manager.is_begging_for_ajo(message)
+            is_begging = await self.bot.manager.is_begging_for_ajo(message.content)
             if is_begging:
                 await message.add_reaction(AJO)
 
@@ -387,13 +387,20 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__use(itr.author, item, itr.guild))
 
-    async def __set_bomb(self, user: User, time: int, guild: Guild) -> str:
-        return await self.bot.manager.set_bomb(
+    async def __set_bomb(self, user: User, time: int, guild: Guild) -> Embed:
+        message = await self.bot.manager.set_bomb(
             user.id,
             ":bomb:",
             time,
             await self.getGuildId(guild)
         )
+
+        return Embed(
+            timestamp = message.timestamp,
+            description=message.description,
+            title=message.title
+        )
+
 
     @command(name="set_bomb", description="Set a bomb timer")
     async def set_bomb_command(self, ctx: Context[Bot], time: int) -> None:
