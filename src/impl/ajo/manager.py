@@ -571,3 +571,42 @@ class AjoManager:
                 reply = f"You have crafted {item} successfully."
 
         return reply
+
+    async def telegram_pair(self, user_id: str, code: str, guild_id: str) -> str:
+
+        discord_telegram_redis_key = f"d2t:{user_id}"
+
+        if await self.redis.exists(discord_telegram_redis_key):
+            return "This account is already paired!"
+
+        if not await self.redis.exists(code):
+            return "The code does not exist or has expired"
+
+        telegram_user_id = await self.redis.get(code)
+
+        telegram_discord_redis_key = f"t2d:{telegram_user_id.decode()}"
+
+        # Do pairing
+        await self.redis.set(discord_telegram_redis_key, telegram_user_id)
+
+        await self.redis.set(telegram_discord_redis_key, user_id)
+
+        return f"Paired!"
+
+    async def telegram_unpair(self, user_id: str, guild_id: str) -> str:
+
+        discord_telegram_redis_key = f"d2t:{user_id}"
+
+        if not await self.redis.exists(discord_telegram_redis_key):
+            return "This account is  not paired!"
+
+        telegram_user_id = await self.redis.get(discord_telegram_redis_key)
+
+        telegram_discord_redis_key = f"t2d:{telegram_user_id.decode()}"
+
+        # Do unpairing
+        await self.redis.delete(discord_telegram_redis_key)
+
+        await self.redis.delete(telegram_discord_redis_key)
+
+        return f"Unpaired!"
