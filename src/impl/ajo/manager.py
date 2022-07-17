@@ -1,11 +1,9 @@
 from datetime import timedelta, datetime
-import json
-from math import ceil
 from os import environ
 import time
 import secrets
+from types import SimpleNamespace
 
-from disnake import Embed, Message
 from loguru import logger
 import aioredis
 
@@ -59,13 +57,12 @@ class AjoManager:
 
         return txt
 
-    async def contains_ajo(self, msg: Message) -> bool:
-        txt = msg.content
-        itxt = txt.lower()
-        return "garlic" in itxt or "ajo" in itxt or AJO in txt or ":garlic" in txt
+    async def contains_ajo(self, msg: str) -> bool:
+        itxt = msg.lower()
+        return "garlic" in itxt or "ajo" in itxt or AJO in msg or ":garlic" in msg
 
-    async def is_begging_for_ajo(self, msg: Message) -> bool:
-        itxt = msg.content.lower()
+    async def is_begging_for_ajo(self, msg: str) -> bool:
+        itxt = msg.lower()
         return "give me garlic" in itxt or "dame ajo" in itxt
 
     async def get_ajo(self, user_id: str) -> int:
@@ -74,12 +71,8 @@ class AjoManager:
             return 0
         return int(res)
 
-    async def get_leaderboard(self) -> Embed:
+    async def get_leaderboard(self) -> dict:
         data = await self.redis.zrange(LEADERBOARD, 0, 9, "rev", "withscores")
-        embed = Embed(
-            title="Ajo Leaderboard",
-            colour=0x87CEEB,
-        )
 
         ids = []
         scores = []
@@ -88,17 +81,14 @@ class AjoManager:
             scores.append(int(score))
 
         names = await self.redis.mget(ids)
-        j = 0
+        res = {}
+        i = 0
         for i in range(len(names)):
             name = names[i].decode("utf-8")
-            embed.add_field(
-                name=f"{j} . {name[:-5]}",
-                value=f"{AJO} {scores[i]}",
-                inline=True,
-            )
-            j += 1
+            res[name] = scores[i]
+            i += 1
 
-        return embed
+        return res
 
     async def gamble_ajo(
         self,
@@ -289,31 +279,26 @@ class AjoManager:
 
         return reply
 
-    async def __build_inventory(self, items) -> Embed:
+    async def __build_inventory(self, items) -> dict:
         if not items:
             items = {}
 
-        embed = Embed(
-            title="Inventory",
-            colour=0x87CEEB,
-        )
+        res = {}
+
         for item_name, item_amount in items:
             item_amount = int(item_amount)
             if item_amount > 0:
-                embed.add_field(
-                    name=f"{item_name.decode()}",
-                    value=f"{int(item_amount)}",
-                    inline=True,
-                )
+                res[item_name.decode()] = int(item_amount)
 
-        return embed
 
-    async def get_inventory(self, user_id: str) -> Embed:
+        return res
+
+    async def get_inventory(self, user_id: str) -> dict:
         res = await self.redis.hgetall(f"{user_id}:inventory")
         return await self.__build_inventory(res.items())
 
     # same as get_inventory, but you pay for it
-    async def see_inventory(self, from_user_id: str, to_user_id: str, guild_id: str) -> Embed | str:
+    async def see_inventory(self, from_user_id: str, to_user_id: str, guild_id: str) -> dict | str:
         inventory_key = f"{to_user_id}:inventory"
 
         err, res = await self.redis.evalsha(
@@ -438,19 +423,22 @@ class AjoManager:
             self.__get_seed()
         )
 
-        embed = Embed(colour=0x87CEEB)
+        ret = SimpleNamespace()
+
         match err.decode("utf-8"):
             case "err":
-                embed.description = f"You do not have enough {item}."
-                embed.title = "There was an error when setting up the bomb"
+                ret.description = f"You do not have enough {item}."
+                ret.title = "There was an error when setting up the bomb"
+                ret.timestamp = None
             case "time":
-                embed.description = f"You cannot set a bomb at this time."
-                embed.title = "There was an error when setting up the bomb"
+                ret.timestamp = None
+                ret.description = f"You cannot set a bomb at this time."
+                ret.title = "There was an error when setting up the bomb"
             case "OK":
-                embed.timestamp = datetime.fromtimestamp(res)
-                embed.description = "Detonation time:"
-                embed.title = "The bomb has been planted"
-        return embed
+                ret.timestamp = datetime.fromtimestamp(res)
+                ret.description = "Detonation time:"
+                ret.title = "The bomb has been planted"
+        return ret
 
     async def curse(self, user_id: str, item: str, target_id: str, guild_id: str) -> str:
         inventory_key = f"{user_id}:inventory"

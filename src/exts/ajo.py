@@ -1,4 +1,4 @@
-from disnake import CommandInteraction, Message, User, Guild
+from disnake import CommandInteraction, Message, User, Guild, Embed
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 from disnake.ext import tasks
 from aioredis.exceptions import ResponseError
@@ -77,7 +77,7 @@ class Ajo(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        contains_ajo = await self.bot.manager.contains_ajo(message)
+        contains_ajo = await self.bot.manager.contains_ajo(message.content)
 
         # Relevant message
         if contains_ajo:
@@ -106,7 +106,7 @@ class Ajo(Cog):
                     bomb_owner = res[0].decode("utf-8")
                     return await message.reply(f"{bomb_owner}'s bomb explodes! {res[1]} ajos have been burnt.")
 
-            is_begging = await self.bot.manager.is_begging_for_ajo(message)
+            is_begging = await self.bot.manager.is_begging_for_ajo(message.content)
             if is_begging:
                 await message.add_reaction(AJO)
 
@@ -145,14 +145,31 @@ class Ajo(Cog):
         count = await self.bot.manager.get_ajo(user.id)
         await itr.send(f"{AJO} {user} has {count} ajos {AJO}")
 
+    async def __get_leaderboard(self) -> Embed:
+        embed = Embed(
+            title="Ajo Leaderboard",
+            colour=0x87CEEB,
+        )
+        lb = await self.bot.manager.get_leaderboard()
+        j = 0
+        for name,points in lb.items():
+            embed.add_field(
+                name=f"{j} . {name[:-5]}",
+                value=f"{AJO} {points}",
+                inline=True
+            )
+            j += 1
+
+        return embed
+
     # LEADERBOARD
     @command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(embed=await self.bot.manager.get_leaderboard())
+        await ctx.reply(embed=await self.__get_leaderboard())
 
     @slash_command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard(self, itr: CommandInteraction) -> None:
-        await itr.send(embed=await self.bot.manager.get_leaderboard())
+        await itr.send(embed=await self.__get_leaderboard())
 
     # GAMBLE
     async def __gamble(self, user: User, amount: str, guild: Guild) -> str:
@@ -295,17 +312,32 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__roulette_shot(itr.author, roulette_id, itr.guild))
 
+    async def __get_inventory(self, author_id = None, inventory = None) -> Embed:
+        if not inventory:
+            inventory = await self.bot.manager.get_inventory(author_id)
+        embed = Embed(
+            title="Inventory",
+            colour=0x87CEEB,
+        )
+        for item_name, quantity in inventory.items():
+            embed.add_field(
+                name=item_name,
+                value=quantity,
+                inline=True
+            )
+        return embed
+
     # INVENTORY
     @command(name="inventory", description="Get inventory.")
     async def inventory_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(embed = await self.bot.manager.get_inventory(ctx.author.id))
+        await ctx.reply(embed = await self.__get_inventory(author_id=ctx.author.id))
 
     @slash_command(name="inventory", description="Get inventory")
     async def inventory(
         self,
         itr: CommandInteraction,
     ) -> None:
-        await itr.send(embed = await self.bot.manager.get_inventory(itr.author.id), ephemeral=True)
+        await itr.send(embed = await self.__get_inventory(author_id=itr.author.id), ephemeral=True)
 
     @command(name="verinventory", description="See someone's inventory.")
     async def verinventory_command(self, ctx: Context[Bot], user: User) -> None:
@@ -317,7 +349,7 @@ class Ajo(Cog):
         if isinstance(res, str):
             await ctx.reply(res)
         else:
-            await ctx.reply(embed = res)
+            await ctx.reply(embed = await self.__get_inventory(inventory=res))
 
     @slash_command(name="verinventory", description="See someone's inventory.")
     async def verinventory(
@@ -333,7 +365,7 @@ class Ajo(Cog):
         if isinstance(res, str):
             await itr.send(res, ephemeral=True)
         else:
-            await itr.send(embed = res, ephemeral=True)
+            await itr.send(embed = await self.__get_inventory(inventory=res), ephemeral=True)
 
     # INVENTORY USE
     async def __use(self, user: User, item: str, guild: Guild) -> str:
@@ -355,13 +387,20 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__use(itr.author, item, itr.guild))
 
-    async def __set_bomb(self, user: User, time: int, guild: Guild) -> str:
-        return await self.bot.manager.set_bomb(
+    async def __set_bomb(self, user: User, time: int, guild: Guild) -> Embed:
+        message = await self.bot.manager.set_bomb(
             user.id,
             ":bomb:",
             time,
             await self.getGuildId(guild)
         )
+
+        return Embed(
+            timestamp = message.timestamp,
+            description=message.description,
+            title=message.title
+        )
+
 
     @command(name="set_bomb", description="Set a bomb timer")
     async def set_bomb_command(self, ctx: Context[Bot], time: int) -> None:
