@@ -11,7 +11,7 @@ def main() -> None:
     if guild := environ.get("TEST_GUILD"):
         test_guilds = [int(guild)]
 
-    intents = Intents(message_content=True)
+    intents = Intents(message_content=True, guilds=True)
     intents.messages = True
 
     bot = Bot(
