@@ -449,5 +449,29 @@ class Ajo(Cog):
     ) -> None:
         await itr.send(await self.__craft(itr.author, item, itr.guild))
 
+    # Telegram pair
+    async def __telegram_pair(self, user: User, code: str, guild: Guild) -> str:
+        return await self.bot.manager.telegram_pair(user.id, code, await self.getGuildId(guild))
+
+    @slash_command(name="telegram_pair", description="Pair your Telegram account")
+    async def telegram_pair(
+        self,
+        itr: CommandInteraction,
+        code: str = Param(description="The pairing code provided in Telegram")
+    ) -> None:
+        await itr.send(await self.__telegram_pair(itr.author, code, itr.guild), ephemeral=True)
+
+    # Telegram unpair
+    async def __telegram_unpair(self, user: User, guild: Guild) -> str:
+        return await self.bot.manager.telegram_unpair(user.id, await self.getGuildId(guild))
+
+    @slash_command(name="telegram_unpair", description="Unpair your Telegram account")
+    async def telegram_unpair(
+        self,
+        itr: CommandInteraction
+    ) -> None:
+        await itr.send(await self.__telegram_unpair(itr.author, itr.guild), ephemeral=True)
+
+
 def setup(bot: Bot) -> None:
     bot.add_cog(Ajo(bot))
