@@ -58,6 +58,8 @@ class AjoManager:
                 txt = ":bone:"
             case "gear" | "⚙️":
                 txt = ":gear:"
+            case "satellite" | "📡":
+                txt = ":satellite:"
 
         return txt
 
@@ -509,6 +511,8 @@ class AjoManager:
                 return await self.use_shoe(user_id, item, guild_id)
             case ":eggplant:":
                 return await self.use_eggplant(user_id, item, guild_id)
+            case ":satellite:":
+                return await self.use_radar(user_id, item, guild_id)
             case _:
                 return f"Unknown item {item}."
 
@@ -591,3 +595,50 @@ class AjoManager:
                 reply = f"You have crafted {item} successfully."
 
         return reply
+
+    async def use_radar(self, user_id: str, item: str, guild_id: str) -> Embed | str:
+        inventory_key = f"{user_id}:inventory"
+        item_key = "items::satellite:"
+
+        err, res = await self.redis.evalsha(
+            environ["use_radar"],
+            3,
+            AJOBUS_INVENTORY,
+            inventory_key,
+            "ajocron-bomb",
+            user_id,
+            item,
+            EVENT_VERSION,
+            guild_id
+        )
+
+        if err.decode("utf-8") == "err":
+            return f"You do not have enough {item}."
+
+        if not res:
+            return f"There are no active bombs."
+
+        # build the bomb embed
+        embed = Embed(
+            title="Bombs",
+            colour=0x87CEEB,
+        )
+
+        ids = res[::2]
+        scores = res[1::2]
+        names = await self.redis.mget(ids)
+
+        # find names related with the ids
+        j = 0
+        now = int(time.time())
+        for i in range(len(names)):
+            name = names[i].decode("utf-8")
+            when = int(scores[i].decode("utf-8"))
+
+            embed.add_field(
+                name=f"{j} . {name[:-5]}",
+                value=timedelta(seconds=when-now),
+                inline=True
+            )
+
+        return embed

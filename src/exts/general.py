@@ -21,7 +21,7 @@ class General(Cog):
             case "ajos":
                 await self.bot.manager.redis.zadd("lb", {itr.author.id: amount})
                 return await itr.send(f"Set ajos to {amount}")
-            case "chop"|"bomb"|"cross"|"ribb"|"herb"|"sauro"|"eggplant"|"shoe"|"tooth"|"bone"|"magic_wand"|"gear":
+            case "chop"|"bomb"|"cross"|"ribb"|"herb"|"sauro"|"eggplant"|"shoe"|"tooth"|"bone"|"magic_wand"|"gear"|"satellite":
                 inv_key = f"{itr.author.id}:inventory"
                 it_type = self.__trans(type)
                 if not it_type:
@@ -62,6 +62,8 @@ class General(Cog):
                 return ":magic_wand:"
             case "gear":
                 return ":gear:"
+            case "satellite":
+                return ":satellite:"
 
         return ":void:"
 

@@ -345,7 +345,11 @@ class Ajo(Cog):
 
     @command(name="use", description="Use an item from the inventory")
     async def use_command(self, ctx: Context[Bot], item: str) -> None:
-        await ctx.reply(await self.__use(ctx.author, item, ctx.guild))
+        res = await self.__use(ctx.author, item, ctx.guild)
+        if isinstance(res, str):
+            await ctx.reply(res)
+        else:
+            await ctx.reply(embed = res)
 
     @slash_command(name="use", description="Use an item from the inventory")
     async def use(
@@ -353,7 +357,11 @@ class Ajo(Cog):
         itr: CommandInteraction,
         item: str = Param(description="The item to use")
     ) -> None:
-        await itr.send(await self.__use(itr.author, item, itr.guild))
+        res = await self.__use(itr.author, item, itr.guild)
+        if isinstance(res, str):
+            await itr.send(res, ephemeral=True)
+        else:
+            await itr.send(embed = res, ephemeral=True)
 
     async def __set_bomb(self, user: User, time: int, guild: Guild) -> str:
         return await self.bot.manager.set_bomb(
