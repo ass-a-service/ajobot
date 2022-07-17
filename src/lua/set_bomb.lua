@@ -9,7 +9,8 @@ local id = ARGV[2]
 local item = ARGV[3]
 local event_version = ARGV[4]
 local guild_id = ARGV[5]
-local seed = tonumber(ARGV[6])
+
+redis.replicate_commands()
 
 -- sanity check, the bomb only allows timer for a maximum of 8h
 if ttl < 0 or ttl > 28800 then
@@ -38,7 +39,6 @@ local time = redis.call("time")
 local expected = tonumber(time[1]) + ttl
 
 -- the bomb will set off within a gap of 7min of the set time
-math.randomseed(seed)
 local actual = math.random(expected - 210, expected + 210)
 
 -- add the bomb to the cron key, its identifier is the user's ID, meaning a user

@@ -1,4 +1,3 @@
-from random import randrange, SystemRandom
 from math import ceil, log
 from os import environ
 import time
@@ -21,7 +20,7 @@ class Vampires(Cog):
         if message.author.bot or message.guild is None:
             return
 
-        contains_ajo = await self.bot.manager.contains_ajo(message)
+        contains_ajo = await self.bot.manager.contains_ajo(message.content)
         if not contains_ajo:
             return
 

@@ -8,7 +8,8 @@ local id = ARGV[1]
 local event_version = ARGV[2]
 local guild_id = ARGV[3]
 local event_id = ARGV[4] -- the redis event_id trigger
-local seed = tonumber(ARGV[5])
+
+redis.replicate_commands()
 
 -- you need at least some ajos to farm
 -- avoids the spam with 0 ajos
@@ -19,7 +20,6 @@ if not current or current < min_ajos then
 end
 
 -- retrieve redis drop rate and maxstack data
-math.randomseed(seed)
 local rand = math.random(1, 100000)
 local acc = 0
 local item, drop_rate, max_stack
