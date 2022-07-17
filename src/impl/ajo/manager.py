@@ -27,9 +27,6 @@ class AjoManager:
         self.redis = aioredis.from_url(f"redis://{environ['REDIS_HOST']}")
         logger.info("Connected to the database.")
 
-    def __get_seed(self) -> int:
-        return time.time_ns()-(int(time.time())*1000000000)
-
     def __translate_emoji(self, txt: str) -> str:
         match txt:
             case "chopsticks" | "🥢":
@@ -104,8 +101,7 @@ class AjoManager:
             user_id,
             amount,
             EVENT_VERSION,
-            guild_id,
-            self.__get_seed()
+            guild_id
         )
 
         match err.decode("utf-8"):
@@ -206,8 +202,7 @@ class AjoManager:
             to_user_id,
             amount,
             EVENT_VERSION,
-            guild_id,
-            self.__get_seed()
+            guild_id
         )
 
         match err.decode("utf-8"):
@@ -237,7 +232,6 @@ class AjoManager:
             environ["roulette"],
             1,
             roulette_key,
-            self.__get_seed(),
             600
         )
 
@@ -412,8 +406,7 @@ class AjoManager:
             user_id,
             item,
             EVENT_VERSION,
-            guild_id,
-            self.__get_seed()
+            guild_id
         )
 
         ret = SimpleNamespace()

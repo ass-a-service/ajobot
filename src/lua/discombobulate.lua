@@ -9,7 +9,8 @@ local target_id = ARGV[2]
 local offer = math.ceil(tonumber(ARGV[3]))
 local event_version = ARGV[4]
 local guild_id = ARGV[5]
-local seed = tonumber(ARGV[6])
+
+redis.replicate_commands()
 
 -- sanity checks
 if offer < 1 then
@@ -40,7 +41,6 @@ if not target_amount or offer < min_offer then
 end
 
 -- dmg is 69 to 200% of offered, but can be buffed
-math.randomseed(seed)
 local min = 69
 local max = 200
 local percent = math.random(min, max)

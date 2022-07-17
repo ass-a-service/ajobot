@@ -6,7 +6,8 @@ local id = ARGV[1]
 local amount = ARGV[2]
 local event_version = ARGV[3]
 local guild_id = ARGV[4]
-local seed = tonumber(ARGV[5])
+
+redis.replicate_commands()
 
 -- check for gamble all
 local current = tonumber(redis.call("zscore", lb_key, id))
@@ -29,7 +30,6 @@ end
 
 -- 25% chance to win up from 1% to 250%
 local change
-math.randomseed(seed)
 if math.random(0, 3) == 1 then
     change = math.ceil(math.random(1, 100) / 40 * amount)
 else
