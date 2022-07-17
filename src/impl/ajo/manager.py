@@ -72,23 +72,20 @@ class AjoManager:
             return 0
         return int(res)
 
-    async def get_effects(self, user_id: str) -> Embed:
+    async def get_effects(self, user_id: str) -> dict:
         curse, buff = await self.redis.mget(
             f"{user_id}:wand-curse",
             f"{user_id}:discombobulate-buff"
         )
 
-        embed = Embed(
-            title="Effects",
-            colour=0x87CEEB,
-        )
+        res = {}
         if buff:
-            embed.add_field(name="Discombobulate buff", value=buff.decode("utf-8"), inline=True)
+            res["Discombobulate buff"] = buff.decode("utf-8")
 
         if curse:
-            embed.add_field(name="Cursed", value=curse.decode("utf-8"), inline=True)
+            res["Cursed"] = curse.decode("utf-8")
 
-        return embed
+        return res
 
     async def get_leaderboard(self) -> dict:
         data = await self.redis.zrange(LEADERBOARD, 0, 9, "rev", "withscores")
@@ -570,7 +567,7 @@ class AjoManager:
 
         return reply
 
-    async def use_radar(self, user_id: str, item: str, guild_id: str) -> Embed | str:
+    async def use_radar(self, user_id: str, item: str, guild_id: str) -> dict | str:
         inventory_key = f"{user_id}:inventory"
         item_key = "items::satellite:"
 
@@ -592,12 +589,6 @@ class AjoManager:
         if not res:
             return f"There are no active bombs."
 
-        # build the bomb embed
-        embed = Embed(
-            title="Bombs",
-            colour=0x87CEEB,
-        )
-
         ids = res[::2]
         scores = res[1::2]
         names = await self.redis.mget(ids)
@@ -605,14 +596,11 @@ class AjoManager:
         # find names related with the ids
         j = 0
         now = int(time.time())
+        res = {}
         for i in range(len(names)):
             name = names[i].decode("utf-8")
             when = int(scores[i].decode("utf-8"))
 
-            embed.add_field(
-                name=f"{j} . {name[:-5]}",
-                value=timedelta(seconds=when-now),
-                inline=True
-            )
+            res[f"{j} . {name[:-5]}"] = timedelta(seconds=when-now)
 
-        return embed
+        return res
