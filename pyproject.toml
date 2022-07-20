@@ -10,9 +10,10 @@ repository = "https://github.com/lastlife/ajobot"
 python = "^3.10"
 taskipy = "^1.9.0"
 disnake = "^2.4.0"
-loguru = "^0.5.3"
+loguru = "^0.6.0"
 python-dotenv = "^0.19.2"
 aioredis = "^2.0.1"
+ajobot-manager = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 black = "^21.12b0"
