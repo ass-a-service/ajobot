@@ -3,7 +3,7 @@ from typing import Any, Optional
 from disnake.ext.commands import Bot as _Bot
 from loguru import logger
 
-from src.impl.ajo import AjoManager
+from ajobot_manager.manager import AjoManager
 
 from .status import StatusHeartbeater
 
