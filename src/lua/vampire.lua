@@ -4,6 +4,7 @@ local lb_key = KEYS[2]
 local vampire_key = KEYS[3]
 local curse_key = KEYS[4]
 local inventory_key = KEYS[5]
+local deb_key = KEYS[6]
 
 local id = ARGV[1]
 local event_version = ARGV[2]
@@ -33,6 +34,18 @@ end
 
 -- quit if the vampire does not appear
 local rand = math.random(0, 99)
+
+-- DEBUG the random
+redis.call(
+    "xadd", deb_key, "*",
+    "version", event_version,
+    "type", "debug_vampire",
+    "user_id", id,
+    "guild_id", guild_id,
+    "random", rand,
+    "appear_chance", appear_chance
+)
+
 if appear_chance < rand then
     return {"OK", false}
 end

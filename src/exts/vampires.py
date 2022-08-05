@@ -27,15 +27,17 @@ class Vampires(Cog):
         vampire_key = f"{message.author.id}:vampire"
         curse_key = f"{message.author.id}:wand-curse"
         inventory_key = f"{message.author.id}:inventory"
+        debug_key = "ajodebug"
 
         err, res = await self.bot.manager.redis.evalsha(
             environ["vampire"],
-            5,
+            6,
             AJOBUS,
             LEADERBOARD,
             vampire_key,
             curse_key,
             inventory_key,
+            debug_key,
             message.author.id,
             EVENT_VERSION,
             0 if message.guild is None else message.guild.id,
