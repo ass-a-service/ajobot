@@ -37,7 +37,7 @@ def main() -> None:
             "tradable": 1,
             "max_stack": 10,
             "craft": {
-                ":garlic:": 50
+                ":herb:": 4
             }
         },
         ":bomb:": {
@@ -57,7 +57,7 @@ def main() -> None:
             "tradable": 1,
             "max_stack": 1,
             "craft": {
-                ":herb:": 4
+                ":garlic:": 50
             }
         },
         ":athletic_shoe:": {
