@@ -31,7 +31,7 @@ class Vampires(Cog):
 
         err, res = await self.bot.manager.redis.evalsha(
             environ["vampire"],
-            5,
+            6,
             AJOBUS,
             LEADERBOARD,
             vampire_key,
