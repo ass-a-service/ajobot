@@ -21,55 +21,60 @@ class Ajo(Cog):
 
     @tasks.loop(seconds=10)
     async def bomb_cron(self) -> None:
-        redis = self.bot.manager.redis
+        try:
+            redis = self.bot.manager.redis
 
-        # read keys not read yet, assume these are bombs
-        tm = time.time()
-        data = await redis.zrangebyscore("ajocron-bomb", "-inf", tm)
+            # read keys not read yet, assume these are bombs
+            tm = time.time()
+            data = await redis.zrangebyscore("ajocron-bomb", "-inf", tm)
 
-        # we only care about the last item, bombs at the same time overwrite
-        if len(data):
-            # setup the bomb flag with the related username
-            user_id = data[-1]
-            await redis.set("ajobomb", await redis.get(user_id))
+            # we only care about the last item, bombs at the same time overwrite
+            if len(data):
+                # setup the bomb flag with the related username
+                user_id = data[-1]
+                await redis.set("ajobomb", await redis.get(user_id))
 
-            # cleanup the cron
-            await redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
-
+                # cleanup the cron
+                await redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
+        except:
+            printf("There was an exception while running bomb_cron. Retrying")
 
     @tasks.loop(seconds=1)
     async def on_ajo(self) -> None:
-        redis = self.bot.manager.redis
-
-        # Create the xreadgroup once
-        # TODO: better do this outside of this fn
         try:
-            await redis.xgroup_create(AJOBUS,"ajo-python",0, mkstream=True)
-        except ResponseError as e:
-            if str(e) != "BUSYGROUP Consumer Group name already exists":
-                raise e
+            redis = self.bot.manager.redis
 
-        data = await redis.xreadgroup("ajo-python","ajo.py",streams={AJOBUS: ">"},count=100)
-        # stream_name, chunk
-        for _, chunk in data:
-            # entry_id, entry_data
-            for entry_id, entry_data in chunk:
-                entry = await self.parseEntry(entry_data)
-                if entry["type"] == "farm":
-                    user_id = entry["user_id"]
-                    await redis.evalsha(
-                        environ['farm_inventory'],
-                        4,
-                        AJOBUS_INVENTORY,
-                        "drop-rate",
-                        LEADERBOARD,
-                        user_id + ":inventory",
-                        user_id,
-                        EVENT_VERSION,
-                        entry["guild_id"],
-                        entry_id,
-                        time.time_ns()-(int(time.time())*1000000000)
-                    )
+            # Create the xreadgroup once
+            # TODO: better do this outside of this fn
+            try:
+                await redis.xgroup_create(AJOBUS,"ajo-python",0, mkstream=True)
+            except ResponseError as e:
+                if str(e) != "BUSYGROUP Consumer Group name already exists":
+                    raise e
+
+            data = await redis.xreadgroup("ajo-python","ajo.py",streams={AJOBUS: ">"},count=100)
+            # stream_name, chunk
+            for _, chunk in data:
+                # entry_id, entry_data
+                for entry_id, entry_data in chunk:
+                    entry = await self.parseEntry(entry_data)
+                    if entry["type"] == "farm":
+                        user_id = entry["user_id"]
+                        await redis.evalsha(
+                            environ['farm_inventory'],
+                            4,
+                            AJOBUS_INVENTORY,
+                            "drop-rate",
+                            LEADERBOARD,
+                            user_id + ":inventory",
+                            user_id,
+                            EVENT_VERSION,
+                            entry["guild_id"],
+                            entry_id,
+                            time.time_ns()-(int(time.time())*1000000000)
+                        )
+        except:
+            printf("There was an exception while runnin on_ajo. Retrying")
 
 
     @Cog.listener()
