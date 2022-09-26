@@ -74,8 +74,15 @@ class Ajo(Cog):
                             entry_id,
                             time.time_ns()-(int(time.time())*1000000000)
                         )
-        except:
-            logger.error("There was an exception while running bomb_cron. Retrying.")
+                    elif entry["type"] == "discombobulate":
+                        target = self.bot.get_user(int(entry["target_id"]))
+                        guild = self.bot.get_guild(int(entry["guild_id"]))
+                        discombobulator = self.bot.get_user(int(entry["source_id"]))
+                        await target.send(f"You have been discombobulated by {discombobulator.name}#{discombobulator.discriminator} from guild "+guild.name)
+
+
+        except Exception as e:
+            logger.error("There was an exception while running on_ajo task. Retrying.")
 
 
     @Cog.listener()
