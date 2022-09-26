@@ -38,7 +38,7 @@ class Ajo(Cog):
                 # cleanup the cron
                 await redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
         except:
-            logger.error("There was an exception while running bomb_cron. Retrying.")
+            logger.error("There was an exception while running bomb_cron task. Retrying.")
 
     @tasks.loop(seconds=1)
     async def on_ajo(self) -> None:
@@ -74,10 +74,10 @@ class Ajo(Cog):
                             entry_id,
                             time.time_ns()-(int(time.time())*1000000000)
                         )
-                    elif entry["type"] == "discombobulate":
-                        target = self.bot.get_user(int(entry["target_id"]))
+                    elif entry["type"] == "discombobulatee":
+                        target = self.bot.get_user(int(entry["user_id"]))
                         guild = self.bot.get_guild(int(entry["guild_id"]))
-                        discombobulator = self.bot.get_user(int(entry["source_id"]))
+                        discombobulator = self.bot.get_user(int(entry["discombobulator_id"]))
                         await target.send(f"You have been discombobulated by {discombobulator.name}#{discombobulator.discriminator} from guild "+guild.name)
 
 
