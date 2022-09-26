@@ -35,6 +35,13 @@ end
 
 -- minimum offer is 35% of the victim
 local target_amount = tonumber(redis.call("zscore", lb_key, target_id))
+
+-- fix corner case when victim doesn't have ajos because it hasn't played
+-- (this happened in dev with a fresh environment but I guess it
+-- could happen elsewhere)
+if not target_amount then
+    target_amount = 0
+end
 local min_offer = math.ceil((35 / 100) * target_amount)
 if not target_amount or offer < min_offer then
     return {"offer", min_offer}
