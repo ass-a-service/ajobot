@@ -5,6 +5,15 @@ email, or any other method with the owners of this repository before making a ch
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
+## Development dependencies
+
+- Docker
+- Docker compose
+- pyenv (optional)
+- Python 3.10
+- poetry (optional)
+- Discord account with [development portal](https://discord.com/developers/)
+
 ## Pull Request Process
 
 1. Ensure any install or build dependencies are removed before the end of the layer when doing a 
