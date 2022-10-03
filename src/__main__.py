@@ -13,6 +13,7 @@ def main() -> None:
 
     intents = Intents(message_content=True, guilds=True)
     intents.messages = True
+    intents.members = True
 
     bot = Bot(
         test_guilds=test_guilds,

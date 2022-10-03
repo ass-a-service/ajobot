@@ -75,6 +75,7 @@ redis.call(
     "version", event_version,
     "type", "discombobulator",
     "user_id", source_id,
+    "discombobulatee_id", target_id,
     "guild_id", guild_id,
     "amount", -offer
 )
@@ -83,6 +84,7 @@ redis.call(
     "version", event_version,
     "type", "discombobulatee",
     "user_id", target_id,
+    "discombobulator_id", source_id,
     "guild_id", guild_id,
     "amount", -dmg
 )

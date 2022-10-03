@@ -2,6 +2,7 @@ from disnake import CommandInteraction, Message, User, Guild, Embed
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 from disnake.ext import tasks
 from aioredis.exceptions import ResponseError
+from loguru import logger
 
 from src.impl.bot import Bot
 import time
@@ -37,7 +38,7 @@ class Ajo(Cog):
                 # cleanup the cron
                 await redis.zremrangebyscore("ajocron-bomb", "-inf", tm)
         except:
-            printf("There was an exception while running bomb_cron. Retrying")
+            logger.error("There was an exception while running bomb_cron task. Retrying.")
 
     @tasks.loop(seconds=1)
     async def on_ajo(self) -> None:
@@ -73,8 +74,15 @@ class Ajo(Cog):
                             entry_id,
                             time.time_ns()-(int(time.time())*1000000000)
                         )
-        except:
-            printf("There was an exception while runnin on_ajo. Retrying")
+                    elif entry["type"] == "discombobulatee":
+                        target = self.bot.get_user(int(entry["user_id"]))
+                        guild = self.bot.get_guild(int(entry["guild_id"]))
+                        discombobulator = self.bot.get_user(int(entry["discombobulator_id"]))
+                        await target.send(f"You have been discombobulated by {discombobulator.name}#{discombobulator.discriminator} from guild "+guild.name)
+
+
+        except Exception as e:
+            logger.error("There was an exception while running on_ajo task. Retrying.")
 
 
     @Cog.listener()
