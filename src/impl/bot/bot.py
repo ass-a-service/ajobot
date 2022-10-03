@@ -24,6 +24,9 @@ class Bot(_Bot):
     async def on_connect(self) -> None:
         logger.info("Connected to the Discord Gateway.")
 
+    async def on_error(self, event_method: str, *args: Any, **kwargs: Any) -> None:
+        raise
+
     async def on_ready(self) -> None:
         logger.info(f"READY event received, connected as {self.user} with {len(self.guilds)} guilds.")
 
