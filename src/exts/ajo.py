@@ -1,6 +1,7 @@
-from disnake import CommandInteraction, Message, User, Guild, Embed
+from disnake import CommandInteraction, MessageInteraction, Message, User, Guild, Embed, ButtonStyle, Member
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 from disnake.ext import tasks
+from disnake.ui import Button, View
 from aioredis.exceptions import ResponseError
 from loguru import logger
 
@@ -13,6 +14,17 @@ LEADERBOARD = "lb"
 EVENT_VERSION = 1
 AJOBUS = "ajobus"
 AJOBUS_INVENTORY = "ajobus-inventory"
+
+class CustomView(View):
+    def __init__(self, member: Member):
+        self.member = member
+        super().__init__(timeout=180)
+
+    async def interaction_check(self, inter: MessageInteraction) -> bool:
+        if inter.author != self.member:
+            await inter.response.send_message(content="You don't have permission to press this button.", ephemeral=True)
+            return False
+        return True
 
 class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
@@ -182,7 +194,27 @@ class Ajo(Cog):
 
     @slash_command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard(self, itr: CommandInteraction) -> None:
-        await itr.send(embed=await self.__get_leaderboard())
+        itr.response.defer
+        view = CustomView(itr.author)
+        previous = Button(style=ButtonStyle.primary, label="Previous", emoji="⏪")
+        next =  Button(style=ButtonStyle.primary, label="Next", emoji="⏩")
+        view.add_item(previous)
+        view.add_item(next)
+        async def button_callback(button_inter: MessageInteraction):
+            button_inter.response.defer
+            await button_inter.send("Fetched your movidas") # Without this, it shows "Interaction failed"
+            await itr.edit_original_response(embed=await self.__get_leaderboard(), view=view)
+        previous.callback = button_callback
+        next.callback = button_callback
+        await itr.send(
+            embed=await self.__get_leaderboard(),
+            view=view,
+            ephemeral=True
+            #components=[
+            #    previous,
+            #    next,
+            #]
+        )
 
     # GAMBLE
     async def __gamble(self, user: User, amount: str, guild: Guild) -> str:
