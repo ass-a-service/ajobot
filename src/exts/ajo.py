@@ -201,19 +201,17 @@ class Ajo(Cog):
         view.add_item(previous)
         view.add_item(next)
         async def button_callback(button_inter: MessageInteraction):
-            button_inter.response.defer
-            await button_inter.send("Fetched your movidas") # Without this, it shows "Interaction failed"
             await itr.edit_original_response(embed=await self.__get_leaderboard(), view=view)
+            try:
+                await button_inter.send("") # Actually this is needed to prevent client showing "Interaction failed"
+            except Exception:
+                pass
         previous.callback = button_callback
         next.callback = button_callback
         await itr.send(
             embed=await self.__get_leaderboard(),
             view=view,
-            ephemeral=True
-            #components=[
-            #    previous,
-            #    next,
-            #]
+            ephemeral=False
         )
 
     # GAMBLE
