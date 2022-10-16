@@ -170,13 +170,15 @@ class Ajo(Cog):
         count = await self.bot.manager.get_ajo(user.id)
         await itr.send(f"{AJO} {user} has {count} ajos {AJO}")
 
-    async def __get_leaderboard(self) -> Embed:
+    async def __get_leaderboard(self, page: int = 1, items_per_page: int = 10) -> Embed:
         embed = Embed(
             title="Ajo Leaderboard",
             colour=0x87CEEB,
         )
-        lb = await self.bot.manager.get_leaderboard()
-        j = 0
+        lb = await self.bot.manager.get_leaderboard(page)
+        page_to = (page*items_per_page)-1
+        page_from = page_to-9
+        j = page_from
         for name,points in lb.items():
             embed.add_field(
                 name=f"{j} . {name[:-5]}",
