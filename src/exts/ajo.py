@@ -188,10 +188,6 @@ class Ajo(Cog):
         return embed
 
     # LEADERBOARD
-    @command(name="leaderboard", description="Get the ajo leaderboard.")
-    async def leaderboard_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(embed=await self.__get_leaderboard())
-
     @slash_command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard(self, itr: CommandInteraction) -> None:
         itr.response.defer
