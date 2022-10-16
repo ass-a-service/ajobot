@@ -1,11 +1,12 @@
-from disnake import CommandInteraction, MessageInteraction, Message, User, Guild, Embed, ButtonStyle, Member
+from disnake import CommandInteraction, MessageInteraction, Message, User, Guild, Embed, ButtonStyle
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 from disnake.ext import tasks
-from disnake.ui import Button, View
+from disnake.ui import Button
 from aioredis.exceptions import ResponseError
 from loguru import logger
 
 from src.impl.bot import Bot
+from src.impl.bot.views.leaderboard import LeaderboardCustomView
 import time
 from os import environ
 
@@ -14,18 +15,6 @@ LEADERBOARD = "lb"
 EVENT_VERSION = 1
 AJOBUS = "ajobus"
 AJOBUS_INVENTORY = "ajobus-inventory"
-
-class CustomView(View):
-    def __init__(self, member: Member, page: int = 1):
-        self.member = member
-        self.page = page
-        super().__init__(timeout=180)
-
-    async def interaction_check(self, inter: MessageInteraction) -> bool:
-        if inter.author != self.member:
-            await inter.response.send_message(content="You don't have permission to press this button.", ephemeral=True)
-            return False
-        return True
 
 class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
@@ -193,7 +182,7 @@ class Ajo(Cog):
     # LEADERBOARD
     @slash_command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard(self, itr: CommandInteraction) -> None:
-        view = CustomView(itr.author)
+        view = LeaderboardCustomView(itr.author)
         previous = Button(style=ButtonStyle.primary, label="Previous", emoji="⏪", custom_id="p")
         next =  Button(style=ButtonStyle.primary, label="Next", emoji="⏩", custom_id="n")
         if view.page == 1:
