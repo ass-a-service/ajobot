@@ -16,8 +16,9 @@ AJOBUS = "ajobus"
 AJOBUS_INVENTORY = "ajobus-inventory"
 
 class CustomView(View):
-    def __init__(self, member: Member):
+    def __init__(self, member: Member, page: int = 1):
         self.member = member
+        self.page = page
         super().__init__(timeout=180)
 
     async def interaction_check(self, inter: MessageInteraction) -> bool:
@@ -192,20 +193,36 @@ class Ajo(Cog):
     # LEADERBOARD
     @slash_command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard(self, itr: CommandInteraction) -> None:
-        itr.response.defer
         view = CustomView(itr.author)
-        previous = Button(style=ButtonStyle.primary, label="Previous", emoji="⏪")
-        next =  Button(style=ButtonStyle.primary, label="Next", emoji="⏩")
+        previous = Button(style=ButtonStyle.primary, label="Previous", emoji="⏪", custom_id="p")
+        next =  Button(style=ButtonStyle.primary, label="Next", emoji="⏩", custom_id="n")
+        if view.page == 1:
+            previous.disabled = True
         view.add_item(previous)
         view.add_item(next)
         async def button_callback(button_inter: MessageInteraction):
-            await itr.edit_original_response(embed=await self.__get_leaderboard(), view=view)
+            # Increase or decrease page based on the button id
+            if button_inter.component.custom_id == "n":
+                view.page += 1
+            else:
+                view.page -= 1
+
+            # Disable the "previous" button only if we're on the first page
+            is_first_page = view.page == 1
+            previous.disabled = is_first_page
+
+            # Modify the original message with the new page
+            await itr.edit_original_response(embed=await self.__get_leaderboard(view.page), view=view)
             try:
                 await button_inter.send("") # Actually this is needed to prevent client showing "Interaction failed"
             except Exception:
                 pass
+
+        # Assign a callback function to the two buttons
         previous.callback = button_callback
         next.callback = button_callback
+
+        # Send the message
         await itr.send(
             embed=await self.__get_leaderboard(),
             view=view,
