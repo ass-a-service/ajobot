@@ -78,15 +78,8 @@ class Ajo(Cog):
                         target = self.bot.get_user(int(entry["user_id"]))
                         guild = self.bot.get_guild(int(entry["guild_id"]))
                         discombobulator = self.bot.get_user(int(entry["discombobulator_id"]))
-                        message = f"You have been discombobulated by {discombobulator.name}#{discombobulator.discriminator} from guild "+guild.name
-                        await target.send(message)
+                        await target.send(f"You have been discombobulated by {discombobulator.name}#{discombobulator.discriminator} from guild "+guild.name)
 
-                        # send a private message to the target
-                        target_channel = target.dm_channel()
-                        if target_channel is None:
-                            target_channel = await user.create_dm()
-                        try: 
-                            await target_channel.send(message)
 
         except Exception as e:
             logger.error("There was an exception while running on_ajo task. Retrying.")
