@@ -13,6 +13,7 @@ LEADERBOARD = "lb"
 EVENT_VERSION = 1
 AJOBUS = "ajobus"
 AJOBUS_INVENTORY = "ajobus-inventory"
+IDS = "ids"
 
 class Ajo(Cog):
     def __init__(self, bot: Bot) -> None:
@@ -99,12 +100,13 @@ class Ajo(Cog):
             bomb_key = "ajobomb"
             err, res = await self.bot.manager.redis.evalsha(
                 environ["ajo"],
-                6,
+                7,
                 AJOBUS,
                 LEADERBOARD,
                 ajo_gain_key,
                 vampire_key,
                 message.author.id,
+                IDS,
                 bomb_key,
                 message.author.id,
                 f"{message.author.name}#{message.author.discriminator}",
@@ -157,6 +159,28 @@ class Ajo(Cog):
     ) -> None:
         count = await self.bot.manager.get_ajo(user.id)
         await itr.send(f"{AJO} {user} has {count} ajos {AJO}")
+
+    @command(name="verid", description="See someone's id.")
+    async def verid_command(self, ctx: Context[Bot], user_name: str) -> None:
+        id = await self.bot.manager.get_id(user_name)
+        if not id:
+            msg = f"{AJO} Unkwnown user {user_name} {AJO}"
+        else:
+            msg = f"{AJO} {user_name}'s id is {id} {AJO}"
+        await ctx.reply(msg)
+
+    @slash_command(name="verid", description="See someone's id.")
+    async def verid(
+        self,
+        itr: CommandInteraction,
+        user_name: str = Param(description="The user name and discriminator.")
+    ) -> None:
+        id = await self.bot.manager.get_id(user_name)
+        if not id:
+            msg = f"{AJO} Unkwnown user {user_name} {AJO}"
+        else:
+            msg = f"{AJO} {user_name}'s id is {id} {AJO}"
+        await itr.send(msg)
 
     async def __get_leaderboard(self) -> Embed:
         embed = Embed(

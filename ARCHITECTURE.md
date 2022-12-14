@@ -8,6 +8,7 @@
 | stream     | `ajobus`                   | ajo changes |
 | stream     | `ajobus-inventory`         | inventory changes |
 | sorted set | `ajocron-bomb`             | bomb cron |
+| hash       | `ids`        `             | user human id to id lookup |
 | string     | `{id}`                     | user human id |
 | hash       | `{id}:inventory`           | user inventory |
 | string     | `{id}:daily`               | user daily reward expiration |
@@ -30,6 +31,16 @@ This key is checked and changed if necessary on each operation.
 > get 111
 "Zymna#0001"
 > set 222 "Axl#0001"
+```
+
+A reverse lookup hash contains the relation from an id to a username and
+discriminator. The hash is updated if the username has changed.
+
+```
+> hget ids "Zymna#0001"
+111
+> hget ids "Axl#0001"
+222
 ```
 
 ### Leaderboard

@@ -4,7 +4,8 @@ local lb_key = KEYS[2]
 local ajo_gain_key = KEYS[3]
 local vampire_key = KEYS[4]
 local name_key = KEYS[5]
-local bomb_key = KEYS[6]
+local ids_key = KEYS[6]
+local bomb_key = KEYS[7]
 
 local id = ARGV[1]
 local called_name = ARGV[2]
@@ -65,6 +66,11 @@ if ajo_gain ~= 0 then
     local current_name = redis.call("get", name_key)
     if called_name ~= current_name then
         redis.call("set", name_key, called_name)
+        -- Only delete the current_name if it's set (the first time it's not)
+        if current_name then
+            redis.call("hdel", ids_key, current_name)
+        end
+        redis.call("hset", ids_key, called_name, id)
     end
 
     return {"OK", ajo_gain}
