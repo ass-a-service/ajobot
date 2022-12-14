@@ -145,14 +145,14 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "ajobot-manager"
-version = "1.2.0"
+version = "1.2.1"
 description = "An interface for the different ajobots"
 category = "main"
 optional = false
 python-versions = ">=3.10,<4.0"
 files = [
-    {file = "ajobot_manager-1.2.0-py3-none-any.whl", hash = "sha256:99a214b666df203d3a04bf4aa8c5d68d98c1e5b7c6dbe70ca5b1d969224d1831"},
-    {file = "ajobot_manager-1.2.0.tar.gz", hash = "sha256:f37bdc34713aa9f30d398298a9f3e28a2b5f3d629448f89df79ae96091a0b5a2"},
+    {file = "ajobot_manager-1.2.1-py3-none-any.whl", hash = "sha256:fb6c5b55ab02028cb792533581c53e194161eb07af55e920636e7f85ddd201b1"},
+    {file = "ajobot_manager-1.2.1.tar.gz", hash = "sha256:9011ccdf69ea4ccc3c8c6571ca6d7db757cb11c4cf6416cc588a7240cdf64812"},
 ]
 
 [package.dependencies]
