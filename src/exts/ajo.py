@@ -1,10 +1,12 @@
-from disnake import CommandInteraction, Message, User, Guild, Embed
+from disnake import CommandInteraction, MessageInteraction, Message, User, Guild, Embed, ButtonStyle
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 from disnake.ext import tasks
+from disnake.ui import Button
 from aioredis.exceptions import ResponseError
 from loguru import logger
 
 from src.impl.bot import Bot
+from src.impl.bot.views.leaderboard import LeaderboardCustomView
 import time
 from os import environ
 
@@ -158,13 +160,15 @@ class Ajo(Cog):
         count = await self.bot.manager.get_ajo(user.id)
         await itr.send(f"{AJO} {user} has {count} ajos {AJO}")
 
-    async def __get_leaderboard(self) -> Embed:
+    async def __get_leaderboard(self, page: int = 1, items_per_page: int = 10) -> Embed:
         embed = Embed(
             title="Ajo Leaderboard",
             colour=0x87CEEB,
         )
-        lb = await self.bot.manager.get_leaderboard()
-        j = 0
+        lb = await self.bot.manager.get_leaderboard(page)
+        page_to = (page*items_per_page)-1
+        page_from = page_to-9
+        j = page_from
         for name,points in lb.items():
             embed.add_field(
                 name=f"{j} . {name[:-5]}",
@@ -176,13 +180,43 @@ class Ajo(Cog):
         return embed
 
     # LEADERBOARD
-    @command(name="leaderboard", description="Get the ajo leaderboard.")
-    async def leaderboard_command(self, ctx: Context[Bot]) -> None:
-        await ctx.reply(embed=await self.__get_leaderboard())
-
     @slash_command(name="leaderboard", description="Get the ajo leaderboard.")
     async def leaderboard(self, itr: CommandInteraction) -> None:
-        await itr.send(embed=await self.__get_leaderboard())
+        view = LeaderboardCustomView(itr.author)
+        previous = Button(style=ButtonStyle.primary, label="Previous", emoji="⏪", custom_id="p")
+        next =  Button(style=ButtonStyle.primary, label="Next", emoji="⏩", custom_id="n")
+        if view.page == 1:
+            previous.disabled = True
+        view.add_item(previous)
+        view.add_item(next)
+        async def button_callback(button_inter: MessageInteraction):
+            # Increase or decrease page based on the button id
+            if button_inter.component.custom_id == "n":
+                view.page += 1
+            else:
+                view.page -= 1
+
+            # Disable the "previous" button only if we're on the first page
+            is_first_page = view.page == 1
+            previous.disabled = is_first_page
+
+            # Modify the original message with the new page
+            await itr.edit_original_response(embed=await self.__get_leaderboard(view.page), view=view)
+            try:
+                await button_inter.send("") # Actually this is needed to prevent client showing "Interaction failed"
+            except Exception:
+                pass
+
+        # Assign a callback function to the two buttons
+        previous.callback = button_callback
+        next.callback = button_callback
+
+        # Send the message
+        await itr.send(
+            embed=await self.__get_leaderboard(),
+            view=view,
+            ephemeral=False
+        )
 
     # GAMBLE
     async def __gamble(self, user: User, amount: str, guild: Guild) -> str:
