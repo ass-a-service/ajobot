@@ -24,3 +24,16 @@ jobs:
         push: true
         tags: ${{ steps.metadata.outputs.tags }}
         labels: ${{ steps.metadata.outputs.labels }}
+  deploy:
+    name: deploy to cluster
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy
+      uses: WyriHaximus/github-action-helm3@v3
+      with:
+        exec: |
+          helm repo add ajobot https://charts.ajobot.com
+          helm repo update
+          helm upgrade ajobot ajobot/ajobot -n ajobot --reuse-vaules --set image.tag=${{github.ref_name}}
+        kubeconfig: '${{ secrets.KUBECONFIG }}'
