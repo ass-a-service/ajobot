@@ -167,7 +167,7 @@ class Ajo(Cog):
         j = 0
         for name,points in lb.items():
             embed.add_field(
-                name=f"{j} . {name[:-5]}",
+                name=f"{j} . {name}",
                 value=f"{AJO} {points}",
                 inline=True
             )
