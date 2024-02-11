@@ -35,5 +35,5 @@ jobs:
         exec: |
           helm repo add ajobot https://charts.ajobot.com
           helm repo update
-          helm upgrade ajobot ajobot/ajobot -n ajobot --reuse-vaules --set image.tag=${{github.ref_name}}
+          helm upgrade ajobot ajobot/ajobot -n ajobot --reuse-values --set image.tag=${{github.ref_name}}
         kubeconfig: '${{ secrets.KUBECONFIG }}'
