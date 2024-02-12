@@ -93,8 +93,8 @@ def main() -> None:
             "curse": 12,
             "max_stack": 1,
             "craft": {
-                ":bone:": 10,
-                ":tooth:": 4
+                ":bone:": 5,
+                ":tooth:": 2
             }
         },
         ":satellite:": {
