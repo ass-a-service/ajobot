@@ -69,7 +69,7 @@ def main() -> None:
         },
         ":eggplant:": {
             "description": "Makes you stronger.",
-            "drop_rate": 30,
+            "drop_rate": 300,
             "tradable": 1,
             "ttl": 600,
             "buff": 31,
