@@ -102,7 +102,7 @@ def main() -> None:
             "tradable": 1,
             "max_stack": 4,
             "craft": {
-                ":gear:": 6
+                ":gear:": 3
             }
         },
         ":gear:": {
