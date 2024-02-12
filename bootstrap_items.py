@@ -27,7 +27,7 @@ def main() -> None:
         },
         ":chopsticks:": {
             "description": "Efficient weapon against vampires.",
-            "drop_rate": 6,
+            "drop_rate": 600,
             "tradable": 1,
             "max_stack": 5
         },
