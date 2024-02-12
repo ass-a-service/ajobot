@@ -13,7 +13,7 @@ redis.replicate_commands()
 
 -- you need at least some ajos to farm
 -- avoids the spam with 0 ajos
-local min_ajos = 100
+local min_ajos = 50
 local current = tonumber(redis.call("zscore", lb_key, id))
 if not current or current < min_ajos then
     return {"funds", current}
