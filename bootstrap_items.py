@@ -111,7 +111,7 @@ def main() -> None:
             "tradable": 1,
             "max_stack": 20,
             "craft": {
-                ":garlic:": 30
+                ":garlic:": 15
             }
         }
     }
