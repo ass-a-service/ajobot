@@ -48,7 +48,7 @@ def main() -> None:
         },
         ":herb:": {
             "description": "Just some herbs.",
-            "drop_rate": 1000,
+            "drop_rate": 4000,
             "tradable": 1,
             "max_stack": 20
         },
