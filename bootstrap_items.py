@@ -42,7 +42,7 @@ def main() -> None:
         },
         ":bomb:": {
             "description": "Plants a bomb, better not be there when it explodes.",
-            "drop_rate": 200,
+            "drop_rate": 900,
             "tradable": 1,
             "max_stack": 1
         },
