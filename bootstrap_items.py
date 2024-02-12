@@ -62,7 +62,7 @@ def main() -> None:
         },
         ":athletic_shoe:": {
             "description": "Makes you run faster through the ajo fields.",
-            "drop_rate": 250,
+            "drop_rate": 1000,
             "tradable": 1,
             "ttl": 600,
             "max_stack": 1
