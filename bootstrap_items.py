@@ -27,7 +27,7 @@ def main() -> None:
         },
         ":chopsticks:": {
             "description": "Efficient weapon against vampires.",
-            "drop_rate": 6,
+            "drop_rate": 600,
             "tradable": 1,
             "max_stack": 5
         },
@@ -42,13 +42,13 @@ def main() -> None:
         },
         ":bomb:": {
             "description": "Plants a bomb, better not be there when it explodes.",
-            "drop_rate": 200,
+            "drop_rate": 900,
             "tradable": 1,
             "max_stack": 1
         },
         ":herb:": {
             "description": "Just some herbs.",
-            "drop_rate": 1000,
+            "drop_rate": 4000,
             "tradable": 1,
             "max_stack": 20
         },
@@ -62,14 +62,14 @@ def main() -> None:
         },
         ":athletic_shoe:": {
             "description": "Makes you run faster through the ajo fields.",
-            "drop_rate": 250,
+            "drop_rate": 1000,
             "tradable": 1,
             "ttl": 600,
             "max_stack": 1
         },
         ":eggplant:": {
             "description": "Makes you stronger.",
-            "drop_rate": 30,
+            "drop_rate": 300,
             "tradable": 1,
             "ttl": 600,
             "buff": 31,
@@ -77,13 +77,13 @@ def main() -> None:
         },
         ":bone:": {
             "description": "A human bone.",
-            "drop_rate": 500,
+            "drop_rate": 5000,
             "tradable": 1,
             "max_stack": 206
         },
         ":tooth:": {
             "description": "A human tooth.",
-            "drop_rate": 400,
+            "drop_rate": 4000,
             "tradable": 1,
             "max_stack": 32
         },
@@ -93,8 +93,8 @@ def main() -> None:
             "curse": 12,
             "max_stack": 1,
             "craft": {
-                ":bone:": 10,
-                ":tooth:": 4
+                ":bone:": 5,
+                ":tooth:": 2
             }
         },
         ":satellite:": {
@@ -102,7 +102,7 @@ def main() -> None:
             "tradable": 1,
             "max_stack": 4,
             "craft": {
-                ":gear:": 6
+                ":gear:": 3
             }
         },
         ":gear:": {
@@ -111,7 +111,7 @@ def main() -> None:
             "tradable": 1,
             "max_stack": 20,
             "craft": {
-                ":garlic:": 30
+                ":garlic:": 15
             }
         }
     }
