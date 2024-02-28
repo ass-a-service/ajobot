@@ -27,7 +27,7 @@ def main() -> None:
         },
         ":chopsticks:": {
             "description": "Efficient weapon against vampires.",
-            "drop_rate": 600,
+            "drop_rate": 250,
             "tradable": 1,
             "max_stack": 5
         },
@@ -62,7 +62,7 @@ def main() -> None:
         },
         ":athletic_shoe:": {
             "description": "Makes you run faster through the ajo fields.",
-            "drop_rate": 1000,
+            "drop_rate": 300,
             "tradable": 1,
             "ttl": 600,
             "max_stack": 1
@@ -77,13 +77,13 @@ def main() -> None:
         },
         ":bone:": {
             "description": "A human bone.",
-            "drop_rate": 5000,
+            "drop_rate": 2500,
             "tradable": 1,
             "max_stack": 206
         },
         ":tooth:": {
             "description": "A human tooth.",
-            "drop_rate": 4000,
+            "drop_rate": 2000,
             "tradable": 1,
             "max_stack": 32
         },
@@ -116,7 +116,6 @@ def main() -> None:
         }
     }
 
-    protos = []
     drop_rate = []
     for item, item_data in data.items():
         # prepare drop rate hash
