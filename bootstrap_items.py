@@ -116,7 +116,6 @@ def main() -> None:
         }
     }
 
-    protos = []
     drop_rate = []
     for item, item_data in data.items():
         # prepare drop rate hash
