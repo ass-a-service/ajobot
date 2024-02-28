@@ -45,7 +45,7 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "ajobot-manager"
-version = "1.2.2"
+version = "1.2.3"
 description = "An interface for the different ajobots"
 category = "main"
 optional = false
@@ -188,7 +188,7 @@ python-versions = ">=3.8"
 
 [[package]]
 name = "identify"
-version = "2.5.34"
+version = "2.5.35"
 description = "File identification library for Python"
 category = "dev"
 optional = false
@@ -330,7 +330,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "sentry-sdk"
-version = "1.40.3"
+version = "1.40.6"
 description = "Python client for Sentry (https://sentry.io)"
 category = "main"
 optional = false
@@ -359,7 +359,7 @@ huey = ["huey (>=2)"]
 loguru = ["loguru (>=0.5)"]
 opentelemetry = ["opentelemetry-distro (>=0.35b0)"]
 opentelemetry-experimental = ["opentelemetry-distro (>=0.40b0,<1.0.0)", "opentelemetry-instrumentation-aiohttp-client (>=0.40b0,<1.0.0)", "opentelemetry-instrumentation-django (>=0.40b0,<1.0.0)", "opentelemetry-instrumentation-fastapi (>=0.40b0,<1.0.0)", "opentelemetry-instrumentation-flask (>=0.40b0,<1.0.0)", "opentelemetry-instrumentation-requests (>=0.40b0,<1.0.0)", "opentelemetry-instrumentation-sqlite3 (>=0.40b0,<1.0.0)", "opentelemetry-instrumentation-urllib (>=0.40b0,<1.0.0)"]
-pure_eval = ["pure-eval", "executing", "asttokens"]
+pure-eval = ["pure-eval", "executing", "asttokens"]
 pymongo = ["pymongo (>=3.1)"]
 pyspark = ["pyspark (>=2.4.4)"]
 quart = ["quart (>=0.16.1)", "blinker (>=1.1)"]
@@ -394,7 +394,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "typing-extensions"
-version = "4.9.0"
+version = "4.10.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
 category = "main"
 optional = false
@@ -402,7 +402,7 @@ python-versions = ">=3.8"
 
 [[package]]
 name = "urllib3"
-version = "2.2.0"
+version = "2.2.1"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
 optional = false
@@ -416,7 +416,7 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "virtualenv"
-version = "20.25.0"
+version = "20.25.1"
 description = "Virtual Python Environment builder"
 category = "dev"
 optional = false
