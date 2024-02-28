@@ -77,13 +77,13 @@ def main() -> None:
         },
         ":bone:": {
             "description": "A human bone.",
-            "drop_rate": 5000,
+            "drop_rate": 2500,
             "tradable": 1,
             "max_stack": 206
         },
         ":tooth:": {
             "description": "A human tooth.",
-            "drop_rate": 4000,
+            "drop_rate": 2000,
             "tradable": 1,
             "max_stack": 32
         },
