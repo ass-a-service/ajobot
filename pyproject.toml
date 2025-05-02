@@ -5,6 +5,7 @@ description = "Count your ajo stats!"
 authors = ["axel <axl89@users.noreply.github.com>"]
 license = "MIT"
 repository = "https://github.com/lastlife/ajobot"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
