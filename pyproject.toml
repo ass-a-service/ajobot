@@ -16,6 +16,7 @@ python-dotenv = "^0.21.0"
 aioredis = "^2.0.1"
 ajobot-manager = "^1.2.1"
 sentry-sdk = "^1.9.8"
+setuptools = "^80.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "^21.12b0"
