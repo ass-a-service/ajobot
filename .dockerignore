@@ -1,6 +1,9 @@
 # Ignore all
 *
 
+# Include bootstrap
+!bootstrap_items.py
+
 # Include poetry
 !poetry.lock
 !pyproject.toml
