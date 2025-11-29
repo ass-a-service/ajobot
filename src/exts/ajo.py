@@ -1,7 +1,7 @@
 from disnake import CommandInteraction, Message, User, Guild, Embed
 from disnake.ext.commands import Cog, Context, Param, command, slash_command
 from disnake.ext import tasks
-from aioredis.exceptions import ResponseError
+from redis.exceptions import ResponseError
 from loguru import logger
 
 from src.impl.bot import Bot
